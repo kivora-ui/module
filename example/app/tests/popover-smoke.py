@@ -1,0 +1,40 @@
+"""Real Android checks for the floating popover and its keyboard handling."""
+import importlib.util
+import time
+from pathlib import Path
+spec = importlib.util.spec_from_file_location('keyboard', Path(__file__).with_name('keyboard-smoke.py'))
+k = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(k)
+ui = k.ui
+ui.adb('shell', 'am', 'force-stop', ui.PACKAGE)
+ui.adb('shell', 'am', 'start', '-n', ui.PACKAGE + '/.MainActivity')
+time.sleep(3)
+k.gallery('Popover')
+trigger = k.bounds(k.find('Ver horario', scroll=True))
+k.tap('Ver horario')
+k.find('Cerrar horario')
+panel = next(n for n in ui.nodes() if n.get('resource-id', '').endswith('popover-content'))
+x1, y1, x2, y2 = k.bounds(panel)
+gap = min(abs(y1 - trigger[3]), abs(trigger[1] - y2))
+assert abs(gap - 8*k.density) < 5, f'Popover detached from trigger: gap={gap}'
+assert x1 >= 0 and x2 <= k.width and y1 > 0 and y2 < k.height
+k.screenshot('popover-floating')
+k.check_input('Consulta sobre el horario', 'popover-keyboard')
+k.tap('Cerrar horario')
+time.sleep(.8)
+k.find('Ver horario')
+k.tap('Ver horario')
+k.find('Cerrar horario')
+ui.adb('shell', 'input', 'tap', str(int(k.width*.01)), str(int(k.height*.3)))
+time.sleep(.8)
+k.find('Ver horario')
+assert not any(n.get('text') == 'Cerrar horario' for n in ui.nodes())
+k.tap('Ver horario')
+k.find('Cerrar horario')
+ui.adb('shell', 'input', 'keyevent', '4')
+time.sleep(.8)
+k.find('Ver horario')
+k.tap('Ver horario')
+k.tap('Cerrar horario')
+k.find('Ver horario')
+print('PASS: anchored floating panel, asChild trigger, keyboard, outside tap, Android Back and Close', flush=True)

@@ -1,0 +1,56 @@
+{
+  "name": "@kivora/example-app",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "react-native start",
+    "android": "react-native run-android --no-packager --active-arch-only",
+    "build": "node scripts/android.mjs assembleDebug",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit",
+    "test": "node --experimental-strip-types --test src/store.test.ts",
+    "bundle": "react-native bundle --platform android --dev false --entry-file index.js --bundle-output build/index.android.bundle --assets-dest build/assets",
+    "prestart": "pnpm --filter @kivora/theme build && pnpm --filter @kivora/native build",
+    "test:components": "vitest run src/example-state.test.tsx"
+  },
+  "dependencies": {
+    "@kivora/native": "workspace:*",
+    "@kivora/theme": "workspace:*",
+    "@notifee/react-native": "^9.1.8",
+    "@react-native-async-storage/async-storage": "^2.2.0",
+    "@shopify/flash-list": "^2",
+    "lucide-react-native": "^1.40.0",
+    "nativewind": "4.2.6",
+    "react": "19.2.3",
+    "react-native": "0.85.3",
+    "react-native-css-interop": "0.2.6",
+    "react-native-gesture-handler": "^2.30.0",
+    "react-native-keyboard-controller": "1.22.0",
+    "react-native-reanimated": "4.3.0",
+    "react-native-safe-area-context": "^5.5.2",
+    "react-native-svg": "^15.15.1",
+    "react-native-worklets": "0.8.3"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.2",
+    "@babel/plugin-transform-react-jsx": "7.29.7",
+    "@babel/runtime": "^7.25.0",
+    "@react-native-community/cli": "20.1.0",
+    "@react-native-community/cli-platform-android": "20.1.0",
+    "@react-native/babel-preset": "0.85.3",
+    "@react-native/codegen": "0.85.3",
+    "@react-native/gradle-plugin": "0.85.3",
+    "@react-native/metro-config": "0.85.3",
+    "@react-native/typescript-config": "0.85.3",
+    "@types/react": "^19.2.0",
+    "@types/react-test-renderer": "^19",
+    "hermes-compiler": "250829098.0.10",
+    "react-test-renderer": "19.2.3",
+    "tailwindcss": "3.4.19",
+    "typescript": "^5.8.3",
+    "vitest": "^2.1.9"
+  },
+  "engines": {
+    "node": ">= 22.11.0"
+  }
+}

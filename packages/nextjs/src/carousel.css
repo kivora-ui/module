@@ -1,0 +1,101 @@
+.kv-carousel .slick-slider {
+  position: relative;
+  display: block;
+  box-sizing: border-box;
+  user-select: none;
+  touch-action: pan-y;
+  width: 100%;
+}
+
+.kv-carousel .slick-list {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  margin: 0 -0.5rem;
+  padding: 0;
+}
+
+.kv-carousel .slick-track {
+  position: relative;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: stretch;
+}
+
+.kv-carousel .slick-track::before,
+.kv-carousel .slick-track::after {
+  display: none;
+}
+
+.kv-carousel .slick-slide {
+  display: block;
+  height: auto;
+  min-height: 1px;
+}
+
+.kv-carousel .slick-slide > div {
+  height: 100%;
+}
+
+.kv-carousel .slick-dots {
+  position: static;
+  bottom: auto;
+  display: flex !important;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.kv-carousel .slick-dots li {
+  display: flex;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 0;
+}
+
+.kv-carousel .slick-dots button {
+  width: 0.5rem;
+  height: 0.5rem;
+  padding: 0;
+  overflow: hidden;
+  color: transparent;
+  background: color-mix(in oklch, var(--color-muted-foreground) 32%, transparent);
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    width 160ms ease,
+    background-color 160ms ease,
+    opacity 160ms ease;
+}
+
+.kv-carousel .slick-dots li button::before {
+  display: none;
+  content: "";
+}
+
+.kv-carousel .slick-dots .slick-active button {
+  width: 1.25rem;
+  background: var(--color-primary);
+}
+
+.kv-carousel .slick-disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.kv-carousel-vertical .slick-list {
+  margin: -0.5rem 0;
+}
+
+.kv-carousel-vertical .slick-track {
+  display: block;
+}
+
+.kv-carousel-vertical .slick-slide > div {
+  padding: 0.5rem 0;
+}

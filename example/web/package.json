@@ -1,0 +1,35 @@
+{
+  "name": "@kivora/example-web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "predev": "pnpm --filter @kivora/theme build && pnpm --filter @kivora/nextjs build",
+    "dev": "next dev --hostname 127.0.0.1",
+    "prebuild": "pnpm --filter @kivora/theme build && pnpm --filter @kivora/nextjs build",
+    "build": "next build",
+    "start": "next start --hostname 127.0.0.1",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "@kivora/nextjs": "workspace:*",
+    "@kivora/theme": "workspace:*",
+    "next": "^16.3.4",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "lucide-react": "^1.40.0",
+    "recharts": "^3.1.0",
+    "date-fns": "^4.1.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "@tailwindcss/postcss": "^4.1.0",
+    "tailwindcss": "^4.1.0",
+    "@types/node": "^26.4.1",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.0",
+    "typescript": "^5.9.3"
+  }
+}

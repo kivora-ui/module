@@ -1,0 +1,13 @@
+diff --git a/dist/metro/expo.js b/dist/metro/expo.js
+index aef75e4f949534740d5411f58b0d4fb293e3e867..eea67e92f26c68b6d85523215a4034cba8456f8b 100644
+--- a/dist/metro/expo.js
++++ b/dist/metro/expo.js
+@@ -12,7 +12,7 @@ function expoColorSchemeWarning() {
+ }
+ function isExpo() {
+     try {
+-        require("@expo/config");
++        require.resolve("expo/package.json", { paths: [process.cwd()] });
+         return true;
+     }
+     catch {

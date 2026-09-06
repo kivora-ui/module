@@ -1,0 +1,40 @@
+{
+  "name": "kivora",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Monorepo for Kivora cross-platform UI packages.",
+  "type": "module",
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "dev:web": "pnpm --filter @kivora/example-web dev",
+    "build:web": "pnpm --filter @kivora/example-web build",
+    "test:web": "pnpm build:web && pnpm --filter @kivora/example-web test:e2e",
+    "build": "pnpm -r build",
+    "publish:native": "pnpm --filter @kivora/native... typecheck && pnpm --filter @kivora/native... build && pnpm --filter @kivora/native publish --access public --publish-branch main",
+    "publish:nextjs": "pnpm --filter @kivora/nextjs... typecheck && pnpm --filter @kivora/nextjs... build && pnpm --filter @kivora/nextjs publish --access public --publish-branch main",
+    "publish:theme": "pnpm --filter @kivora/theme typecheck && pnpm --filter @kivora/theme build && pnpm --filter @kivora/theme publish --access public --publish-branch main",
+    "storybook": "pnpm --filter @kivora/storybook storybook",
+    "build:storybook": "pnpm --filter @kivora/storybook build",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "test:datepicker:e2e": "playwright test tests/date-picker.playwright.spec.ts --browser=chromium --reporter=line",
+    "dev:app": "pnpm --filter @kivora/example-app start",
+    "android:app": "pnpm --filter @kivora/example-app android",
+    "build:app": "pnpm --filter @kivora/theme build && pnpm --filter @kivora/example-app build",
+    "test:app": "pnpm --filter @kivora/example-app test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^26.4.1",
+    "@types/react": "^19.2.18",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.9"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "react-native-css-interop@0.2.6": "patches/react-native-css-interop@0.2.6.patch"
+    }
+  }
+}

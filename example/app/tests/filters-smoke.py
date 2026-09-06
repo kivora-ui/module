@@ -1,0 +1,32 @@
+"""Comprueba filtros inferiores y un selector anidado en Android."""
+import importlib.util
+import time
+from pathlib import Path
+
+spec = importlib.util.spec_from_file_location('smoke', Path(__file__).with_name('android-smoke.py'))
+ui = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(ui)
+ui.adb('shell', 'am', 'force-stop', ui.PACKAGE)
+ui.adb('shell', 'am', 'start', '-n', ui.PACKAGE + '/.MainActivity')
+time.sleep(4)
+ui.tap('Inventario')
+ui.tap('Mostrar filtros')
+ui.find('Filtrar productos')
+ui.tap('Categoría')
+ui.tap('Higiene')
+ui.find('Filtrar productos')
+ui.tap('Solo poco stock')
+ui.tap('Limpiar filtros')
+ui.tap('Ver 12 productos')
+ui.find('12 productos')
+ui.tap('Mostrar filtros')
+ui.tap('Solo poco stock')
+ui.adb('shell', 'input', 'keyevent', '4')
+ui.find('3 productos')
+ui.tap('Mostrar filtros')
+ui.tap('Limpiar filtros')
+ui.tap('Ver 12 productos')
+ui.tap('Ajustes')
+ui.tap('Ver componentes')
+ui.find('60 ejemplos')
+print('OK: filtros en sheet, selector anidado, limpieza, cierre y galería ampliada.', flush=True)

@@ -1,0 +1,69 @@
+{
+  "name": "@kivora/native",
+  "version": "0.0.0",
+  "description": "Kivora UI components for React Native.",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "react-native": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "react-native": "./src/index.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@gorhom/bottom-sheet": "^5.2.14",
+    "@kivora/theme": "workspace:*",
+    "class-variance-authority": "^0.7.1",
+    "lucide-react-native": "^1.40.0",
+    "prismjs": "^1.30.0",
+    "react-native-reanimated-carousel": "4.0.3"
+  },
+  "peerDependencies": {
+    "@notifee/react-native": "^9.1.8",
+    "nativewind": "^4.2.6 || ^5.0.0-0",
+    "react": ">=18",
+    "react-native": ">=0.74",
+    "react-native-css": ">=1.0.0",
+    "react-native-gesture-handler": "^2.30.0",
+    "react-native-keyboard-controller": "^1.22.0",
+    "react-native-reanimated": ">=3.16",
+    "react-native-safe-area-context": ">=5",
+    "react-native-svg": ">=15"
+  },
+  "devDependencies": {
+    "@notifee/react-native": "^9.1.8",
+    "@types/prismjs": "^1.26.6",
+    "@types/react": "^19.2.18",
+    "nativewind": "preview",
+    "react-native-css": "latest",
+    "react-native-keyboard-controller": "^1.22.0",
+    "react-native-reanimated": "^3.16.0",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.9"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependenciesMeta": {
+    "react-native-css": {
+      "optional": true
+    }
+  }
+}
