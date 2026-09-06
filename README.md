@@ -1,5 +1,7 @@
 # Kivora UI
 
+Configura una aplicación existente con `npx @kivora/init` (tras publicar el paquete). Detecta Next.js o React Native, prepara la instalación y conserva la configuración compatible. Consulta [el instalador y sus versiones soportadas](packages/init/README.md); `--dry-run` permite revisar los cambios sin aplicarlos.
+
 **Un mismo lenguaje visual para Next.js y React Native.**
 
 Componentes en TypeScript para construir interfaces de escritorio, tablet y móvil con temas neutros, modo claro y oscuro y una base de diseño compartida. Cada plataforma conserva sus interacciones: navegación y teclado en web; gestos, controles táctiles y paneles inferiores en la app.

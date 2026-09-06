@@ -1,0 +1,17 @@
+{
+  "name": "@kivora/init",
+  "version": "0.1.0",
+  "description": "Safely configure Kivora in an existing Next.js or React Native project.",
+  "type": "module",
+  "bin": { "kivora-init": "./src/cli.mjs" },
+  "files": ["src", "README.md"],
+  "engines": { "node": ">=20.19.0" },
+  "scripts": {
+    "build": "node --check src/cli.mjs && node --check src/project.mjs && node --check src/transforms.mjs && node --check src/templates.mjs",
+    "typecheck": "pnpm build",
+    "lint": "pnpm build",
+    "test": "node --test test/*.test.mjs"
+  },
+  "dependencies": { "typescript": "^5.9.3", "semver": "^7.7.2", "cross-spawn": "^7.0.6" },
+  "publishConfig": { "access": "public" }
+}

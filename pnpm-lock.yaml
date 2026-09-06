@@ -184,6 +184,18 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
+  packages/init:
+    dependencies:
+      cross-spawn:
+        specifier: ^7.0.6
+        version: 7.0.6
+      semver:
+        specifier: ^7.7.2
+        version: 7.8.5
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
   packages/native:
     dependencies:
       '@gorhom/bottom-sheet':

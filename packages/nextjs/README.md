@@ -1,5 +1,7 @@
 # @kivora/nextjs
 
+Instalación asistida, una vez publicado el CLI: ejecuta `npx @kivora/init` dentro de tu aplicación. Usa `--dry-run` para revisar el plan. Consulta [las opciones y compatibilidad de @kivora/init](https://www.npmjs.com/package/@kivora/init).
+
 **Componentes para Next.js con el mismo lenguaje visual que Kivora para React Native.**
 
 Una librería TypeScript con temas neutros, modo claro/oscuro y componentes responsive para escritorio, tablet y móvil. Incluye formularios, navegación, tablas, filtros, calendarios, carruseles y paneles.

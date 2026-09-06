@@ -1,5 +1,7 @@
 # @kivora/native
 
+Instalación asistida, una vez publicado el CLI: ejecuta `npx @kivora/init` dentro de tu aplicación. La primera receta admite React Native Community CLI 0.85.3–0.85.x con NativeWind 4; otras combinaciones requieren configuración manual. Usa `--dry-run` para revisar el plan. Consulta [@kivora/init](https://www.npmjs.com/package/@kivora/init).
+
 **Componentes React Native con el mismo lenguaje visual que Kivora para Next.js.**
 
 Formularios, tablas, calendarios, paneles y carruseles en TypeScript, con temas neutros, modo oscuro, gestos y animaciones. El ejemplo Android utiliza React Native Community CLI, **sin Expo**.

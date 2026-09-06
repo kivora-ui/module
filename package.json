@@ -13,6 +13,7 @@
     "publish:native": "pnpm --filter @kivora/native... typecheck && pnpm --filter @kivora/native... build && pnpm --filter @kivora/native publish --access public --publish-branch main",
     "publish:nextjs": "pnpm --filter @kivora/nextjs... typecheck && pnpm --filter @kivora/nextjs... build && pnpm --filter @kivora/nextjs publish --access public --publish-branch main",
     "publish:theme": "pnpm --filter @kivora/theme typecheck && pnpm --filter @kivora/theme build && pnpm --filter @kivora/theme publish --access public --publish-branch main",
+    "publish:init": "pnpm --filter @kivora/init typecheck && pnpm --filter @kivora/init test && pnpm --filter @kivora/init build && pnpm --filter @kivora/init publish --access public --publish-branch main",
     "storybook": "pnpm --filter @kivora/storybook storybook",
     "build:storybook": "pnpm --filter @kivora/storybook build",
     "typecheck": "pnpm -r typecheck",

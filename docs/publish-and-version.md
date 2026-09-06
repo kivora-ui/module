@@ -26,6 +26,21 @@ Estos resultados corresponden al estado revisado; hay que repetir las comprobaci
 - **Versionado:** los tres paquetes están en `0.0.0`. Configurar Changesets y preparar la versión inicial siguiendo los pasos de esta guía.
 - **Instalación externa:** probar los archivos `.tgz` en aplicaciones fuera del workspace. Los tests del código fuente no sustituyen esta comprobación.
 
+## Instalador `@kivora/init`
+
+Se añade un cuarto paquete público, `packages/init`, que publica el ejecutable `kivora-init` para que npm pueda resolver `npx @kivora/init`. Su código ESM se incluye directamente en el tarball; el build comprueba la sintaxis y no genera `dist`.
+
+```powershell
+pnpm --filter @kivora/init test
+pnpm --filter @kivora/init build
+node packages/init/src/cli.mjs --help
+node packages/init/src/cli.mjs --cwd C:/ruta/a/una/app --dry-run
+```
+
+Los tests del instalador usan aplicaciones temporales y simulan la instalación de dependencias. Antes de publicar, probar también el ejecutable empaquetado en aplicaciones externas de ambas plataformas, incluyendo un proyecto con configuración previa. Consulta [las versiones soportadas, opciones y recuperación](../packages/init/README.md).
+
+La revisión histórica de las tres librerías en la tabla superior no incluye este paquete. Los pendientes de estilos web y del parche nativo también afectan al resultado del instalador. Publicar Theme y las librerías antes de anunciar `npx @kivora/init`.
+
 ## 2. Preparar la cuenta de npm
 
 Para publicar bajo `@kivora`, necesitas controlar ese scope mediante el usuario correspondiente o una organización de npm en la que tengas permisos de publicación. La revisión local no comprueba la disponibilidad del scope ni los permisos de tu cuenta.
@@ -85,8 +100,8 @@ pnpm exec changeset
 
 En el asistente:
 
-1. Seleccionar `@kivora/theme`, `@kivora/nextjs` y `@kivora/native`.
-2. Elegir un incremento `minor` para los tres.
+1. Seleccionar `@kivora/theme`, `@kivora/nextjs`, `@kivora/native` y `@kivora/init`.
+2. Elegir un incremento `minor` para los paquetes que sigan en `0.0.0`. Init ya está preparado en `0.1.0`; no seleccionarlo para otro incremento si se va a publicar esa versión inicial.
 3. Describir la primera publicación.
 
 Después, aplicar el versionado y actualizar el lockfile:
@@ -96,7 +111,7 @@ pnpm exec changeset version
 pnpm install
 ```
 
-Partiendo de `0.0.0` y sin otros changesets pendientes, los tres deben quedar en `0.1.0`. Revisar los `package.json`, los changelogs y `pnpm-lock.yaml`.
+Partiendo de `0.0.0` para las librerías y conservando Init en su versión inicial, los cuatro deben quedar en `0.1.0`. Revisar los `package.json`, los changelogs y `pnpm-lock.yaml`.
 
 ### Dependencias internas
 
@@ -132,7 +147,7 @@ pnpm --filter "./packages/*" typecheck
 pnpm --filter "./packages/*" test
 ```
 
-El filtro selecciona las tres librerías y evita ejecutar estos comandos sobre las aplicaciones de ejemplo y Storybook. La compilación debe hacerse antes de empaquetar o publicar: actualmente los paquetes no tienen un hook que garantice automáticamente este paso.
+El filtro selecciona las tres librerías y el instalador, y evita ejecutar estos comandos sobre las aplicaciones de ejemplo y Storybook. La compilación debe hacerse antes de empaquetar o publicar: actualmente los paquetes no tienen un hook que garantice automáticamente este paso.
 
 Generar los archivos que se instalarán en las aplicaciones de prueba:
 
@@ -140,6 +155,7 @@ Generar los archivos que se instalarán en las aplicaciones de prueba:
 pnpm --dir packages/theme pack
 pnpm --dir packages/nextjs pack
 pnpm --dir packages/native pack
+pnpm --dir packages/init pack
 ```
 
 Cada comando muestra la ruta de su `.tgz`. Conservar esos archivos fuera del commit de la release.
@@ -172,9 +188,10 @@ Para publicar un paquete individual, los scripts del `package.json` raíz ejecut
 pnpm publish:theme
 pnpm publish:nextjs
 pnpm publish:native
+pnpm publish:init
 ```
 
-Los scripts de Next.js y Native comprueban y compilan también sus dependencias locales, pero publican únicamente el paquete indicado. Si necesitan una versión nueva de Theme, publicarla primero con `pnpm publish:theme`. Estos scripts no incrementan versiones ni ejecutan los tests; preparar las versiones y completar los tests siguiendo los pasos anteriores.
+Los scripts de Next.js y Native comprueban y compilan también sus dependencias locales, pero publican únicamente el paquete indicado. Si necesitan una versión nueva de Theme, publicarla primero con `pnpm publish:theme`. Estos scripts no incrementan versiones. El script de Init también ejecuta sus tests; los de las librerías no los ejecutan. Preparar las versiones y completar los tests siguiendo los pasos anteriores.
 
 Este comando realiza la publicación real en npm:
 
@@ -194,9 +211,10 @@ Referencia: [publicación recursiva de pnpm](https://pnpm.io/cli/publish).
 npm view @kivora/theme version
 npm view @kivora/nextjs version
 npm view @kivora/native version
+npm view @kivora/init version
 ```
 
-Para la primera release, comprobar que los tres muestran `0.1.0`. Después, verificar una instalación desde npm en los proyectos externos de prueba.
+Para la primera release, comprobar que los cuatro muestran `0.1.0`. Después, verificar una instalación desde npm en los proyectos externos de prueba.
 
 ## 8. Flujo habitual para las siguientes versiones
 
