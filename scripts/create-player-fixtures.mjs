@@ -1,0 +1,26 @@
+import { execFileSync } from 'node:child_process';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+const root = fileURLToPath(new URL('../example/web/public/player-fixtures/', import.meta.url));
+mkdirSync(root, { recursive: true });
+const run = args => execFileSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', ...args], { cwd: root, stdio: 'inherit' });
+run(['-f','lavfi','-i','testsrc2=size=640x360:rate=24','-f','lavfi','-i','sine=frequency=330:sample_rate=44100','-t','18','-c:v','libx264','-pix_fmt','yuv420p','-g','48','-keyint_min','48','-sc_threshold','0','-b:v','450k','-c:a','aac','-b:a','64k','-movflags','+faststart','sample.mp4']);
+run(['-f','lavfi','-i','color=c=0x18354a:size=640x360:rate=24','-f','lavfi','-i','sine=frequency=660:sample_rate=44100','-t','2','-c:v','libx264','-pix_fmt','yuv420p','-c:a','aac','-movflags','+faststart','intro.mp4']);
+run(['-f','lavfi','-i','color=c=0xb34a18:size=640x360:rate=24','-f','lavfi','-i','sine=frequency=440:sample_rate=44100','-t','4','-c:v','libx264','-pix_fmt','yuv420p','-c:a','aac','-movflags','+faststart','ad.mp4']);
+run(['-i','sample.mp4','-vn','-c:a','libmp3lame','audio.mp3']);
+run(['-i','sample.mp4','-frames:v','1','poster.png']);
+run(['-i','sample.mp4','-vf','fps=1/3,scale=160:90,tile=6x1','-frames:v','1','thumbnails.jpg']);
+writeFileSync(`${root}/thumbnails.vtt`, 'WEBVTT\n\n' + Array.from({length:6}, (_, index) => {
+  const stamp = seconds => `00:00:${String(seconds).padStart(2, '0')}.000`;
+  return `${stamp(index * 3)} --> ${stamp((index + 1) * 3)}\nthumbnails.jpg#xywh=${index * 160},0,160,90\n\n`;
+}).join(''));
+mkdirSync(`${root}/hls`, { recursive: true });
+run(['-i','sample.mp4','-c','copy','-hls_time','2','-hls_list_size','0','-hls_playlist_type','vod','-hls_segment_type','fmp4','hls/master.m3u8']);
+mkdirSync(`${root}/dash`, { recursive: true });
+run(['-i','sample.mp4','-map','0:v','-map','0:v','-map','0:a','-c:v','libx264','-b:v:0','450k','-b:v:1','180k','-s:v:1','320x180','-g','48','-keyint_min','48','-sc_threshold','0','-c:a','aac','-seg_duration','2','-use_template','1','-use_timeline','1','-adaptation_sets','id=0,streams=v id=1,streams=a','-f','dash','dash/manifest.mpd']);
+mkdirSync(`${root}/drm`, { recursive: true });
+execFileSync(process.env.KIVORA_PACKAGER ?? 'packager', ['in=sample.mp4,stream=video,output=drm/video.mp4', '--enable_raw_key_encryption', '--keys', 'label=:key_id=11223344556677889900aabbccddeeff:key=00112233445566778899aabbccddeeff', '--clear_lead', '0', '--mpd_output', 'drm/manifest.mpd'], {cwd: root, stdio: 'inherit'});
+writeFileSync(`${root}/captions-es.vtt`, 'WEBVTT\n\n00:00:00.000 --> 00:00:05.000\nSubtítulos de prueba de Kivora\n\n00:00:05.000 --> 00:00:18.000\nReproducción, anuncios y plugins\n');
+writeFileSync(`${root}/captions-en.vtt`, 'WEBVTT\n\n00:00:00.000 --> 00:00:05.000\nKivora test captions\n\n00:00:05.000 --> 00:00:18.000\nPlayback, advertising and plugins\n');
+writeFileSync(`${root}/ad.xml`, `<?xml version="1.0"?><VAST version="3.0"><Ad id="kivora-test"><InLine><AdSystem>Kivora fixtures</AdSystem><AdTitle>Test advertisement</AdTitle><Impression></Impression><Creatives><Creative><Linear skipoffset="00:00:01"><Duration>00:00:04</Duration><MediaFiles><MediaFile delivery="progressive" type="video/mp4" width="640" height="360">http://127.0.0.1:3000/player-fixtures/ad.mp4</MediaFile></MediaFiles></Linear></Creative></Creatives></InLine></Ad></VAST>`);
+console.log('Created synthetic, royalty-free MP4, HLS, DASH, audio, intro, ad and caption fixtures.');

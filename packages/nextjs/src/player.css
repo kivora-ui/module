@@ -1,0 +1,150 @@
+.kivora-player { position: relative; width: 100%; min-width: 0; border-radius: 16px; background: var(--color-background); color: var(--color-foreground); box-shadow: 0 8px 32px #00000012; }
+.kivora-player-stage { position: relative; isolation: isolate; overflow: hidden; aspect-ratio: 16 / 9; background: #090909; color: #fff; border-radius: 16px 16px 0 0; }
+.kivora-player-stage > video { width: 100%; height: 100%; object-fit: contain; }
+.kivora-player-intro { position: absolute; inset: 0; }
+.kivora-player-center { position: absolute; inset: 0; display: flex; flex-direction: column; gap: 16px; align-items: center; justify-content: center; padding: 24px; text-align: center; }
+.kivora-player-controls { padding: 12px 16px; min-width: 0; }
+.kivora-player-timeline { display: flex; align-items: center; gap: 12px; }
+.kivora-player-time { font-size: 11px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.kivora-player-live { color: #fb345d; font-size: 11px; font-weight: 700; }
+.kivora-player-seek { position: relative; flex: 1; min-width: 0; padding: 9px 0; }
+.kivora-player-seek-track { height: 4px; }
+.kivora-player-seek-thumb { width: 13px; height: 13px; }
+.kivora-player-preview { position: absolute; bottom: 28px; width: 174px; transform: translateX(-50%); pointer-events: none; background: #111e; color: white; border-radius: 7px; padding: 3px; box-shadow: 0 8px 24px #0005; text-align: center; font-size: 11px; font-variant-numeric: tabular-nums; z-index: 10; }
+.kivora-player-preview-image { position: relative; overflow: hidden; width: 168px; max-width: 100%; aspect-ratio: 16/9; border-radius: 4px; }
+.kivora-player-preview-image img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.kivora-player-preview > span { display: block; padding: 4px; }
+.kivora-player-play-large { width: 60px; height: 60px; border-radius: 50%; }
+.kivora-player-central-play { flex-direction: row; gap: 30px; }
+.kivora-player-skip-label { position: absolute; font-size: 9px; margin-top: 4px; }
+.kivora-player-transport { display: flex; }
+.kivora-player-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 2px; margin-top: 6px; }
+.kivora-player-volume { width: 72px; accent-color: var(--color-primary); }
+.kivora-player-settings { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; padding: 12px 0; }
+.kivora-player-settings > label { min-width: 0; font-size: 12px; display: grid; gap: 6px; }
+.kivora-player-ad-container { position: absolute; inset: 0; pointer-events: none; }
+.kivora-player-ad-container > * { pointer-events: auto; }
+.kivora-player-ad-container video { width: 100%; height: 100%; object-fit: contain; }
+.kivora-player-overlays { position: absolute; inset: 0; pointer-events: none; }
+.kivora-player-overlays > * { pointer-events: auto; }
+.kivora-player:fullscreen { height: 100%; display: flex; flex-direction: column; border-radius: 0; }
+.kivora-player:fullscreen .kivora-player-stage { flex: 1; aspect-ratio: auto; min-height: 0; border-radius: 0; }
+.kivora-player-audio .kivora-player-stage { aspect-ratio: auto; min-height: 100px; background: var(--color-muted); color: var(--color-foreground); }
+.kivora-player-audio .kivora-player-stage > video { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.kivora-player-art { display: flex; align-items: center; gap: 16px; padding: 16px; font-weight: 600; }
+.kivora-player-art img { width: 64px; height: 64px; object-fit: cover; border-radius: 10px; }
+.kivora-player-art span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kivora-player-footer { position: fixed; z-index: 40; bottom: 0; left: 0; right: 0; border-radius: 0; padding-bottom: env(safe-area-inset-bottom); box-shadow: 0 -4px 24px #0002; }
+.kivora-player-footer .kivora-player-stage { min-height: 0; border-radius: 0; background: transparent; }
+.kivora-player-footer .kivora-player-art { padding: 8px 16px 0; font-size: 14px; }
+.kivora-player-footer .kivora-player-art img { width: 32px; height: 32px; }
+.kivora-player-footer .kivora-player-controls { padding-top: 4px; }
+.kivora-player-sheet-art { display: flex; justify-content: center; padding: 24px; }
+.kivora-player-sheet-art img { width: min(50vw, 240px); aspect-ratio: 1; object-fit: cover; border-radius: 16px; }
+@media (max-width: 600px) {
+  .kivora-player-settings { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kivora-player-volume, .kivora-player-pip { display: none; }
+  .kivora-player-controls { padding: 8px; }
+  .kivora-player-toolbar { gap: 0; }
+  .kivora-player-toolbar > button { width: 34px; height: 36px; }
+}
+
+/* Video controls live over the picture; audio retains the standard layout. */
+.kivora-player-immersive { container-type: inline-size; background: #080a0e; color: #fff; }
+.kivora-player-immersive .kivora-player-stage { border-radius: 16px; }
+.kivora-player-chrome { position: absolute; inset: 0; z-index: 4; pointer-events: none; background: linear-gradient(180deg, #0009 0%, transparent 26%, transparent 48%, #000c 100%); transition: opacity .25s, visibility .25s; }
+.kivora-player-immersive .kivora-player-central-play { z-index: 3; transition: opacity .25s, visibility .25s; }
+.kivora-player-immersive .kivora-player-ad-container { z-index: 2; }
+.kivora-player-immersive .kivora-player-overlays { z-index: 5; transition: opacity .25s, visibility .25s; }
+.kivora-player-ui-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+.kivora-player-immersive[data-controls-idle="true"] .kivora-player-stage,
+.kivora-player-immersive[data-controls-idle="true"] .kivora-player-stage * { cursor: none !important; }
+.kivora-player-chrome .kivora-player-controls { position: absolute; bottom: 0; left: 0; right: 0; padding: 12px 22px 14px; pointer-events: auto; }
+.kivora-player-chrome .kivora-player-toolbar { flex-wrap: nowrap; gap: 5px; margin-top: 0; }
+.kivora-player-chrome button, .kivora-player-central-play button { position: relative; }
+.kivora-player-chrome .kivora-player-toolbar button { flex-shrink: 0; width: 36px; height: 36px; }
+.kivora-player-chrome .kivora-player-toolbar .kivora-player-skip-ad { width: auto; padding: 0 12px; border-radius: 20px; }
+.kivora-player-immersive[data-player-phase="ad"] .kivora-player-toolbar { flex-wrap: wrap; }
+.kivora-player-immersive[data-player-phase="ad"] .kivora-player-toolbar button:disabled { display: none; }
+.kivora-player-chrome .kivora-player-toolbar button, .kivora-player-chrome .kivora-player-queue-heading button, .kivora-player-chrome .kivora-player-controls > button, .kivora-player-immersive .kivora-player-central-play button { color: white; background: transparent; border-color: #ffffff40; box-shadow: none; }
+.kivora-player-chrome button:hover, .kivora-player-immersive .kivora-player-central-play button:hover { background: #ffffff20; }
+.kivora-player-chrome button:focus-visible, .kivora-player-immersive .kivora-player-central-play button:focus-visible { outline: 2px solid white; outline-offset: 3px; }
+.kivora-player-chrome .kivora-player-seek-track { background: #ffffff45; }
+.kivora-player-chrome .kivora-player-seek-range, .kivora-player-chrome .kivora-player-seek-thumb { background: #ff2451; border-color: #ff2451; }
+.kivora-player-chrome .kivora-player-seek-thumb { box-shadow: none; }
+.kivora-player-chrome .kivora-player-volume { width: 66px; }
+.kivora-player-chrome .kivora-player-volume > span:first-child { height: 3px; background: #ffffff40; }
+.kivora-player-chrome .kivora-player-volume > span:first-child > span { background: white; }
+.kivora-player-chrome .kivora-player-volume [role="slider"] { width: 10px; height: 10px; background: white; border: none; }
+.kivora-player-heading { position: absolute; top: 25px; left: 28px; right: 28px; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.kivora-player-heading strong { display: block; font-size: clamp(14px, 2.4cqw, 22px); font-weight: 500; }
+.kivora-player-heading div > span { display: block; color: #ffffffa0; font-size: 12px; margin-top: 3px; }
+.kivora-player-badge { border: 1px solid #ffffff60; border-radius: 20px; padding: 3px 10px; font-size: 11px; white-space: nowrap; }
+.kivora-player-program { position: absolute; bottom: 115px; left: 28px; max-width: 55%; }
+.kivora-player-eyebrow { text-transform: uppercase; letter-spacing: .16em; font-size: 10px; font-weight: 700; }
+.kivora-player-program > p { color: #ffffffb0; font-size: 11px; margin-top: 8px; }
+.kivora-player-program h2 { font-size: clamp(20px, 4cqw, 40px); line-height: 1.1; font-weight: 650; margin-top: 8px; }
+.kivora-player-program > .kivora-player-description { color: #ffffffdd; font-size: 12px; line-height: 1.5; max-width: 320px; margin-top: 12px; }
+.kivora-player-queue { pointer-events: auto; position: absolute; top: 68px; right: 26px; bottom: 110px; width: 27%; max-width: 260px; display: flex; flex-direction: column; min-height: 0; }
+.kivora-player-queue-heading { display: flex; flex-shrink: 0; align-items: center; justify-content: space-between; font-size: 11px; color: #ffffffc0; }
+.kivora-player-queue-heading button { width: 26px; height: 26px; }
+.kivora-player-queue-items { overflow: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #ffffff50 transparent; padding: 3px; display: grid; gap: 9px; }
+.kivora-player-episode { position: relative; isolation: isolate; display: block; width: 100%; text-align: left; min-height: 108px; overflow: hidden; border-radius: 9px; flex-shrink: 0; border: 1px solid #ffffff25; background: #141820; transition: transform .2s, border-color .2s; }
+.kivora-player-episode:hover { border-color: white; }
+.kivora-player-episode[aria-current="true"] { outline: 2px solid white; outline-offset: 0; }
+.kivora-player-episode img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
+.kivora-player-episode::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(transparent, #000d); }
+.kivora-player-episode > div { padding: 42px 10px 10px; }
+.kivora-player-episode strong { display: block; font-size: 12px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+.kivora-player-episode span { display: block; font-size: 10px; color: #ffffffb0; margin-top: 3px; }
+.kivora-player-episode-progress { height: 2px; margin-top: 8px; background: #ffffff40; }
+.kivora-player-episode-progress > div { background: #ff2451; }
+.kivora-player-center-with-queue { right: 22%; }
+.kivora-player-immersive .kivora-player-play-large { width: 82px; height: 82px; border: 2px solid white; background: #0001; }
+.kivora-player[data-controls-variant="compact"] .kivora-player-toolbar button { border-radius: 50%; background: #17171788; }
+.kivora-player[data-controls-variant="compact"] .kivora-player-central-play .kivora-player-play-large { width: 62px; height: 62px; background: #0006; border: none; }
+.kivora-player[data-controls-variant="cinema"] .kivora-player-seek-range, .kivora-player[data-controls-variant="cinema"] .kivora-player-seek-thumb { background: white; border-color: white; }
+.kivora-player[data-controls-variant="series"] .kivora-player-central-play { bottom: 30%; }
+.kivora-player-chrome .kivora-player-settings { position: absolute; right: 16px; bottom: calc(100% + 6px); width: min(440px, calc(100% - 32px)); padding: 16px; background: #15171cf5; border-radius: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); box-shadow: 0 8px 30px #0005; pointer-events: auto; color: white; }
+.kivora-player-chrome .kivora-player-settings, .kivora-player-chrome .kivora-player-downloads { --color-background: #191c23; --color-foreground: #fff; --color-popover: #191c23; --color-popover-foreground: #fff; --color-muted: #292d37; --color-muted-foreground: #b8bdc8; --color-accent: #343947; --color-accent-foreground: #fff; --color-input: #444a57; }
+.kivora-player-chrome .kivora-player-downloads { max-height: 130px; overflow: auto; padding: 0 8px; background: #171920ee; border-radius: 8px; }
+@container (max-width: 650px) {
+  .kivora-player-chrome .kivora-player-controls { padding: 7px 12px 9px; }
+  .kivora-player-chrome .kivora-player-toolbar { gap: 1px; }
+  .kivora-player-chrome .kivora-player-toolbar button { width: 30px; height: 30px; }
+  .kivora-player-chrome .kivora-player-volume, .kivora-player-chrome .kivora-player-pip, .kivora-player-transport { display: none; }
+  .kivora-player-heading { top: 14px; left: 16px; right: 16px; }
+  .kivora-player-heading div > span { font-size: 10px; }
+  .kivora-player-program { bottom: 86px; left: 16px; }
+  .kivora-player-program .kivora-player-description, .kivora-player-program > p { display: none; }
+  .kivora-player-program h2 { font-size: 21px; }
+  .kivora-player-queue { top: 44px; right: 14px; bottom: 80px; width: 32%; }
+  .kivora-player-episode { min-height: 74px; }
+  .kivora-player-episode > div { padding: 27px 7px 7px; }
+  .kivora-player-episode strong { font-size: 10px; }
+  .kivora-player-immersive .kivora-player-play-large { width: 54px; height: 54px; }
+  .kivora-player-central-play { gap: 12px; }
+  .kivora-player-chrome .kivora-player-settings { padding: 10px; gap: 6px; font-size: 10px; bottom: calc(100% + 2px); }
+}
+@container (max-width: 420px) {
+  .kivora-player-immersive .kivora-player-stage { aspect-ratio: 4/3; }
+  .kivora-player-program { display: none; }
+  .kivora-player-program h2 { font-size: 17px; }
+  .kivora-player-heading strong { font-size: 13px; }
+  .kivora-player-badge { display: none; }
+  .kivora-player-queue { width: 38%; bottom: 76px; top: 54px; }
+  .kivora-player-queue-heading { font-size: 9px; }
+  .kivora-player-episode { min-height: 46px; }
+  .kivora-player-episode > div { padding: 22px 5px 5px; }
+  .kivora-player-episode strong { font-size: 9px; }
+  .kivora-player-episode span, .kivora-player-episode-progress { display: none; }
+  .kivora-player-center-with-queue { right: 35%; }
+  .kivora-player[data-controls-variant="series"] .kivora-player-central-play { bottom: 25%; }
+  .kivora-player-central-play > button:not(.kivora-player-play-large) { display: none; }
+  .kivora-player-chrome .kivora-player-toolbar { gap: 0; }
+  .kivora-player-chrome .kivora-player-toolbar button { width: 28px; }
+  .kivora-player-immersive .kivora-player-stage:has(.kivora-player-settings, .kivora-player-downloads) { min-height: 300px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kivora-player-chrome, .kivora-player-immersive .kivora-player-central-play, .kivora-player-episode { transition: none; }
+}

@@ -3,7 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = dirname(fileURLToPath(import.meta.url));
-const files = ["styles.css", "carousel.css", "upload-dashboard.css"];
+const files = ["styles.css", "carousel.css", "upload-dashboard.css", "player.css"];
 const sourceDir = join(root, "..", "src");
 const targetDir = join(root, "..", "dist");
 

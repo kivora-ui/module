@@ -164,6 +164,7 @@ type Example = { name: string; description: string; render: () => ReactNode };
 // One entry per source component family. The E2E suite checks this list against
 // packages/nextjs/src/components so new families cannot silently lose coverage.
 export const examples: Record<string, Example> = {
+  player: { name: 'Player', description: 'Video, audio, DRM, ads and offline playback.', render: () => <Link href="/player" className="underline">Abrir Player OTT</Link> },
   'file-upload': { name: 'FileUpload', description: 'Selecciona y sube archivos. Pausa, reanuda o reintenta.', render: () => <FileUploadDemo /> },
   'qr-code': { name: 'QRCode', description: 'Genera un QR local para un enlace o texto.', render: () => <QRCodeDemo /> },
   barcode: { name: 'Barcode', description: 'Code 128, EAN, UPC, Data Matrix, PDF417 y Aztec.', render: () => <BarcodeDemo /> },

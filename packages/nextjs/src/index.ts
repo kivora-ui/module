@@ -459,3 +459,12 @@ export type { UploadMessages, UploadLocaleOptions } from "@kivora/upload";
 
 export type { UploadDashboardOptions } from "./components/upload-dashboard";
 
+export { Player, usePlayer } from './components/player/player';
+export type { PlayerProps } from './components/player/player';
+export { PlayerController, playerTime } from './components/player/controller';
+export type { PlayerSource, PlayerSnapshot, PlayerPhase, PlayerControllerOptions, PlayerPlugin, PlayerPluginContext, PlayerEvent, PlayerOverlay, PlayerOverlayContext, PlayerAdBreak, PlayerAds, PlayerTextTrack, PlayerDownload } from './components/player/types';
+export type { PlayerMessages } from './components/player/locale';
+
+export { AudioPlayerProvider, useAudioPlayer } from './components/player/audio-player';
+export type { AudioPlayerContextValue } from './components/player/audio-player';
+export type { PlayerControlsVariant, PlayerProgram, PlayerQueueItem, PlayerThumbnail } from './components/player/types';

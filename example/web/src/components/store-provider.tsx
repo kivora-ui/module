@@ -11,6 +11,7 @@ import {
 } from "react";
 import {
   KivoraProvider,
+  AudioPlayerProvider,
   Toaster,
   TooltipProvider,
   toast,
@@ -206,7 +207,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     <StoreContext.Provider value={value}>
       <KivoraProvider colorMode={state.settings.dark ? "dark" : "light"}>
         <TooltipProvider>
-          {children}
+          <AudioPlayerProvider locale="es">{children}</AudioPlayerProvider>
           <UploadSessionStatus />
           <Toaster richColors position="bottom-right" />
         </TooltipProvider>
