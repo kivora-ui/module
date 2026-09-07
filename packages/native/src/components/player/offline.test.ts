@@ -63,3 +63,60 @@ describe('OfflineDownloadManager — unsupported sources', () => {
     await expect(manager.download(mp4Source)).resolves.toBeUndefined();
   });
 });
+
+describe('OfflineDownloadManager — downloading a supported MP4 source', () => {
+  it('transitions queued → downloading → downloaded and exposes a playable local source', async () => {
+    const fs = createFakeFileSystem();
+    const manager = new OfflineDownloadManager(fs);
+    const snapshots: string[][] = [];
+    manager.subscribe(() => snapshots.push(manager.getSnapshot().map(entry => entry.state)));
+
+    await manager.download(mp4Source);
+
+    expect(snapshots).toContainEqual(['queued']);
+    expect(snapshots).toContainEqual(['downloading']);
+    expect(snapshots).toContainEqual(['downloaded']);
+    const [entry] = manager.getSnapshot();
+    expect(entry).toMatchObject({ id: 'flower', state: 'downloaded', progress: 1 });
+    expect(entry!.localUri).toContain('flower');
+    expect(fs.files.has(entry!.localUri!)).toBe(true);
+
+    const playable = manager.getPlaybackSource('flower');
+    expect(playable).toMatchObject({ id: 'flower', title: 'Flower' });
+    expect(playable!.src).toBe(`file://${entry!.localUri}`);
+  });
+
+  it('reports growing progress while the download is in flight', async () => {
+    const fs = createFakeFileSystem();
+    fs.downloadFile = ({ toFile, progress }) => {
+      const promise = (async () => {
+        progress?.({ bytesWritten: 25, contentLength: 100 });
+        progress?.({ bytesWritten: 100, contentLength: 100 });
+        fs.files.set(toFile, 'fake-mp4-bytes');
+        return { statusCode: 200 };
+      })();
+      return { jobId: 1, promise };
+    };
+    const manager = new OfflineDownloadManager(fs);
+    const progressValues: number[] = [];
+    manager.subscribe(() => { progressValues.push(manager.getSnapshot()[0]!.progress); });
+
+    await manager.download(mp4Source);
+
+    expect(progressValues).toContain(0.25);
+    expect(progressValues[progressValues.length - 1]).toBe(1);
+  });
+
+  it('does not start a second download for an id already downloaded', async () => {
+    const fs = createFakeFileSystem();
+    let downloadCalls = 0;
+    const originalDownloadFile = fs.downloadFile;
+    fs.downloadFile = options => { downloadCalls++; return originalDownloadFile(options); };
+    const manager = new OfflineDownloadManager(fs);
+
+    await manager.download(mp4Source);
+    await manager.download(mp4Source);
+
+    expect(downloadCalls).toBe(1);
+  });
+});

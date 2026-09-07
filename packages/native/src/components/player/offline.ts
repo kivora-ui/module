@@ -43,9 +43,47 @@ export class OfflineDownloadManager {
   subscribe = (listener: () => void) => { this.listeners.add(listener); return () => { this.listeners.delete(listener); }; };
   private patch(next: OfflineDownloadEntry[]) { this.state = next; this.listeners.forEach(listener => listener()); }
 
+  private extensionFor(mimeType?: string) {
+    return mimeType?.includes('mp4') ? 'mp4' : 'bin';
+  }
+
+  private updateEntry(id: string, patch: Partial<OfflineDownloadEntry>) {
+    this.patch(this.state.map(entry => entry.id === id ? { ...entry, ...patch } : entry));
+  }
+
   download = async (source: PlayerSource): Promise<void> => {
     const reason = unsupportedReason(source, !!this.drmProvider);
     if (reason) throw new OfflineUnsupportedError(reason, source.id);
-    // Task 2 adds the real download flow here.
+    const existing = this.state.find(entry => entry.id === source.id);
+    if (existing && existing.state !== 'error') return;
+
+    const mediaDir = `${this.fs.documentDirectoryPath}/kivora-downloads`;
+    const toFile = `${mediaDir}/${source.id}.${this.extensionFor(source.mimeType)}`;
+    this.patch([...this.state.filter(entry => entry.id !== source.id), { id: source.id, source, state: 'queued', progress: 0 }]);
+    this.updateEntry(source.id, { state: 'downloading' });
+
+    const { promise } = this.fs.downloadFile({
+      fromUrl: source.src,
+      toFile,
+      progress: ({ bytesWritten, contentLength }) => {
+        this.updateEntry(source.id, { progress: contentLength > 0 ? bytesWritten / contentLength : 0 });
+      },
+    });
+    try {
+      const result = await promise;
+      if (result.statusCode >= 200 && result.statusCode < 300) {
+        this.updateEntry(source.id, { state: 'downloaded', progress: 1, localUri: toFile });
+      } else {
+        this.updateEntry(source.id, { state: 'error', error: `HTTP ${result.statusCode}` });
+      }
+    } catch (error) {
+      this.updateEntry(source.id, { state: 'error', error: error instanceof Error ? error.message : String(error) });
+    }
+  };
+
+  getPlaybackSource = (id: string): PlayerSource | undefined => {
+    const entry = this.state.find(item => item.id === id);
+    if (!entry || entry.state !== 'downloaded' || !entry.localUri) return undefined;
+    return { ...entry.source, src: `file://${entry.localUri}` };
   };
 }
