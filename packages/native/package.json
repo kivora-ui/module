@@ -76,6 +76,9 @@
   "peerDependenciesMeta": {
     "react-native-css": {
       "optional": true
+    },
+    "@kesha-antonov/react-native-background-downloader": {
+      "optional": true
     }
   }
 }

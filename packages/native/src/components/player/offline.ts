@@ -63,6 +63,10 @@ export class OfflineDownloadManager {
   private readonly mediaDir: string;
   private readonly manifestPath: string;
   private readonly ready: Promise<void>;
+  /** Resolvers for `download()` calls currently in flight, keyed by source id.
+   * Lets `remove()` settle the caller's pending promise when a download is
+   * cancelled mid-flight instead of leaving it hanging forever. */
+  private resolvers = new Map<string, () => void>();
 
   constructor(
     private fs: OfflineFileSystem,
@@ -154,18 +158,34 @@ export class OfflineDownloadManager {
     const toFile = `${this.mediaDir}/${source.id}.${this.extensionFor(source.mimeType)}`;
     this.patch([...this.state.filter(entry => entry.id !== source.id), { id: source.id, source, state: 'queued', progress: 0, localUri: toFile }]);
     this.updateEntry(source.id, { state: 'downloading' });
+    // Persist the 'downloading' state before the transfer starts: if the app
+    // is killed while this transfer is in flight, resumeAll() on the next
+    // launch needs to see this entry in the manifest to re-attach to it via
+    // transport.resumeExisting() (the OS-level session survives the kill even
+    // though this in-memory state does not).
+    await this.saveManifest();
 
     await new Promise<void>(resolve => {
+      this.resolvers.set(source.id, resolve);
       this.transport.start({
         id: source.id,
         fromUrl: source.src,
         toFile,
         onProgress: progress => this.updateEntry(source.id, { progress: progress.contentLength > 0 ? progress.bytesWritten / progress.contentLength : 0 }),
-        onDone: () => { void this.handleDone(source.id).then(resolve); },
-        onError: message => { this.updateEntry(source.id, { state: 'error', error: message }); void this.saveManifest().then(resolve); },
+        onDone: () => { void this.handleDone(source.id).then(() => this.settle(source.id)); },
+        onError: message => { this.updateEntry(source.id, { state: 'error', error: message }); void this.saveManifest().then(() => this.settle(source.id)); },
       });
     });
   };
+
+  /** Resolves a pending `download()` call for `id`, if one exists, exactly once. */
+  private settle(id: string) {
+    const resolve = this.resolvers.get(id);
+    if (resolve) {
+      this.resolvers.delete(id);
+      resolve();
+    }
+  }
 
   remove = async (id: string): Promise<void> => {
     await this.ready;
@@ -176,6 +196,10 @@ export class OfflineDownloadManager {
     }
     this.patch(this.state.filter(item => item.id !== id));
     await this.saveManifest();
+    // Cancelling a stopped transport job doesn't guarantee onDone/onError
+    // fires (Android generally never fires it for a stopped task), so settle
+    // the caller's download() promise here rather than leaving it hanging.
+    this.settle(id);
   };
 
   getPlaybackSource = (id: string): PlayerSource | undefined => {

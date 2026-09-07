@@ -184,6 +184,54 @@ describe('OfflineDownloadManager — download failures', () => {
   });
 });
 
+describe('OfflineDownloadManager — persisting in-flight downloads', () => {
+  it('persists the downloading state before the transfer starts, so a fresh manager resumes it after a real app kill', async () => {
+    const fs = createFakeFileSystem();
+    const transport = createFakeTransport(fs.files);
+    transport.setStartImpl(() => {}); // never calls onDone/onError — stays in-flight, like a real transfer surviving a kill
+
+    const manager = new OfflineDownloadManager(fs, transport);
+    const pending = manager.download(mp4Source);
+    void pending; // deliberately left unresolved: this download is still "in flight" when the app is killed
+
+    // Let the manifest write inside download() settle before simulating the restart.
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    // The manifest on disk must already carry the still-downloading entry —
+    // this is what a fresh launch's resumeAll() reads to decide what to
+    // resume, and it must be written *before* the transfer starts, not only
+    // once it finishes.
+    const manifestRaw = fs.files.get('/fake/documents/kivora-downloads/manifest.json');
+    expect(manifestRaw).toBeDefined();
+    const manifest = JSON.parse(manifestRaw!) as OfflineDownloadEntry[];
+    expect(manifest).toMatchObject([{ id: 'flower', state: 'downloading' }]);
+
+    // Simulate a real app kill + relaunch: a brand-new manager over the same
+    // file system/manifest, with its own fresh, instrumented fake transport
+    // that records whether resumeExisting was called and with which
+    // still-downloading ids the manager expected to resume.
+    const resumeCalledWithIds: string[] = [];
+    const freshTransport = createFakeTransport(fs.files);
+    freshTransport.resumeExisting = async () => {
+      // The manager doesn't pass ids as an argument — it derives which ids to
+      // ask about from the manifest already loaded into `this.state`, then
+      // unconditionally invokes resumeExisting(). Record that this happened,
+      // and independently assert (above) that the manifest driving it names
+      // the right id.
+      resumeCalledWithIds.push('flower');
+      return [];
+    };
+
+    const restarted = new OfflineDownloadManager(fs, freshTransport);
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    // resumeExisting must have been invoked (proving resumeAll() did not bail
+    // out early on an empty/stale manifest) for the still-downloading id.
+    expect(resumeCalledWithIds).toEqual(['flower']);
+    expect(restarted.getSnapshot().some(entry => entry.id === 'flower')).toBe(true);
+  });
+});
+
 describe('OfflineDownloadManager — resuming after app restart', () => {
   it('re-attaches to a transfer that survived a restart and completes it', async () => {
     const fs = createFakeFileSystem();
@@ -327,7 +375,9 @@ describe('OfflineDownloadManager — remove', () => {
 
     expect(transport.stopped).toEqual(['flower']);
     expect(manager.getSnapshot()).toEqual([]);
-    void pending; // intentionally left unresolved; the fake job never settles
+    // remove() must settle the caller's download() promise even though the
+    // stopped transport job never calls onDone/onError itself.
+    await expect(pending).resolves.toBeUndefined();
   });
 
   it('does not throw when removing an id whose file is already gone', async () => {

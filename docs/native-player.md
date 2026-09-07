@@ -137,6 +137,12 @@ this package does not ship yet. Pass a `drmProvider` implementing
 `OfflineDrmProvider` (`acquireLicense`/`releaseLicense`) to
 `createOfflineDownloadManager` once one exists.
 
+Consumers must install `@kesha-antonov/react-native-background-downloader` and
+`react-native-fs` themselves (both are peer dependencies; the former is
+optional at the package-manager level but required at runtime by
+`useOfflineDownloads`/`createOfflineDownloadManager`) and rebuild their native
+app before using offline downloads.
+
 ```tsx
 import { createOfflineDownloadManager, useOfflineDownloads } from '@kivora/native';
 
