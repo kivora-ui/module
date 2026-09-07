@@ -29,14 +29,14 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@kivora/codes": "workspace:*",
     "@gorhom/bottom-sheet": "^5.2.14",
+    "@kivora/codes": "workspace:*",
     "@kivora/theme": "workspace:*",
+    "@kivora/upload": "workspace:*",
     "class-variance-authority": "^0.7.1",
     "lucide-react-native": "^1.40.0",
     "prismjs": "^1.30.0",
-    "react-native-reanimated-carousel": "4.0.3",
-    "@kivora/upload": "workspace:*"
+    "react-native-reanimated-carousel": "4.0.3"
   },
   "peerDependencies": {
     "@notifee/react-native": "^9.1.8",
@@ -46,9 +46,12 @@
     "react-native-css": ">=1.0.0",
     "react-native-gesture-handler": "^2.30.0",
     "react-native-keyboard-controller": "^1.22.0",
+    "react-native-fs": "^2.20.0",
+    "react-native-orientation-locker": "1.7.0",
     "react-native-reanimated": ">=3.16",
     "react-native-safe-area-context": ">=5",
-    "react-native-svg": ">=15"
+    "react-native-svg": ">=15",
+    "react-native-video": "6.19.2"
   },
   "devDependencies": {
     "@notifee/react-native": "^9.1.8",
@@ -56,8 +59,11 @@
     "@types/react": "^19.2.18",
     "nativewind": "preview",
     "react-native-css": "latest",
+    "react-native-fs": "^2.20.0",
     "react-native-keyboard-controller": "^1.22.0",
+    "react-native-orientation-locker": "1.7.0",
     "react-native-reanimated": "^3.16.0",
+    "react-native-video": "6.19.2",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3",
     "vitest": "^2.1.9"

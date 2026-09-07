@@ -1,3 +1,4 @@
+import * as React from 'react';
 import type { OfflineDownloadEntry, OfflineDrmProvider, PlayerSource } from './types';
 
 /** Minimal file system surface the manager needs; the real implementation
@@ -127,4 +128,8 @@ export class OfflineDownloadManager {
     if (!entry || entry.state !== 'downloaded' || !entry.localUri) return undefined;
     return { ...entry.source, src: `file://${entry.localUri}` };
   };
+}
+
+export function useOfflineDownloads(manager: OfflineDownloadManager) {
+  return React.useSyncExternalStore(manager.subscribe, manager.getSnapshot, manager.getServerSnapshot);
 }

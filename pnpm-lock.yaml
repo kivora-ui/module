@@ -82,6 +82,9 @@ importers:
       react-native-keyboard-controller:
         specifier: 1.22.0
         version: 1.22.0(react-native-reanimated@4.3.0(react-native-worklets@0.8.3(@babel/core@7.29.7)(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(react-native@0.85.3(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.3))(react@19.2.3))(react-native@0.85.3(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.3))(react@19.2.3))(react-native@0.85.3(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.3))(react@19.2.3)
+      react-native-orientation-locker:
+        specifier: 1.7.0
+        version: 1.7.0(react-native@0.85.3(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.3))(react@19.2.3)
       react-native-reanimated:
         specifier: 4.3.0
         version: 4.3.0(react-native-worklets@0.8.3(@babel/core@7.29.7)(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(react-native@0.85.3(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.3))(react@19.2.3))(react-native@0.85.3(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.3))(react@19.2.3)
@@ -91,6 +94,9 @@ importers:
       react-native-svg:
         specifier: ^15.15.1
         version: 15.15.5(react-native@0.85.3(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.3))(react@19.2.3)
+      react-native-video:
+        specifier: 6.19.2
+        version: 6.19.2(react-native@0.85.3(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.3))(react@19.2.3)
       react-native-worklets:
         specifier: 0.8.3
         version: 0.8.3(@babel/core@7.29.7)(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(react-native@0.85.3(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.3))(react@19.2.3)
@@ -287,12 +293,21 @@ importers:
       react-native-css:
         specifier: latest
         version: 3.0.7(@expo/metro-config@57.0.12(typescript@5.9.3))(lightningcss@1.33.0)(react-native@0.87.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.8))(react@19.2.8)
+      react-native-fs:
+        specifier: ^2.20.0
+        version: 2.20.0(react-native@0.87.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.8))
       react-native-keyboard-controller:
         specifier: ^1.22.0
         version: 1.22.0(react-native-reanimated@3.19.5(@babel/core@7.29.7)(react-native@0.87.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.8))(react@19.2.8))(react-native@0.87.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.8))(react@19.2.8)
+      react-native-orientation-locker:
+        specifier: 1.7.0
+        version: 1.7.0(react-native@0.87.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.8))(react@19.2.8)
       react-native-reanimated:
         specifier: ^3.16.0
         version: 3.19.5(@babel/core@7.29.7)(react-native@0.87.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.8))(react@19.2.8)
+      react-native-video:
+        specifier: 6.19.2
+        version: 6.19.2(react-native@0.87.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.8))(react@19.2.8)
       tsup:
         specifier: ^8.5.1
         version: 8.5.1(jiti@2.7.0)(postcss@8.5.26)(typescript@5.9.3)(yaml@2.9.0)
@@ -3574,6 +3589,9 @@ packages:
     resolution: {integrity: sha512-BLrgEcRTwX2o6gGxGOCNyMvGSp35YofuYzw9h1IMTRmKqttAZZVU67bdb9Pr2vUHA8+j3i2tJfjO6C6+4myGTA==}
     engines: {node: 18 || 20 || >=22}
 
+  base-64@0.1.0:
+    resolution: {integrity: sha512-Y5gU45svrR5tI2Vt/X9GPd3L0HNIKzGu202EjxrXMpuc2V2CiKgemAbUUsqYmZJvPtCXoUKjNZwBJzsNScUbXA==}
+
   base64-js@1.5.1:
     resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
 
@@ -5729,6 +5747,15 @@ packages:
       react: '>=19'
       react-native: '>=0.81'
 
+  react-native-fs@2.20.0:
+    resolution: {integrity: sha512-VkTBzs7fIDUiy/XajOSNk0XazFE9l+QlMAce7lGuebZcag5CnjszB+u4BdqzwaQOdcYb5wsJIsqq4kxInIRpJQ==}
+    peerDependencies:
+      react-native: '*'
+      react-native-windows: '*'
+    peerDependenciesMeta:
+      react-native-windows:
+        optional: true
+
   react-native-gesture-handler@2.32.0:
     resolution: {integrity: sha512-uYIMOKlKENORq2SABE+jIjbPU+h5I/sQKcq2v16zRq848nwEp1fWRVwML4QWqijc8UcXJC25o54S8GQd4Mf2OA==}
     peerDependencies:
@@ -5760,6 +5787,16 @@ packages:
       react-native: '*'
       react-native-reanimated: '>=3.0.0'
 
+  react-native-orientation-locker@1.7.0:
+    resolution: {integrity: sha512-2PhG4UyRJktb3KCTISStuu8/q+Q3q3oPesGg9DhdY0b6Cu/ZzxkCvkbJte2TPWRYkS0JpClimvqVaonulGvDrA==}
+    peerDependencies:
+      react: '>=16.13.1'
+      react-native: '>=0.63.2'
+      react-native-windows: '>=0.63.3'
+    peerDependenciesMeta:
+      react-native-windows:
+        optional: true
+
   react-native-reanimated-carousel@4.0.3:
     resolution: {integrity: sha512-YZXlvZNghR5shFcI9hTA7h7bEhh97pfUSLZvLBAshpbkuYwJDKmQXejO/199T6hqGq0wCRwR0CWf2P4Vs6A4Fw==}
     peerDependencies:
@@ -5790,6 +5827,12 @@ packages:
 
   react-native-svg@15.15.5:
     resolution: {integrity: sha512-L4go5jA+GWutdJ/JucuN20cjAbMg1HmMtAP+wZ+3JLCf6Jd0bhXQHxciRP/AQm/FlrIEZwkMcHNZP+FXAiic0w==}
+    peerDependencies:
+      react: '*'
+      react-native: '*'
+
+  react-native-video@6.19.2:
+    resolution: {integrity: sha512-gh5dBMGSHywKr8+p4azRXrFQgT+QTmS1tI4sz6kVRjSENORfsrGGLQzmyo/7S9m+ZOTLWQJ3h8ONaXxR4F2Fcw==}
     peerDependencies:
       react: '*'
       react-native: '*'
@@ -6106,7 +6149,6 @@ packages:
 
   shaka-player@5.2.9:
     resolution: {integrity: sha512-tPeq2yv3Z9pQJskn5+0X5ys7cG5cX+CHfkIlVVahZ+RG4buTrgEwDh8cM7dmwVCUF7Pc6SW7wKbgp29/TGeP8Q==}
-    engines: {node: '>=18'}
 
   shallow-equal@3.1.0:
     resolution: {integrity: sha512-pfVOw8QZIXpMbhBWvzBISicvToTiM5WBF1EeAUZDDSb5Dt29yl4AYbyywbJFSEsRUMr7gJaxqCdr4L3tQf9wVg==}
@@ -6557,6 +6599,9 @@ packages:
     resolution: {integrity: sha512-Pp6GSwGP/NrPIrxVFAIkOQeyw8lFenOHijQWkUTrDvrF4ALqylP2C/KCkeS9dpUM3KvYRQhna5vt7IL95+ZQ9w==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+
+  utf8@3.0.0:
+    resolution: {integrity: sha512-E8VjFIQ/TyQgp+TZfS6l8yp/xWppSAHzidGiRrqe4bK4XP9pTRyKFgGJpO3SN7zdX4DeomTrwaseCHovfpFcqQ==}
 
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
@@ -9994,6 +10039,8 @@ snapshots:
 
   balanced-match@4.0.4: {}
 
+  base-64@0.1.0: {}
+
   base64-js@1.5.1: {}
 
   baseline-browser-mapping@2.11.20: {}
@@ -12329,6 +12376,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  react-native-fs@2.20.0(react-native@0.87.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.8)):
+    dependencies:
+      base-64: 0.1.0
+      react-native: 0.87.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.8)
+      utf8: 3.0.0
+
   react-native-gesture-handler@2.32.0(react-native@0.85.3(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.3))(react@19.2.3):
     dependencies:
       '@egjs/hammerjs': 2.0.17
@@ -12380,6 +12433,16 @@ snapshots:
       react-native: 0.85.3(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.3)
       react-native-is-edge-to-edge: 1.3.1(react-native@0.85.3(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.3))(react@19.2.3)
       react-native-reanimated: 4.3.0(react-native-worklets@0.8.3(@babel/core@7.29.7)(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(react-native@0.85.3(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.3))(react@19.2.3))(react-native@0.85.3(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.3))(react@19.2.3)
+
+  react-native-orientation-locker@1.7.0(react-native@0.85.3(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.3))(react@19.2.3):
+    dependencies:
+      react: 19.2.3
+      react-native: 0.85.3(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.3)
+
+  react-native-orientation-locker@1.7.0(react-native@0.87.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.8))(react@19.2.8):
+    dependencies:
+      react: 19.2.8
+      react-native: 0.87.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.8)
 
   react-native-reanimated-carousel@4.0.3(react-native-gesture-handler@2.32.0(react-native@0.87.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.8))(react@19.2.8))(react-native-reanimated@3.19.5(@babel/core@7.29.7)(react-native@0.87.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.8))(react@19.2.8))(react-native@0.87.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.8))(react@19.2.8):
     dependencies:
@@ -12437,6 +12500,16 @@ snapshots:
     dependencies:
       css-select: 5.2.2
       css-tree: 1.1.3
+      react: 19.2.8
+      react-native: 0.87.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.8)
+
+  react-native-video@6.19.2(react-native@0.85.3(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.3))(react@19.2.3):
+    dependencies:
+      react: 19.2.3
+      react-native: 0.85.3(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.3)
+
+  react-native-video@6.19.2(react-native@0.87.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.8))(react@19.2.8):
+    dependencies:
       react: 19.2.8
       react-native: 0.87.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.8)
 
@@ -13379,6 +13452,8 @@ snapshots:
   use-sync-external-store@1.6.0(react@19.2.8):
     dependencies:
       react: 19.2.8
+
+  utf8@3.0.0: {}
 
   util-deprecate@1.0.2: {}
 

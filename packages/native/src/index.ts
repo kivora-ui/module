@@ -211,3 +211,14 @@ export type { UploadFile, UploadItem, UploadOptions, UploadStatus } from "@kivor
 export { createBackgroundUploadController } from "./lib/background-upload";
 
 export type { UploadMessages, UploadLocaleOptions } from "@kivora/upload";
+
+export { Player, usePlayer } from './components/player/player';
+export type { PlayerProps } from './components/player/player';
+export { PlayerController, playerTime } from './components/player/controller';
+export { AudioPlayerProvider, useAudioPlayer } from './components/player/audio-player';
+export type { AudioPlayerContextValue } from './components/player/audio-player';
+export type { PlayerSource, PlayerSnapshot, PlayerEvent, PlayerAdBreak, PlayerControlsVariant, PlayerOrientation, PlayerProgram, PlayerQueueItem } from './components/player/types';
+export { OfflineDownloadManager, OfflineUnsupportedError, useOfflineDownloads } from './components/player/offline';
+export type { OfflineFileSystem } from './components/player/offline';
+export { createOfflineDownloadManager, nativeOfflineFileSystem } from './components/player/offline-native';
+export type { OfflineDownloadState, OfflineDownloadEntry, OfflineDrmProvider } from './components/player/types';
