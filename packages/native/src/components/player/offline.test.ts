@@ -184,6 +184,100 @@ describe('OfflineDownloadManager — download failures', () => {
   });
 });
 
+describe('OfflineDownloadManager — resuming after app restart', () => {
+  it('re-attaches to a transfer that survived a restart and completes it', async () => {
+    const fs = createFakeFileSystem();
+    // Seed the manifest with a downloading entry
+    const entry: OfflineDownloadEntry = { id: 'flower', source: mp4Source, state: 'downloading', progress: 0.5, localUri: '/fake/documents/kivora-downloads/flower.mp4' };
+    await fs.writeFile('/fake/documents/kivora-downloads/manifest.json', JSON.stringify([entry]));
+
+    const transport = createFakeTransport(fs.files);
+    let resumeCallbacks: any;
+    transport.resumeExisting = async callbacks => {
+      resumeCallbacks = callbacks;
+      return ['flower']; // found this transfer
+    };
+    const manager = new OfflineDownloadManager(fs, transport);
+    await new Promise(resolve => setTimeout(resolve, 0)); // let resume settle
+
+    // Simulate the transfer completing
+    resumeCallbacks.onProgress('flower', { bytesWritten: 100, contentLength: 100 });
+    fs.files.set(entry.localUri!, 'fake-mp4-bytes');
+    resumeCallbacks.onDone('flower');
+    await new Promise(resolve => setTimeout(resolve, 0)); // let handlers settle
+
+    const [result] = manager.getSnapshot();
+    expect(result).toMatchObject({ id: 'flower', state: 'downloaded', progress: 1, localUri: '/fake/documents/kivora-downloads/flower.mp4' });
+  });
+
+  it('marks a lost transfer as interrupted when it was not found on resume', async () => {
+    const fs = createFakeFileSystem();
+    // Seed the manifest with a downloading entry
+    const entry: OfflineDownloadEntry = { id: 'flower', source: mp4Source, state: 'downloading', progress: 0.3, localUri: '/fake/documents/kivora-downloads/flower.mp4' };
+    await fs.writeFile('/fake/documents/kivora-downloads/manifest.json', JSON.stringify([entry]));
+
+    const transport = createFakeTransport(fs.files);
+    transport.resumeExisting = async () => []; // found no transfers
+
+    const manager = new OfflineDownloadManager(fs, transport);
+    await new Promise(resolve => setTimeout(resolve, 0)); // let resume settle
+
+    const [result] = manager.getSnapshot();
+    expect(result).toMatchObject({ id: 'flower', state: 'error', error: 'Download interrupted' });
+
+    // Verify the error is persisted
+    const restarted = new OfflineDownloadManager(fs, createFakeTransport(fs.files));
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(restarted.getSnapshot()[0]).toMatchObject({ state: 'error', error: 'Download interrupted' });
+  });
+
+  it('does not throw when resumeExisting rejects, and marks pending entries as interrupted', async () => {
+    const fs = createFakeFileSystem();
+    // Seed the manifest with a downloading entry
+    const entry: OfflineDownloadEntry = { id: 'flower', source: mp4Source, state: 'downloading', progress: 0, localUri: '/fake/documents/kivora-downloads/flower.mp4' };
+    await fs.writeFile('/fake/documents/kivora-downloads/manifest.json', JSON.stringify([entry]));
+
+    const transport = createFakeTransport(fs.files);
+    transport.resumeExisting = async () => { throw new Error('resume service down'); };
+
+    const manager = new OfflineDownloadManager(fs, transport);
+    await new Promise(resolve => setTimeout(resolve, 0)); // let resume settle (should not throw)
+
+    const [result] = manager.getSnapshot();
+    expect(result).toMatchObject({ id: 'flower', state: 'error', error: 'Download interrupted' });
+
+    // Manager should still be usable: a new download should not throw
+    const anotherSource: PlayerSource = { id: 'garden', title: 'Garden', src: 'https://example.com/garden.mp4', mimeType: 'video/mp4' };
+    await expect(manager.download(anotherSource)).resolves.toBeUndefined();
+    expect(manager.getSnapshot().length).toBe(2);
+  });
+
+  it('invokes onDownloadComplete when a resumed transfer completes', async () => {
+    const fs = createFakeFileSystem();
+    const entry: OfflineDownloadEntry = { id: 'flower', source: mp4Source, state: 'downloading', progress: 0, localUri: '/fake/documents/kivora-downloads/flower.mp4' };
+    await fs.writeFile('/fake/documents/kivora-downloads/manifest.json', JSON.stringify([entry]));
+
+    const transport = createFakeTransport(fs.files);
+    let resumeCallbacks: any;
+    transport.resumeExisting = async callbacks => {
+      resumeCallbacks = callbacks;
+      return ['flower'];
+    };
+
+    const onCompleteCalls: OfflineDownloadEntry[] = [];
+    const manager = new OfflineDownloadManager(fs, transport, undefined, (entry) => onCompleteCalls.push(entry));
+    await new Promise(resolve => setTimeout(resolve, 0)); // let resume settle
+
+    // Simulate the transfer completing
+    fs.files.set(entry.localUri!, 'fake-mp4-bytes');
+    resumeCallbacks.onDone('flower');
+    await new Promise(resolve => setTimeout(resolve, 0)); // let handlers settle
+
+    expect(onCompleteCalls).toHaveLength(1);
+    expect(onCompleteCalls[0]).toMatchObject({ id: 'flower', state: 'downloaded' });
+  });
+});
+
 describe('OfflineDownloadManager — manifest persistence', () => {
   it('persists a downloaded entry and reloads it in a fresh manager instance', async () => {
     const fs = createFakeFileSystem();

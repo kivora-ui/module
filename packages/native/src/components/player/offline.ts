@@ -100,17 +100,26 @@ export class OfflineDownloadManager {
    * 'downloading' in the manifest that the transport doesn't recognize was
    * lost (OS discarded it, or resume failed) and is marked as errored. */
   private async resumeAll() {
-    const pending = this.state.filter(entry => entry.state === 'downloading');
-    if (pending.length === 0) return;
-    const resumed = await this.transport.resumeExisting({
-      onProgress: (id, progress) => this.updateEntry(id, { progress: progress.contentLength > 0 ? progress.bytesWritten / progress.contentLength : 0 }),
-      onDone: id => this.handleDone(id),
-      onError: (id, message) => this.updateEntry(id, { state: 'error', error: message }),
-    });
-    const lost = pending.filter(entry => !resumed.includes(entry.id));
-    if (lost.length > 0) {
-      this.patch(this.state.map(entry => lost.some(l => l.id === entry.id) ? { ...entry, state: 'error', error: 'Download interrupted' } : entry));
-      await this.saveManifest();
+    try {
+      const pending = this.state.filter(entry => entry.state === 'downloading');
+      if (pending.length === 0) return;
+      const resumed = await this.transport.resumeExisting({
+        onProgress: (id, progress) => this.updateEntry(id, { progress: progress.contentLength > 0 ? progress.bytesWritten / progress.contentLength : 0 }),
+        onDone: id => this.handleDone(id),
+        onError: (id, message) => this.updateEntry(id, { state: 'error', error: message }),
+      });
+      const lost = pending.filter(entry => !resumed.includes(entry.id));
+      if (lost.length > 0) {
+        this.patch(this.state.map(entry => lost.some(l => l.id === entry.id) ? { ...entry, state: 'error', error: 'Download interrupted' } : entry));
+        await this.saveManifest();
+      }
+    } catch {
+      // Resume failure: mark all pending entries as interrupted rather than wedging the manager.
+      const pending = this.state.filter(entry => entry.state === 'downloading');
+      if (pending.length > 0) {
+        this.patch(this.state.map(entry => pending.some(p => p.id === entry.id) ? { ...entry, state: 'error', error: 'Download interrupted' } : entry));
+        await this.saveManifest();
+      }
     }
   }
 
