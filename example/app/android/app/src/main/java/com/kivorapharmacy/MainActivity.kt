@@ -2,6 +2,8 @@ package com.kivorapharmacy
 
 import android.content.Intent
 import android.content.res.Configuration
+import android.os.Bundle
+import com.reactnative.googlecast.api.RNGCCastContext
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
@@ -9,6 +11,11 @@ import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnable
 import com.facebook.react.defaults.DefaultReactActivityDelegate
 
 class MainActivity : ReactActivity() {
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    RNGCCastContext.getSharedInstance(this)
+  }
+
   override fun onConfigurationChanged(newConfig: Configuration) {
     super.onConfigurationChanged(newConfig)
     sendBroadcast(Intent("onConfigurationChanged").setPackage(packageName).putExtra("newConfig", newConfig))

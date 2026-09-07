@@ -1,7 +1,7 @@
 import type { OnLoadData } from 'react-native-video';
 import type { PlayerAdBreak, PlayerEvent, PlayerSnapshot, PlayerSource } from './types';
 
-const initial: PlayerSnapshot = { ad: undefined, error: undefined, phase: 'idle', paused: true, buffering: false, currentTime: 0, duration: 0, volume: 1, muted: false, rate: 1, revision: 0, startTime: 0, audioTracks: [], textTracks: [], videoTracks: [], audioTrack: 'auto', textTrack: 'off', videoTrack: 'auto' };
+const initial: PlayerSnapshot = { sleepTimer: undefined, ad: undefined, error: undefined, castError: undefined, phase: 'idle', paused: true, buffering: false, currentTime: 0, duration: 0, volume: 1, muted: false, rate: 1, revision: 0, startTime: 0, audioTracks: [], textTracks: [], videoTracks: [], audioTrack: 'auto', textTrack: 'off', videoTrack: 'auto' };
 export function playerTime(value: number) {
   const seconds = Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0;
   return seconds >= 3600 ? `${Math.floor(seconds / 3600)}:${String(Math.floor(seconds / 60) % 60).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}` : `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
@@ -19,6 +19,29 @@ export class PlayerController {
   private resumeTime = 0;
   private contentDuration = 0;
   private finishing = false;
+  private sleepTimeout?: ReturnType<typeof setTimeout>;
+  private clearSleepTimer() {
+    clearTimeout(this.sleepTimeout);
+    this.sleepTimeout = undefined;
+  }
+  setSleepTimer = (value: 15 | 30 | 45 | 60 | 'episode' | null) => {
+    if (this.state.source?.type !== 'audio') return;
+    this.clearSleepTimer();
+    const sleepTimer: PlayerSnapshot['sleepTimer'] = value === null ? undefined : value === 'episode' ? { mode: 'episode' } : { mode: 'deadline', deadline: Date.now() + value * 60_000 };
+    this.patch({ sleepTimer }, 'sleep-timer');
+    if (sleepTimer?.mode === 'deadline') this.sleepTimeout = setTimeout(this.checkSleepTimer, Math.max(0, sleepTimer.deadline - Date.now()));
+  };
+  checkSleepTimer = () => {
+    const timer = this.state.sleepTimer;
+    if (timer?.mode !== 'deadline' || timer.deadline > Date.now()) return;
+    this.finishSleepTimer();
+  };
+  finishSleepTimer = () => {
+    if (!this.state.sleepTimer) return;
+    const episode = this.state.sleepTimer.mode === 'episode';
+    this.clearSleepTimer();
+    this.patch({ sleepTimer: undefined, paused: true, ...(episode ? { phase: 'ended' as const, buffering: false } : {}) }, 'sleep-timer-ended');
+  };
   getSnapshot = () => this.state;
   getServerSnapshot = () => this.state;
   subscribe = (listener: () => void) => { this.listeners.add(listener); return () => { this.listeners.delete(listener); }; };
@@ -32,23 +55,31 @@ export class PlayerController {
     this.seekNative = seek;
     this.pauseNative = pause;
     PlayerController.connected.add(this);
-    return () => { if (this.seekNative === seek) { this.pauseNative?.(); this.seekNative = undefined; this.pauseNative = undefined; PlayerController.connected.delete(this); this.patch({ paused: true }); } };
+    return () => { if (this.seekNative === seek) { this.clearSleepTimer(); this.pauseNative?.(); this.seekNative = undefined; this.pauseNative = undefined; PlayerController.connected.delete(this); this.patch({ paused: true, sleepTimer: undefined }); } };
   };
   /** Release the previous media, including ads, before another player starts. */
   close = () => {
+    this.clearSleepTimer();
     if (this.state.phase === 'idle') return;
     this.pauseNative?.();
-    const currentTime = this.state.ad ? this.resumeTime : this.state.currentTime;
+    const currentTime = this.state.ad || this.state.phase === 'intro' ? this.resumeTime : this.state.currentTime;
     this.activeAd = undefined;
-    this.patch({ phase: 'idle', paused: true, buffering: false, mediaUri: undefined, ad: undefined, currentTime, revision: this.state.revision + 1 }, 'close');
+    this.patch({ sleepTimer: undefined, phase: 'idle', paused: true, buffering: false, mediaUri: undefined, ad: undefined, currentTime, revision: this.state.revision + 1 }, 'close');
   };
   loadSource = (source: PlayerSource, autoPlay = false) => {
+    this.clearSleepTimer();
     this.played.clear(); this.activeAd = undefined; this.finishing = false; this.contentDuration = 0;
     this.resumeTime = Math.max(0, source.startTime ?? 0);
-    this.patch({ ...initial, source, phase: 'loading', mediaUri: source.src, mediaMimeType: source.mimeType, startTime: this.resumeTime, currentTime: this.resumeTime, volume: this.state.volume, muted: this.state.muted, revision: this.state.revision + 1 }, 'source-change');
+    const intro = source.type !== 'audio' ? source.intro : undefined;
+    this.patch({ ...initial, source, phase: intro ? 'intro' : 'loading', buffering: true, mediaUri: intro?.src ?? source.src, mediaMimeType: intro ? intro.mimeType : source.mimeType, startTime: intro ? 0 : this.resumeTime, currentTime: intro ? 0 : this.resumeTime, volume: this.state.volume, muted: this.state.muted, revision: this.state.revision + 1 }, 'source-change');
     if (autoPlay) this.play();
   };
   private pending(at: PlayerAdBreak['at']) { return this.state.source?.ads?.breaks?.find(ad => ad.at === at && !this.played.has(ad.id)); }
+  private finishIntro() {
+    const pre = this.pending('pre');
+    if (pre) { this.startAd(pre); return; }
+    this.patch({ phase: 'loading', buffering: true, mediaUri: this.state.source?.src, mediaMimeType: this.state.source?.mimeType, currentTime: this.resumeTime, startTime: this.resumeTime, duration: 0, revision: this.state.revision + 1 }, 'intro-ended');
+  }
   private startAd(ad: PlayerAdBreak) {
     this.played.add(ad.id); this.activeAd = ad;
     this.patch({ phase: 'ad', buffering: true, currentTime: 0, duration: ad.duration ?? 0, mediaUri: ad.src, mediaMimeType: ad.mimeType, startTime: 0, revision: this.state.revision + 1, ad: { id: ad.id, title: ad.title ?? '', remaining: ad.duration ?? 0, canSkip: ad.skipAfter === 0 } }, 'ad-started');
@@ -59,6 +90,10 @@ export class PlayerController {
     this.activeAd = undefined;
     this.patch({ ad: undefined, phase: this.finishing ? 'ended' : 'loading', paused: this.finishing || this.state.paused, buffering: !this.finishing, mediaUri: this.state.source?.src, mediaMimeType: this.state.source?.mimeType, currentTime: this.resumeTime, startTime: this.resumeTime, duration: this.contentDuration, revision: this.state.revision + 1 }, 'ad-ended');
   }
+  setCasting = (casting: boolean) => this.patch(casting
+    ? { casting: true, castError: undefined }
+    : { casting: false, castError: undefined, paused: true, startTime: this.state.currentTime, revision: this.state.revision + 1 });
+  castFailure = (castError: string) => this.patch({ castError, paused: true, buffering: false });
   play = () => {
     if (!this.state.source) return;
     for (const other of PlayerController.connected) if (other !== this) other.close();
@@ -66,30 +101,33 @@ export class PlayerController {
     if (this.state.phase === 'error') { this.retry(); return; }
     if (this.state.phase === 'ended') { this.loadSource(this.state.source, true); return; }
     this.patch({ paused: false }, 'play');
+    if (this.state.phase === 'intro') return;
     const pre = !this.activeAd && this.pending('pre');
     if (pre) this.startAd(pre);
   };
   pause = () => this.patch({ paused: true }, 'pause');
   seek = (time: number) => {
-    if (this.state.ad || !Number.isFinite(time) || this.state.duration <= 0) return;
+    if (this.state.ad || this.state.phase === 'intro' || !Number.isFinite(time) || this.state.duration <= 0) return;
     const target = Math.max(0, Math.min(time, this.state.duration));
     this.seekNative?.(target); this.patch({ currentTime: target });
   };
   setVolume = (volume: number) => { if (Number.isFinite(volume)) this.patch({ volume: Math.max(0, Math.min(1, volume)) }); };
   setMuted = (muted: boolean) => this.patch({ muted });
-  setRate = (rate: number) => { if (!this.state.ad && Number.isFinite(rate) && rate >= 0.25 && rate <= 4) this.patch({ rate }); };
-  selectAudio = (audioTrack: string) => { if (!this.state.ad) this.patch({ audioTrack }); };
-  selectText = (textTrack: string) => { if (!this.state.ad) this.patch({ textTrack }); };
-  selectQuality = (videoTrack: string) => { if (!this.state.ad) this.patch({ videoTrack }); };
+  setRate = (rate: number) => { if (!this.state.ad && this.state.phase !== 'intro' && Number.isFinite(rate) && rate >= 0.25 && rate <= 4) this.patch({ rate }); };
+  selectAudio = (audioTrack: string) => { if (!this.state.ad && this.state.phase !== 'intro') this.patch({ audioTrack }); };
+  selectText = (textTrack: string) => { if (!this.state.ad && this.state.phase !== 'intro') this.patch({ textTrack }); };
+  selectQuality = (videoTrack: string) => { if (!this.state.ad && this.state.phase !== 'intro') this.patch({ videoTrack }); };
   retry = () => { if (this.state.source) this.loadSource(this.state.source, true); };
   skipAd = () => { if (this.activeAd && this.state.ad?.canSkip) this.finishAd(); };
   loaded = (data: OnLoadData) => {
     const duration = Number.isFinite(data.duration) ? data.duration : 0;
+    if (this.state.phase === 'intro') { this.patch({ duration, buffering: false }, 'ready'); return; }
     if (!this.activeAd) this.contentDuration = duration;
     this.patch({ duration: this.activeAd?.duration ? Math.min(duration || this.activeAd.duration, this.activeAd.duration) : duration, buffering: false, phase: this.state.ad ? 'ad' : this.finishing ? 'ended' : 'content', ...(!this.activeAd ? { audioTracks: data.audioTracks ?? [], textTracks: data.textTracks ?? [], videoTracks: data.videoTracks ?? [] } : {}) }, 'ready');
   };
   progress = (time: number) => {
     if (!Number.isFinite(time)) return;
+    if (this.state.phase === 'intro') { this.patch({ currentTime: time }, 'timeupdate'); return; }
     if (this.activeAd) {
       const ad = this.activeAd;
       if (this.state.duration > 0 && time >= this.state.duration) { this.finishAd(); return; }
@@ -101,7 +139,14 @@ export class PlayerController {
     if (mid && !this.state.paused) { this.resumeTime = time; this.startAd(mid); }
   };
   ended = () => {
+    if (this.state.phase === 'ended') return;
+    if (this.state.phase === 'intro') { this.finishIntro(); return; }
     if (this.activeAd) { this.finishAd(); return; }
+    if (this.state.sleepTimer?.mode === 'episode') {
+      this.clearSleepTimer();
+      this.patch({ sleepTimer: undefined, phase: 'ended', paused: true, buffering: false }, 'sleep-timer-ended');
+      return;
+    }
     const post = this.pending('post');
     this.finishing = true; this.resumeTime = this.contentDuration;
     if (post) this.startAd(post);
@@ -110,10 +155,12 @@ export class PlayerController {
   buffer = (buffering: boolean) => this.patch({ buffering });
   playback = (playing: boolean) => { if (!this.state.buffering) this.patch({ paused: !playing }, playing ? 'playing' : 'pause'); };
   fail = (error: string) => {
+    if (this.state.phase === 'intro') { this.finishIntro(); return; }
     if (this.activeAd && this.state.source?.ads?.onError !== 'stop') { this.finishAd(); return; }
     this.patch({ phase: 'error', error, paused: true, buffering: false }, 'error');
   };
   imaEvent = (event: string) => {
+    if (this.state.phase === 'intro') return;
     if (['CONTENT_PAUSE_REQUESTED', 'AD_BREAK_STARTED', 'STARTED'].includes(event)) this.patch({ phase: 'ad', ad: { id: 'ima', title: '', remaining: 0, canSkip: false, ima: true } });
     if (['CONTENT_RESUME_REQUESTED', 'ALL_ADS_COMPLETED', 'AD_BREAK_ENDED', 'ERROR'].includes(event)) this.patch({ phase: 'content', ad: undefined });
   };

@@ -4,9 +4,19 @@ android {
   namespace 'com.kivora.upload'
   compileSdkVersion rootProject.ext.compileSdkVersion
   defaultConfig { minSdkVersion 24 }
+  testOptions { unitTests.includeAndroidResources = true }
 }
 dependencies {
   implementation 'com.facebook.react:react-android'
   implementation 'androidx.work:work-runtime-ktx:2.10.1'
   implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+  compileOnly project(':react-native-video')
+  def media3Version = rootProject.ext.has('media3Version') ? rootProject.ext.media3Version : (rootProject.findProperty('RNVideo_media3Version') ?: '1.8.0')
+  implementation "androidx.media3:media3-exoplayer:$media3Version"
+  implementation "androidx.media3:media3-exoplayer-hls:$media3Version"
+  implementation "androidx.media3:media3-exoplayer-dash:$media3Version"
+  implementation "androidx.media3:media3-database:$media3Version"
+  testImplementation 'junit:junit:4.13.2'
+  testImplementation 'org.robolectric:robolectric:4.14.1'
+  testImplementation project(':react-native-video')
 }

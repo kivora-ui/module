@@ -40,6 +40,9 @@ importers:
 
   example/app:
     dependencies:
+      '@kesha-antonov/react-native-background-downloader':
+        specifier: 4.6.2
+        version: 4.6.2(react-native@0.85.3(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.3))
       '@kivora/native':
         specifier: workspace:*
         version: link:../../packages/native
@@ -73,9 +76,15 @@ importers:
       react-native-css-interop:
         specifier: 0.2.6
         version: 0.2.6(patch_hash=6avvp75jppyuy2z4skq4osuvgu)(jrfw3no3iqy7oarwvgkidh5lsu)
+      react-native-fs:
+        specifier: 2.20.0
+        version: 2.20.0(react-native@0.85.3(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.3))
       react-native-gesture-handler:
         specifier: ^2.30.0
         version: 2.32.0(react-native@0.85.3(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.3))(react@19.2.3)
+      react-native-google-cast:
+        specifier: 4.9.1
+        version: 4.9.1(react-native@0.85.3(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.3))(react@19.2.3)
       react-native-image-picker:
         specifier: ^8.2.1
         version: 8.2.1(react-native@0.85.3(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.3))(react@19.2.3)
@@ -299,6 +308,9 @@ importers:
       react-native-fs:
         specifier: ^2.20.0
         version: 2.20.0(react-native@0.87.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.8))
+      react-native-google-cast:
+        specifier: 4.9.1
+        version: 4.9.1(react-native@0.87.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.8))(react@19.2.8)
       react-native-keyboard-controller:
         specifier: ^1.22.0
         version: 1.22.0(react-native-reanimated@3.19.5(@babel/core@7.29.7)(react-native@0.87.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.8))(react@19.2.8))(react-native@0.87.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.8))(react@19.2.8)
@@ -5770,6 +5782,12 @@ packages:
       react: '*'
       react-native: '*'
 
+  react-native-google-cast@4.9.1:
+    resolution: {integrity: sha512-/HvIKAaWHtG6aTNCxrNrqA2ftWGkfH0M/2iN+28pdGUXpKmueb33mgL1m8D4zzwEODQMcmpfoCsym1IwDvugBQ==}
+    peerDependencies:
+      react: '*'
+      react-native: '*'
+
   react-native-image-picker@8.2.1:
     resolution: {integrity: sha512-FBeGYJGFDjMdGCcyubDJgBAPCQ4L1D3hwLXyUU91jY9ahOZMTbluceVvRmrEKqnDPFJ0gF1NVhJ0nr1nROFLdg==}
     peerDependencies:
@@ -7979,6 +7997,10 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.6.0
+
+  '@kesha-antonov/react-native-background-downloader@4.6.2(react-native@0.85.3(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.3))':
+    dependencies:
+      react-native: 0.85.3(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.3)
 
   '@kesha-antonov/react-native-background-downloader@4.6.2(react-native@0.87.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.8))':
     dependencies:
@@ -12388,6 +12410,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  react-native-fs@2.20.0(react-native@0.85.3(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.3)):
+    dependencies:
+      base-64: 0.1.0
+      react-native: 0.85.3(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.3)
+      utf8: 3.0.0
+
   react-native-fs@2.20.0(react-native@0.87.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.8)):
     dependencies:
       base-64: 0.1.0
@@ -12409,6 +12437,16 @@ snapshots:
       '@types/react-test-renderer': 19.1.0
       hoist-non-react-statics: 3.3.2
       invariant: 2.2.4
+      react: 19.2.8
+      react-native: 0.87.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.8)
+
+  react-native-google-cast@4.9.1(react-native@0.85.3(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.3))(react@19.2.3):
+    dependencies:
+      react: 19.2.3
+      react-native: 0.85.3(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.3)
+
+  react-native-google-cast@4.9.1(react-native@0.87.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.8))(react@19.2.8):
+    dependencies:
       react: 19.2.8
       react-native: 0.87.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.8)
 

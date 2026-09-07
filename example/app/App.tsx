@@ -1,4 +1,5 @@
 import './global.css';
+import * as GoogleCast from 'react-native-google-cast';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import {
@@ -54,6 +55,7 @@ import { useStore } from './src/use-store';
 import { themeVariables } from './src/theme';
 import { ComponentScreen } from './src/component-screen';
 import { PlayerScreen } from './src/player-screen';
+import { getPlayerDownloads } from './src/player-downloads';
 
 type Screen =
   'Inicio' | 'Mostrador' | 'Inventario' | 'Ventas' | 'Ajustes' | 'Componentes' | 'Player';
@@ -155,6 +157,7 @@ function Choice({
 }
 
 export default function App() {
+  useEffect(() => { getPlayerDownloads(); }, []);
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
@@ -286,7 +289,7 @@ function Pharmacy() {
         <StatusBar barStyle={dark ? 'light-content' : 'dark-content'} />
         <SafeAreaView className="flex-1" edges={['top', 'bottom']}>
           <OrientationLocker orientation={PORTRAIT} />
-          <AudioPlayerProvider>
+          <AudioPlayerProvider cast={GoogleCast} airPlay bottomOffset={81}>
           {!ready ? (
             <View className="flex-1 items-center justify-center gap-4 p-6">
               <ActivityIndicator color={ink} />

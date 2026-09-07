@@ -1,7 +1,20 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
   <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+  <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+  <uses-permission android:name="android.permission.WAKE_LOCK" />
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
   <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-  <application><service android:name="androidx.work.impl.foreground.SystemForegroundService" android:foregroundServiceType="dataSync" tools:node="merge" /></application>
+  <application>
+    <service android:name="com.brentvatne.exoplayer.VideoPlaybackService" android:exported="false" android:foregroundServiceType="mediaPlayback">
+      <intent-filter><action android:name="androidx.media3.session.MediaSessionService" /></intent-filter>
+    </service>
+    <service android:name="androidx.work.impl.foreground.SystemForegroundService" android:foregroundServiceType="dataSync" tools:node="merge" />
+    <service android:name="com.kivora.player.KivoraDownloadService" android:exported="false" android:foregroundServiceType="dataSync">
+      <intent-filter><action android:name="androidx.media3.exoplayer.downloadService.action.RESTART" /><category android:name="android.intent.category.DEFAULT" /></intent-filter>
+    </service>
+    <service android:name="androidx.media3.exoplayer.scheduler.PlatformScheduler$PlatformSchedulerService" android:permission="android.permission.BIND_JOB_SERVICE" android:exported="true" />
+  </application>
 </manifest>

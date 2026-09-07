@@ -1,4 +1,5 @@
-import { OfflineDownloadManager, type OfflineFileSystem, type OfflineTransport } from './offline';
+import { adaptiveMimeType, OfflineDownloadManager, type OfflineFileSystem, type OfflineTransport } from './offline';
+import { createAdaptiveTransport } from './offline-adaptive';
 import type { OfflineDownloadEntry, OfflineDrmProvider } from './types';
 import { notifyDownloadComplete } from './offline-notifications';
 
@@ -50,18 +51,14 @@ function nativeTransport(): OfflineTransport {
       }
       jobs.delete(id);
     };
-    cachedTransport = {
-      start: ({ id, fromUrl, toFile, onProgress, onDone, onError }) => {
-        const task = createDownloadTask({ id, url: fromUrl, destination: toFile });
+    const progressive: OfflineTransport = {
+      start: ({ id, fromUrl, toFile, headers, onProgress, onDone, onError }) => {
+        const task = createDownloadTask({ id, url: fromUrl, destination: toFile, headers });
         jobs.set(id, task);
         task
           .begin(() => {})
           .progress(({ bytesDownloaded, bytesTotal }: { bytesDownloaded: number; bytesTotal: number }) =>
             onProgress({ bytesWritten: bytesDownloaded, contentLength: bytesTotal }))
-          // `location` is the library's authoritative final file path (it strips
-          // `file://` from `destination` and moves the file there); we assume it
-          // matches `toFile`/the manifest-derived path rather than threading it
-          // through `OfflineTransport.onDone`, which currently takes no arguments.
           .done(() => {
             settle(id);
             onDone();
@@ -72,11 +69,11 @@ function nativeTransport(): OfflineTransport {
           });
         task.start();
       },
-      stop: id => {
-        const task = jobs.get(id);
+      stop: async id => {
+        const task = jobs.get(id) ?? (await getExistingDownloadTasks()).find((existing: { id: string }) => existing.id === id);
         if (task) {
           jobs.delete(id);
-          void task.stop().catch(() => {});
+          await task.stop();
         }
       },
       resumeExisting: async ({ onProgress, onDone, onError }) => {
@@ -110,16 +107,55 @@ function nativeTransport(): OfflineTransport {
             void task.resume().catch(() => {});
           }
         }
-        return tasks.map(task => task.id);
+        return [...new Set([...tasks.map(task => task.id), ...jobs.keys()])];
       },
     };
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { NativeModules, NativeEventEmitter } = require('react-native');
+    const native = NativeModules.KivoraOfflineDownloads;
+    if (native) {
+      const emitter = new NativeEventEmitter(native);
+      const adaptive = createAdaptiveTransport(native, listener => { emitter.addListener('KivoraOfflineDownload', listener); });
+      cachedTransport = {
+        supportsSegmented: true,
+        start: options => {
+          const transport = adaptiveMimeType({ src: options.fromUrl, mimeType: options.mimeType }) ? adaptive : progressive;
+          transport.start(options);
+        },
+        stop: async id => { await Promise.all([progressive.stop(id), adaptive.stop(id)]); },
+        resumeExisting: async callbacks => {
+          const results = await Promise.allSettled([progressive.resumeExisting(callbacks), adaptive.resumeExisting(callbacks)]);
+          const ids: string[] = [];
+          for (const result of results) {
+            if (result.status === 'rejected') throw result.reason;
+            ids.push(...result.value);
+          }
+          return ids;
+        },
+      };
+    } else {
+      cachedTransport = progressive;
+    }
   }
   return cachedTransport;
 }
+
+let foregroundManager: OfflineDownloadManager | undefined;
+let listeningToAppState = false;
 
 export function createOfflineDownloadManager(
   drmProvider?: OfflineDrmProvider,
   onDownloadComplete: (entry: OfflineDownloadEntry) => void = entry => { void notifyDownloadComplete(entry.source.title); },
 ): OfflineDownloadManager {
-  return new OfflineDownloadManager(nativeOfflineFileSystem(), nativeTransport(), drmProvider, onDownloadComplete);
+  const manager = new OfflineDownloadManager(nativeOfflineFileSystem(), nativeTransport(), drmProvider, onDownloadComplete);
+  foregroundManager = manager;
+  if (!listeningToAppState) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { AppState } = require('react-native');
+    AppState.addEventListener('change', (state: string) => {
+      if (state === 'active') void foregroundManager?.reconcile();
+    });
+    listeningToAppState = true;
+  }
+  return manager;
 }

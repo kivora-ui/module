@@ -17,24 +17,28 @@ export interface OfflineFileSystem {
  * `offline-native.ts` can back it with a library that manages its own OS-level
  * background session instead of `react-native-fs`. */
 export interface OfflineTransport {
+  supportsSegmented?: boolean;
   /** Starts a new transfer. `id` is the download entry's stable id (`source.id`),
    * used as the job's identity so a later app restart can re-attach to it. */
   start(options: {
     id: string;
     fromUrl: string;
     toFile: string;
+    mimeType?: string;
+    title?: string;
+    headers?: Record<string, string>;
     onProgress: (progress: { bytesWritten: number; contentLength: number }) => void;
-    onDone: () => void;
+    onDone: (localUri?: string, notificationHandled?: boolean) => void;
     onError: (message: string) => void;
   }): void;
   /** Cancels an in-flight transfer. No-op if `id` has no active job. */
-  stop(id: string): void;
+  stop(id: string): void | Promise<void>;
   /** Called once when the manager is constructed. Re-attaches the given
    * callbacks to whatever transfers survived an app restart, and returns the
    * ids of the ones it found. */
   resumeExisting(callbacks: {
     onProgress: (id: string, progress: { bytesWritten: number; contentLength: number }) => void;
-    onDone: (id: string) => void;
+    onDone: (id: string, localUri?: string, notificationHandled?: boolean) => void;
     onError: (id: string, message: string) => void;
   }): Promise<string[]>;
 }
@@ -48,13 +52,22 @@ export class OfflineUnsupportedError extends Error {
   }
 }
 
-function unsupportedReason(source: PlayerSource, hasDrmProvider: boolean): 'segmented-format' | 'drm' | undefined {
-  if (source.mimeType?.includes('dash') || source.mimeType?.includes('mpegurl')) return 'segmented-format';
+export function adaptiveMimeType(source: Pick<PlayerSource, 'src' | 'mimeType'>): string | undefined {
+  const mime = source.mimeType?.toLowerCase();
+  const path = source.src.split(/[?#]/, 1)[0]!.toLowerCase();
+  if (mime?.includes('dash') || path.endsWith('.mpd')) return 'application/dash+xml';
+  if (mime?.includes('mpegurl') || path.endsWith('.m3u8')) return 'application/x-mpegurl';
+  return undefined;
+}
+
+function unsupportedReason(source: PlayerSource, hasDrmProvider: boolean, supportsSegmented: boolean): 'segmented-format' | 'drm' | undefined {
+  if (adaptiveMimeType(source) && !supportsSegmented) return 'segmented-format';
+  if (adaptiveMimeType(source) && source.nativeSource?.drm) return 'drm';
   if (source.nativeSource?.drm && !hasDrmProvider) return 'drm';
   return undefined;
 }
 
-/** Downloads progressive (non-segmented), non-DRM sources for offline playback.
+/** Downloads sources supported by the platform transport for offline playback.
  * Mirrors `PlayerController`'s subscribe/getSnapshot shape so it can back a
  * `useSyncExternalStore`-based hook the same way. */
 export class OfflineDownloadManager {
@@ -63,6 +76,12 @@ export class OfflineDownloadManager {
   private readonly mediaDir: string;
   private readonly manifestPath: string;
   private readonly ready: Promise<void>;
+  private manifestWrites: Promise<void> = Promise.resolve();
+  private initialized = false;
+  private reconciliation?: Promise<void>;
+  private starting: Promise<void> = Promise.resolve();
+  private active = new Map<string, symbol>();
+  private removing = new Set<string>();
   /** Resolvers for `download()` calls currently in flight, keyed by source id.
    * Lets `remove()` settle the caller's pending promise when a download is
    * cancelled mid-flight instead of leaving it hanging forever. */
@@ -76,7 +95,10 @@ export class OfflineDownloadManager {
   ) {
     this.mediaDir = `${fs.documentDirectoryPath}/kivora-downloads`;
     this.manifestPath = `${this.mediaDir}/manifest.json`;
-    this.ready = this.loadManifest().then(() => this.resumeAll());
+    this.ready = this.loadManifest().then(() => this.resumeAll()).then(() => {
+      this.initialized = true;
+      this.pump();
+    });
   }
 
   getSnapshot = () => this.state;
@@ -95,34 +117,61 @@ export class OfflineDownloadManager {
     }
   }
 
-  private async saveManifest() {
-    await this.fs.mkdir(this.mediaDir).catch(() => {});
-    await this.fs.writeFile(this.manifestPath, JSON.stringify(this.state));
+  private saveManifest() {
+    const contents = JSON.stringify(this.state);
+    const write = this.manifestWrites.then(async () => {
+      await this.fs.mkdir(this.mediaDir);
+      await this.fs.writeFile(this.manifestPath, contents);
+    });
+    this.manifestWrites = write.catch(() => {});
+    return write;
   }
 
   /** Re-attaches to any transfer that survived an app restart. Any entry left
    * 'downloading' in the manifest that the transport doesn't recognize was
    * lost (OS discarded it, or resume failed) and is marked as errored. */
   private async resumeAll() {
+    const pending = this.state.filter(entry => entry.state === 'downloading');
+    const attempts = new Map(pending.map(entry => [entry.id, this.active.get(entry.id) ?? Symbol(entry.id)]));
+    attempts.forEach((attempt, id) => this.active.set(id, attempt));
+    if (pending.length === 0) return;
+    let resumed: string[];
     try {
-      const pending = this.state.filter(entry => entry.state === 'downloading');
-      if (pending.length === 0) return;
-      const resumed = await this.transport.resumeExisting({
-        onProgress: (id, progress) => this.updateEntry(id, { progress: progress.contentLength > 0 ? progress.bytesWritten / progress.contentLength : 0 }),
-        onDone: id => this.handleDone(id),
-        onError: (id, message) => this.updateEntry(id, { state: 'error', error: message }),
+      resumed = await this.transport.resumeExisting({
+        onProgress: (id, progress) => this.progress(id, attempts.get(id), progress),
+        onDone: (id, localUri, notificationHandled) => { void this.finish(id, attempts.get(id), undefined, localUri, notificationHandled); },
+        onError: (id, message) => { void this.finish(id, attempts.get(id), message); },
       });
-      const lost = pending.filter(entry => !resumed.includes(entry.id));
-      if (lost.length > 0) {
-        this.patch(this.state.map(entry => lost.some(l => l.id === entry.id) ? { ...entry, state: 'error', error: 'Download interrupted' } : entry));
-        await this.saveManifest();
-      }
     } catch {
-      // Resume failure: mark all pending entries as interrupted rather than wedging the manager.
-      const pending = this.state.filter(entry => entry.state === 'downloading');
-      if (pending.length > 0) {
-        this.patch(this.state.map(entry => pending.some(p => p.id === entry.id) ? { ...entry, state: 'error', error: 'Download interrupted' } : entry));
+      for (const entry of pending) {
+        if (!this.isCurrent(entry.id, attempts.get(entry.id))) continue;
+        this.removing.add(entry.id);
+        try {
+          await this.transport.stop(entry.id);
+        } catch {
+          continue;
+        } finally {
+          this.removing.delete(entry.id);
+        }
+        await this.finish(entry.id, attempts.get(entry.id), 'Download interrupted');
+      }
+      return;
+    }
+    for (const entry of pending) {
+      if (!resumed.includes(entry.id)) await this.finish(entry.id, attempts.get(entry.id), 'Download interrupted');
+    }
+    const surviving = pending.filter(entry => this.isCurrent(entry.id, attempts.get(entry.id)));
+    for (const entry of surviving.slice(1)) {
+      this.removing.add(entry.id);
+      try {
+        await this.transport.stop(entry.id);
+        this.active.delete(entry.id);
+        this.updateEntry(entry.id, { state: 'queued', progress: 0 });
         await this.saveManifest();
+      } catch {
+        continue;
+      } finally {
+        this.removing.delete(entry.id);
       }
     }
   }
@@ -135,12 +184,43 @@ export class OfflineDownloadManager {
     this.patch(this.state.map(entry => entry.id === id ? { ...entry, ...patch } : entry));
   }
 
-  private async handleDone(id: string) {
-    const toFile = this.localFileFor(id);
-    this.updateEntry(id, { state: 'downloaded', progress: 1, localUri: toFile });
-    await this.saveManifest();
-    const entry = this.state.find(item => item.id === id);
-    if (entry) this.onDownloadComplete?.(entry);
+  private isCurrent(id: string, attempt: symbol | undefined) {
+    return attempt !== undefined && this.active.get(id) === attempt && !this.removing.has(id)
+      && this.state.some(entry => entry.id === id && entry.state === 'downloading');
+  }
+
+  reconcile = async (): Promise<void> => {
+    await this.ready;
+    if (this.reconciliation) return this.reconciliation;
+    this.initialized = false;
+    this.reconciliation = this.starting.then(() => this.resumeAll()).finally(() => {
+      this.reconciliation = undefined;
+      this.initialized = true;
+      this.pump();
+    });
+    await this.reconciliation;
+  };
+
+  private progress(id: string, attempt: symbol | undefined, progress: { bytesWritten: number; contentLength: number }) {
+    if (this.isCurrent(id, attempt)) this.updateEntry(id, { progress: progress.contentLength > 0 ? progress.bytesWritten / progress.contentLength : 0 });
+  }
+
+  private async finish(id: string, attempt: symbol | undefined, error?: string, localUri?: string, notificationHandled = false) {
+    if (!this.isCurrent(id, attempt)) return;
+    this.updateEntry(id, error === undefined
+      ? { state: 'downloaded', progress: 1, localUri: localUri ?? this.localFileFor(id) }
+      : { state: 'error', error });
+    try {
+      await this.saveManifest();
+      const entry = this.state.find(item => item.id === id);
+      if (error === undefined && entry && !this.removing.has(id) && !notificationHandled) this.onDownloadComplete?.(entry);
+    } finally {
+      if (this.active.get(id) === attempt && !this.removing.has(id)) {
+        this.active.delete(id);
+        this.settle(id);
+        this.pump();
+      }
+    }
   }
 
   private localFileFor(id: string): string {
@@ -149,34 +229,51 @@ export class OfflineDownloadManager {
   }
 
   download = async (source: PlayerSource): Promise<void> => {
-    const reason = unsupportedReason(source, !!this.drmProvider);
+    const reason = unsupportedReason(source, !!this.drmProvider, !!this.transport.supportsSegmented);
     if (reason) throw new OfflineUnsupportedError(reason, source.id);
     await this.ready;
+    await this.reconciliation;
     const existing = this.state.find(entry => entry.id === source.id);
-    if (existing && existing.state !== 'error') return;
+    if (this.removing.has(source.id) || this.active.has(source.id) || (existing && existing.state !== 'error')) return;
 
     const toFile = `${this.mediaDir}/${source.id}.${this.extensionFor(source.mimeType)}`;
     this.patch([...this.state.filter(entry => entry.id !== source.id), { id: source.id, source, state: 'queued', progress: 0, localUri: toFile }]);
-    this.updateEntry(source.id, { state: 'downloading' });
-    // Persist the 'downloading' state before the transfer starts: if the app
-    // is killed while this transfer is in flight, resumeAll() on the next
-    // launch needs to see this entry in the manifest to re-attach to it via
-    // transport.resumeExisting() (the OS-level session survives the kill even
-    // though this in-memory state does not).
+    const completion = new Promise<void>(resolve => { this.resolvers.set(source.id, resolve); });
     await this.saveManifest();
-
-    await new Promise<void>(resolve => {
-      this.resolvers.set(source.id, resolve);
-      this.transport.start({
-        id: source.id,
-        fromUrl: source.src,
-        toFile,
-        onProgress: progress => this.updateEntry(source.id, { progress: progress.contentLength > 0 ? progress.bytesWritten / progress.contentLength : 0 }),
-        onDone: () => { void this.handleDone(source.id).then(() => this.settle(source.id)); },
-        onError: message => { this.updateEntry(source.id, { state: 'error', error: message }); void this.saveManifest().then(() => this.settle(source.id)); },
-      });
-    });
+    this.pump();
+    await completion;
   };
+
+  private pump() {
+    if (!this.initialized || this.active.size > 0 || this.removing.size > 0) return;
+    const entry = this.state.find(item => item.state === 'queued');
+    if (!entry) return;
+    const attempt = Symbol(entry.id);
+    this.active.set(entry.id, attempt);
+    this.updateEntry(entry.id, { state: 'downloading' });
+    this.starting = this.start(entry, attempt);
+  }
+
+  private async start(entry: OfflineDownloadEntry, attempt: symbol) {
+    const { id, source } = entry;
+    try {
+      await this.saveManifest();
+      if (!this.isCurrent(id, attempt)) return;
+      this.transport.start({
+        id,
+        fromUrl: source.src,
+        toFile: this.localFileFor(id),
+        mimeType: adaptiveMimeType(source) ?? source.mimeType,
+        title: source.title,
+        headers: source.nativeSource?.headers,
+        onProgress: progress => this.progress(id, attempt, progress),
+        onDone: (localUri, notificationHandled) => { void this.finish(id, attempt, undefined, localUri, notificationHandled); },
+        onError: message => { void this.finish(id, attempt, message); },
+      });
+    } catch (error) {
+      await this.finish(id, attempt, error instanceof Error ? error.message : String(error));
+    }
+  }
 
   /** Resolves a pending `download()` call for `id`, if one exists, exactly once. */
   private settle(id: string) {
@@ -189,23 +286,33 @@ export class OfflineDownloadManager {
 
   remove = async (id: string): Promise<void> => {
     await this.ready;
-    this.transport.stop(id);
-    const entry = this.state.find(item => item.id === id);
-    if (entry?.localUri) {
-      try { await this.fs.unlink(entry.localUri); } catch { /* already gone: nothing to clean up */ }
+    await this.reconciliation;
+    if (this.removing.has(id)) return;
+    this.removing.add(id);
+    try {
+      await this.transport.stop(id);
+      const entry = this.state.find(item => item.id === id);
+      if (entry?.localUri && !adaptiveMimeType(entry.source)) {
+        try { await this.fs.unlink(entry.localUri); } catch { /* already gone: nothing to clean up */ }
+      }
+      this.patch(this.state.filter(item => item.id !== id));
+      try {
+        await this.saveManifest();
+      } finally {
+        this.settle(id);
+        this.active.delete(id);
+      }
+    } finally {
+      this.removing.delete(id);
+      this.pump();
     }
-    this.patch(this.state.filter(item => item.id !== id));
-    await this.saveManifest();
-    // Cancelling a stopped transport job doesn't guarantee onDone/onError
-    // fires (Android generally never fires it for a stopped task), so settle
-    // the caller's download() promise here rather than leaving it hanging.
-    this.settle(id);
   };
 
   getPlaybackSource = (id: string): PlayerSource | undefined => {
     const entry = this.state.find(item => item.id === id);
     if (!entry || entry.state !== 'downloaded' || !entry.localUri) return undefined;
-    return { ...entry.source, src: `file://${entry.localUri}` };
+    const src = /^[a-z][a-z\d+.-]*:/i.test(entry.localUri) ? entry.localUri : `file://${entry.localUri}`;
+    return { ...entry.source, src, mimeType: adaptiveMimeType(entry.source) ?? entry.source.mimeType, intro: undefined, ads: undefined };
   };
 }
 

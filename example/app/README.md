@@ -27,6 +27,12 @@ El CLI compila, instala y abre `Farmacia Oliva`. También funciona con un Androi
 
 ## Funcionalidades
 
+El player incluye Google Cast para enviar los vídeos de red a un Chromecast o TV
+compatible en la misma Wi-Fi. El SDK se configura en Android y se pasa al player
+con `cast={GoogleCast}`; las muestras locales y las descargas privadas no se envían.
+La integración y los requisitos de AirPlay, CarPlay y Android Auto están en la
+[guía del player](../../docs/native-player.md#chromecast-airplay-and-car-integrations).
+
 - **Inicio:** ventas del día, carrito pendiente y avisos de reposición.
 - **Mostrador:** búsqueda por nombre, marca o código; categoría y poco stock; carrito con cantidades limitadas al stock; cliente; tarjeta o efectivo con cálculo de cambio; ticket.
 - **Inventario:** consulta de existencias, mínimos y recepción de unidades.
@@ -88,4 +94,23 @@ Con Python 3 y el emulador de ejemplo abierto, `python example/app/tests/android
 En **Ajustes → Probar player** puedes probar DASH, HLS, MP4, episodios, ajustes,
 pantalla completa y anuncios. El audio persiste al navegar y se cierra al
 reproducir vídeo. Las muestras de audio y publicidad vienen incluidas en la app.
+
+El audio Android continúa con la pantalla bloqueada o al cambiar de aplicación,
+con controles de reproducción en la notificación del sistema. Usa **Audio de
+2 minutos: probar bloqueo** para comprobarlo. El temporizador de audio local
+se ejecuta en ExoPlayer de forma nativa, sin depender de JavaScript para pausar.
+Forzar el cierre de la app o retirar su tarea detiene esta sesión; no equivale
+a bloquear la pantalla. La implementación iOS requiere un host con Background
+Audio y todavía no dispone del temporizador nativo.
+**Pruebas de inicio** incluye imagen/vídeo, imagen/marca/vídeo e
+imagen/marca/anuncio/vídeo, con muestras locales y la secuencia de fases visible.
+La sección **Descargas** permite guardar el formato seleccionado: MP4 y, en
+Android, HLS/DASH VOD sin DRM con vídeo hasta 720p y audio. Permite ver el progreso,
+cancelar, reproducir sin conexión y eliminar la descarga. El gestor persiste al navegar y
+restaura las descargas al arrancar. **Encolar DASH, HLS y MP4** permite probar la cola FIFO: una activa
+y las demás pendientes. La activa continúa nativamente en segundo plano; si el
+sistema suspende JavaScript, la siguiente arranca al volver a la app. El permiso
+de notificaciones se solicita antes de descargar. HLS/DASH usan avisos nativos de progreso y finalización de Media3.
+Para MP4, Android 16+ usa el aviso nativo de finalización y las versiones
+anteriores usan Notifee cuando JavaScript recibe la finalización.
 Consulta [la guía del player nativo](../../docs/native-player.md).

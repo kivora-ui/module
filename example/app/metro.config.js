@@ -12,7 +12,10 @@ const singleton = [
   'react-native-keyboard-controller',
   'react-native-svg',
   'react-native-video',
+  'react-native-google-cast',
   'react-native-orientation-locker',
+  'react-native-fs',
+  '@kesha-antonov/react-native-background-downloader',
   'react-native-safe-area-context',
   'react-native-gesture-handler',
 ];

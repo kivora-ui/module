@@ -52,7 +52,8 @@
     "react-native-reanimated": ">=3.16",
     "react-native-safe-area-context": ">=5",
     "react-native-svg": ">=15",
-    "react-native-video": "6.19.2"
+    "react-native-video": "6.19.2",
+    "react-native-google-cast": "4.9.1"
   },
   "devDependencies": {
     "@kesha-antonov/react-native-background-downloader": "^4.6.2",
@@ -68,7 +69,8 @@
     "react-native-video": "6.19.2",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3",
-    "vitest": "^2.1.9"
+    "vitest": "^2.1.9",
+    "react-native-google-cast": "4.9.1"
   },
   "publishConfig": {
     "access": "public"
@@ -78,6 +80,9 @@
       "optional": true
     },
     "@kesha-antonov/react-native-background-downloader": {
+      "optional": true
+    },
+    "react-native-google-cast": {
       "optional": true
     }
   }

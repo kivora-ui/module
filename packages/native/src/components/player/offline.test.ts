@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { DRMType } from 'react-native-video';
 import { OfflineDownloadManager, OfflineUnsupportedError, type OfflineFileSystem, type OfflineTransport } from './offline';
+import { createAdaptiveTransport, type AdaptiveDownload } from './offline-adaptive';
 import type { OfflineDownloadEntry, PlayerSource } from './types';
 
 function createFakeFileSystem(): OfflineFileSystem & { files: Map<string, string> } {
@@ -56,7 +57,314 @@ const hlsSource: PlayerSource = { id: 'hls', title: 'Angel One', src: 'https://e
 const drmSource: PlayerSource = { id: 'drm-film', title: 'Protected film', src: 'https://example.com/film.mp4', mimeType: 'video/mp4', nativeSource: { drm: { type: 'widevine' as DRMType } } };
 const mp4Source: PlayerSource = { id: 'flower', title: 'Flower', src: 'https://example.com/flower.mp4', mimeType: 'video/mp4' };
 
+describe('OfflineDownloadManager FIFO', () => {
+  const tick = () => new Promise(resolve => setTimeout(resolve, 0));
+
+  it('keeps an adaptive preparation active across foreground snapshots before native enqueue', async () => {
+    const fs = createFakeFileSystem();
+    const started: string[] = [];
+    let rejectPreparation!: (error: Error) => void;
+    let emit!: (download: AdaptiveDownload) => void;
+    const transport = createAdaptiveTransport({
+      start: options => {
+        started.push(options.id);
+        return new Promise<void>((_, reject) => { rejectPreparation = reject; });
+      },
+      remove: async () => {},
+      getDownloads: async () => [],
+    }, listener => { emit = listener; });
+    const manager = new OfflineDownloadManager(fs, transport);
+    const first = manager.download(hlsSource);
+    const second = manager.download(dashSource);
+    await tick();
+    await manager.reconcile();
+    expect(started).toEqual(['hls']);
+    expect(manager.getSnapshot().map(entry => entry.state)).toEqual(['downloading', 'queued']);
+    rejectPreparation(new Error('Manifest failed'));
+    await first;
+    await tick();
+    expect(started).toEqual(['hls', 'dash']);
+    emit({ id: 'dash', state: 'downloaded', progress: 1, localUri: 'https://kivora-offline.invalid/dash' });
+    await second;
+  });
+
+  it('waits for initial persistence and transport registration before a foreground inspection', async () => {
+    const fs = createFakeFileSystem();
+    const writeFile = fs.writeFile;
+    let releaseWrite!: () => void;
+    let saving!: () => void;
+    const savingStarted = new Promise<void>(resolve => { saving = resolve; });
+    fs.writeFile = async (path, contents) => {
+      if (contents.includes('downloading')) {
+        saving();
+        await new Promise<void>(resolve => { releaseWrite = resolve; });
+      }
+      await writeFile(path, contents);
+    };
+    const transport = createFakeTransport(fs.files);
+    const started: FakeJob[] = [];
+    transport.setStartImpl(job => { started.push(job); });
+    let inspections = 0;
+    transport.resumeExisting = async () => { inspections++; return started.map(job => job.id); };
+    const manager = new OfflineDownloadManager(fs, transport);
+    const pending = manager.download(mp4Source);
+    await savingStarted;
+    const refreshing = manager.reconcile();
+    await tick();
+    expect(inspections).toBe(0);
+    releaseWrite();
+    await refreshing;
+    expect(inspections).toBe(1);
+    expect(manager.getSnapshot()[0]?.state).toBe('downloading');
+    started[0]!.onDone();
+    await pending;
+  });
+
+  it('keeps the next request queued until active cancellation is acknowledged', async () => {
+    const fs = createFakeFileSystem();
+    const transport = createFakeTransport(fs.files);
+    transport.supportsSegmented = true;
+    const started: FakeJob[] = [];
+    transport.setStartImpl(job => { started.push(job); });
+    let stopped!: () => void;
+    transport.stop = () => new Promise<void>(resolve => { stopped = resolve; });
+    const manager = new OfflineDownloadManager(fs, transport);
+    const first = manager.download(mp4Source);
+    const second = manager.download(hlsSource);
+    await tick();
+    const removal = manager.remove('flower');
+    await tick();
+    started[0]!.onDone();
+    await tick();
+    expect(started).toHaveLength(1);
+    stopped();
+    await removal;
+    await first;
+    await tick();
+    expect(started.map(job => job.id)).toEqual(['flower', 'hls']);
+    started[1]!.onDone();
+    await second;
+  });
+
+  it('releases a confirmed cancellation when persisting its removal fails', async () => {
+    const fs = createFakeFileSystem();
+    const transport = createFakeTransport(fs.files);
+    transport.supportsSegmented = true;
+    const started: FakeJob[] = [];
+    transport.setStartImpl(job => { started.push(job); });
+    const manager = new OfflineDownloadManager(fs, transport);
+    const first = manager.download(mp4Source);
+    const second = manager.download(hlsSource);
+    await tick();
+    const writeFile = fs.writeFile;
+    let failed = false;
+    fs.writeFile = async (path, contents) => {
+      if (!failed) { failed = true; throw new Error('Disk unavailable'); }
+      await writeFile(path, contents);
+    };
+    await expect(manager.remove('flower')).rejects.toThrow('Disk unavailable');
+    await first;
+    await tick();
+    expect(started.map(job => job.id)).toEqual(['flower', 'hls']);
+    started[1]!.onDone();
+    await second;
+  });
+
+  it('deduplicates concurrent requests and ignores duplicate terminal callbacks', async () => {
+    const fs = createFakeFileSystem();
+    const transport = createFakeTransport(fs.files);
+    const started: FakeJob[] = [];
+    transport.setStartImpl(job => { started.push(job); });
+    const manager = new OfflineDownloadManager(fs, transport);
+    const first = manager.download(mp4Source);
+    await manager.download(mp4Source);
+    await tick();
+    expect(started).toHaveLength(1);
+    started[0]!.onDone();
+    started[0]!.onError('late error');
+    await first;
+    expect(manager.getSnapshot()[0]?.state).toBe('downloaded');
+  });
+
+  it('starts a persisted queue when no transfer was active at shutdown', async () => {
+    const fs = createFakeFileSystem();
+    await fs.writeFile('/fake/documents/kivora-downloads/manifest.json', JSON.stringify([
+      { id: 'flower', source: mp4Source, state: 'queued', progress: 0 },
+    ]));
+    const manager = new OfflineDownloadManager(fs, createFakeTransport(fs.files));
+    await tick();
+    expect(manager.getSnapshot()[0]?.state).toBe('downloaded');
+  });
+
+  it('reconciles a lost background completion event on foreground and starts the next request once', async () => {
+    const fs = createFakeFileSystem();
+    const transport = createFakeTransport(fs.files);
+    transport.supportsSegmented = true;
+    const started: FakeJob[] = [];
+    transport.setStartImpl(job => { started.push(job); });
+    const manager = new OfflineDownloadManager(fs, transport);
+    const first = manager.download(mp4Source);
+    const second = manager.download(hlsSource);
+    await tick();
+    let release!: () => void;
+    let inspections = 0;
+    transport.resumeExisting = async callbacks => {
+      inspections++;
+      await new Promise<void>(resolve => { release = resolve; });
+      callbacks.onDone('flower');
+      return ['flower'];
+    };
+    const refreshing = [manager.reconcile(), manager.reconcile()];
+    await tick();
+    expect(inspections).toBe(1);
+    expect(started).toHaveLength(1);
+    release();
+    await Promise.all(refreshing);
+    await first;
+    await tick();
+    expect(started.map(job => job.id)).toEqual(['flower', 'hls']);
+    started[0]!.onError('late event');
+    expect(manager.getSnapshot()[0]?.state).toBe('downloaded');
+    started[1]!.onDone();
+    await second;
+  });
+
+  it('stops extra restored transfers from an older parallel manifest and requeues them in order', async () => {
+    const fs = createFakeFileSystem();
+    await fs.writeFile('/fake/documents/kivora-downloads/manifest.json', JSON.stringify(
+      [mp4Source, hlsSource, dashSource].map(source => ({ id: source.id, source, state: 'downloading', progress: 0.5 })),
+    ));
+    const transport = createFakeTransport(fs.files);
+    transport.supportsSegmented = true;
+    const started: FakeJob[] = [];
+    transport.setStartImpl(job => { started.push(job); });
+    let restored!: Parameters<OfflineTransport['resumeExisting']>[0];
+    transport.resumeExisting = async callbacks => { restored = callbacks; return ['flower', 'hls', 'dash']; };
+    const manager = new OfflineDownloadManager(fs, transport);
+    await tick();
+    expect(transport.stopped).toEqual(['hls', 'dash']);
+    expect(manager.getSnapshot().map(entry => entry.state)).toEqual(['downloading', 'queued', 'queued']);
+    restored.onDone('flower');
+    await tick();
+    expect(started.map(job => job.id)).toEqual(['hls']);
+    restored.onDone('hls');
+    expect(manager.getSnapshot().find(entry => entry.id === 'hls')?.state).toBe('downloading');
+    started[0]!.onDone();
+    await tick();
+    started[1]!.onDone();
+  });
+
+  it('waits for a failed restore to stop uncertain native work before advancing', async () => {
+    const fs = createFakeFileSystem();
+    await fs.writeFile('/fake/documents/kivora-downloads/manifest.json', JSON.stringify([
+      { id: 'flower', source: mp4Source, state: 'downloading', progress: 0 },
+      { id: 'hls', source: hlsSource, state: 'queued', progress: 0 },
+    ]));
+    const transport = createFakeTransport(fs.files);
+    transport.supportsSegmented = true;
+    const started: FakeJob[] = [];
+    transport.setStartImpl(job => { started.push(job); });
+    transport.resumeExisting = async () => { throw new Error('Cannot inspect'); };
+    let stopped!: () => void;
+    transport.stop = () => new Promise<void>(resolve => { stopped = resolve; });
+    const manager = new OfflineDownloadManager(fs, transport);
+    await tick();
+    expect(started).toEqual([]);
+    stopped();
+    await tick();
+    expect(started.map(job => job.id)).toEqual(['hls']);
+    started[0]!.onDone();
+    await tick();
+    expect(manager.getSnapshot()[0]?.state).toBe('error');
+  });
+
+  it('advances after a synchronous transport start failure', async () => {
+    const fs = createFakeFileSystem();
+    const transport = createFakeTransport(fs.files);
+    transport.supportsSegmented = true;
+    transport.setStartImpl(job => {
+      if (job.id === 'flower') throw new Error('Cannot start');
+      job.onDone();
+    });
+    const manager = new OfflineDownloadManager(fs, transport);
+    await Promise.all([manager.download(mp4Source), manager.download(hlsSource)]);
+    expect(manager.getSnapshot().map(entry => entry.state)).toEqual(['error', 'downloaded']);
+  });
+
+  it('persists mixed-format requests and starts only the next after success or failure', async () => {
+    const fs = createFakeFileSystem();
+    const transport = createFakeTransport(fs.files);
+    transport.supportsSegmented = true;
+    const started: FakeJob[] = [];
+    transport.setStartImpl(job => { started.push(job); });
+    const manager = new OfflineDownloadManager(fs, transport);
+    const requests = [mp4Source, hlsSource, dashSource].map(source => manager.download(source));
+    await tick();
+    expect(started.map(job => job.id)).toEqual(['flower']);
+    expect(JSON.parse(fs.files.get('/fake/documents/kivora-downloads/manifest.json')!).map((entry: OfflineDownloadEntry) => entry.state)).toEqual(['downloading', 'queued', 'queued']);
+    started[0]!.onDone();
+    await tick();
+    expect(started.map(job => job.id)).toEqual(['flower', 'hls']);
+    started[1]!.onError('failed');
+    await tick();
+    expect(started.map(job => job.id)).toEqual(['flower', 'hls', 'dash']);
+    started[2]!.onDone();
+    await Promise.all(requests);
+  });
+
+  it('cancels queued entries without starting them and ignores stale callbacks after retry', async () => {
+    const fs = createFakeFileSystem();
+    const transport = createFakeTransport(fs.files);
+    transport.supportsSegmented = true;
+    const started: FakeJob[] = [];
+    transport.setStartImpl(job => { started.push(job); });
+    const manager = new OfflineDownloadManager(fs, transport);
+    const first = manager.download(mp4Source);
+    const queued = manager.download(hlsSource);
+    await tick();
+    await manager.remove('hls');
+    await queued;
+    expect(started.map(job => job.id)).toEqual(['flower']);
+    await manager.remove('flower');
+    await first;
+    const retry = manager.download(mp4Source);
+    await tick();
+    started[0]!.onDone();
+    expect(manager.getSnapshot()[0]?.state).toBe('downloading');
+    started[1]!.onDone();
+    await retry;
+  });
+
+  it('reconciles restored active work before draining persisted queued entries', async () => {
+    const fs = createFakeFileSystem();
+    await fs.writeFile('/fake/documents/kivora-downloads/manifest.json', JSON.stringify([
+      { id: 'flower', source: mp4Source, state: 'downloading', progress: 0 },
+      { id: 'hls', source: hlsSource, state: 'queued', progress: 0 },
+    ]));
+    const transport = createFakeTransport(fs.files);
+    transport.supportsSegmented = true;
+    const started: FakeJob[] = [];
+    transport.setStartImpl(job => { started.push(job); });
+    let restored!: Parameters<OfflineTransport['resumeExisting']>[0];
+    transport.resumeExisting = async callbacks => { restored = callbacks; return ['flower']; };
+    const manager = new OfflineDownloadManager(fs, transport);
+    await tick();
+    expect(started).toEqual([]);
+    restored.onDone('flower');
+    await tick();
+    expect(started.map(job => job.id)).toEqual(['hls']);
+    started[0]!.onDone();
+    await tick();
+    expect(manager.getSnapshot().every(entry => entry.state === 'downloaded')).toBe(true);
+  });
+});
+
 describe('OfflineDownloadManager — unsupported sources', () => {
+  it('recognizes segmented URLs when the MIME type is omitted', async () => {
+    const fs = createFakeFileSystem();
+    const manager = new OfflineDownloadManager(fs, createFakeTransport(fs.files));
+    await expect(manager.download({ ...hlsSource, mimeType: undefined, src: 'https://example.com/video.M3U8?token=demo' })).rejects.toMatchObject({ reason: 'segmented-format' });
+  });
   it('rejects DASH sources immediately with reason "segmented-format"', async () => {
     const fs = createFakeFileSystem();
     const manager = new OfflineDownloadManager(fs, createFakeTransport(fs.files));
@@ -82,6 +390,57 @@ describe('OfflineDownloadManager — unsupported sources', () => {
     const fs = createFakeFileSystem();
     const manager = new OfflineDownloadManager(fs, createFakeTransport(fs.files));
     await expect(manager.download(mp4Source)).resolves.toBeUndefined();
+  });
+});
+
+describe('OfflineDownloadManager — adaptive transport', () => {
+  it.each([hlsSource, dashSource])('downloads $id and plays its native offline URI without ads', async source => {
+    const fs = createFakeFileSystem();
+    const transport = createFakeTransport(fs.files);
+    Object.assign(transport, { supportsSegmented: true });
+    const notices: string[] = [];
+    transport.start = options => {
+      expect(options.mimeType).toBe(source.mimeType);
+      expect(options.headers).toEqual({ Authorization: 'Bearer demo' });
+      options.onProgress({ bytesWritten: 4, contentLength: 10 });
+      options.onDone(`https://kivora-offline.invalid/${source.id}`, true);
+    };
+    const manager = new OfflineDownloadManager(fs, transport, undefined, entry => notices.push(entry.id));
+    await manager.download({ ...source, nativeSource: { headers: { Authorization: 'Bearer demo' } }, intro: { src: 'https://example.com/intro.mp4' }, ads: { tagUrl: 'https://example.com/ads' } });
+    expect(manager.getSnapshot()[0]).toMatchObject({ state: 'downloaded', progress: 1 });
+    expect(manager.getPlaybackSource(source.id)).toMatchObject({ src: `https://kivora-offline.invalid/${source.id}`, intro: undefined, ads: undefined });
+    expect(notices).toEqual([]);
+  });
+
+  it('restores the native playback URI when a background adaptive download finished', async () => {
+    const fs = createFakeFileSystem();
+    await fs.writeFile('/fake/documents/kivora-downloads/manifest.json', JSON.stringify([{ id: 'hls', source: hlsSource, state: 'downloading', progress: 0 }]));
+    const transport = createFakeTransport(fs.files);
+    Object.assign(transport, { supportsSegmented: true });
+    transport.resumeExisting = async callbacks => {
+      callbacks.onDone('hls', 'https://kivora-offline.invalid/hls', true);
+      return ['hls'];
+    };
+    const manager = new OfflineDownloadManager(fs, transport);
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(manager.getPlaybackSource('hls')?.src).toBe('https://kivora-offline.invalid/hls');
+  });
+
+  it('waits for native removal before removing the persisted download', async () => {
+    const fs = createFakeFileSystem();
+    const transport = createFakeTransport(fs.files);
+    Object.assign(transport, { supportsSegmented: true });
+    transport.start = options => options.onDone('https://kivora-offline.invalid/hls', true);
+    const manager = new OfflineDownloadManager(fs, transport);
+    await manager.download(hlsSource);
+    let finish!: () => void;
+    transport.stop = () => new Promise<void>(resolve => { finish = resolve; });
+    const removing = manager.remove('hls');
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(manager.getSnapshot()).toHaveLength(1);
+    finish();
+    await removing;
+    expect(manager.getSnapshot()).toEqual([]);
   });
 });
 
@@ -347,6 +706,36 @@ describe('OfflineDownloadManager — manifest persistence', () => {
 });
 
 describe('OfflineDownloadManager — remove', () => {
+  it('does not start the transfer if cancelled while saving its initial state', async () => {
+    const fs = createFakeFileSystem();
+    const transport = createFakeTransport(fs.files);
+    let started = false;
+    transport.setStartImpl(() => { started = true; });
+    const writeFile = fs.writeFile;
+    let finishWrite!: () => void;
+    let saving!: () => void;
+    const savingStarted = new Promise<void>(resolve => { saving = resolve; });
+    fs.writeFile = async (path, contents) => {
+      if (contents.includes('downloading')) {
+        saving();
+        await new Promise<void>(resolve => { finishWrite = resolve; });
+      }
+      await writeFile(path, contents);
+    };
+    const manager = new OfflineDownloadManager(fs, transport);
+    const pending = manager.download(mp4Source);
+    await savingStarted;
+    const removing = manager.remove(mp4Source.id);
+    await new Promise(resolve => setTimeout(resolve, 0));
+    finishWrite();
+    await removing;
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(started).toBe(false);
+    await pending;
+    const persisted = JSON.parse(fs.files.get('/fake/documents/kivora-downloads/manifest.json')!);
+    expect(persisted).toEqual([]);
+  });
+
   it('deletes the local file and the manifest entry for a downloaded item', async () => {
     const fs = createFakeFileSystem();
     const manager = new OfflineDownloadManager(fs, createFakeTransport(fs.files));

@@ -2,10 +2,15 @@ import type { ReactVideoSource, OnLoadData } from 'react-native-video';
 
 export type PlayerControlsVariant = 'compact' | 'cinema' | 'series' | 'standard';
 export type PlayerOrientation = 'auto' | 'landscape';
+export interface PlayerCastMediaOptions {
+  hlsSegmentFormat?: 'AAC' | 'AC3' | 'E-AC3' | 'FMP4' | 'MP3' | 'TS' | 'TS_AAC';
+  hlsVideoSegmentFormat?: 'FMP4' | 'MPEG2-TS';
+}
 export interface PlayerAdBreak {
   id: string;
   src: string;
   mimeType?: string;
+  cast?: PlayerCastMediaOptions;
   at: 'pre' | 'post' | number;
   duration?: number;
   skipAfter?: number;
@@ -17,7 +22,10 @@ export interface PlayerSource {
   title: string;
   type?: 'video' | 'audio';
   mimeType?: string;
+  cast?: PlayerCastMediaOptions;
   poster?: string;
+  subtitle?: string;
+  intro?: { src: string; mimeType?: string; title?: string; cast?: PlayerCastMediaOptions };
   startTime?: number;
   /** Native headers, DRM, side-loaded text tracks and buffering options. */
   nativeSource?: Omit<ReactVideoSource, 'uri' | 'startPosition' | 'ad'>;
@@ -27,7 +35,10 @@ export interface PlayerProgram { title?: string; subtitle?: string; description?
 export interface PlayerQueueItem { id: string; title: string; subtitle?: string; image?: string; progress?: number }
 export interface PlayerSnapshot {
   source?: PlayerSource;
-  phase: 'idle' | 'loading' | 'content' | 'ad' | 'ended' | 'error';
+  phase: 'idle' | 'loading' | 'intro' | 'content' | 'ad' | 'ended' | 'error';
+  casting?: boolean;
+  castError?: string;
+  sleepTimer?: { mode: 'deadline'; deadline: number } | { mode: 'episode' };
   paused: boolean;
   buffering: boolean;
   currentTime: number;
