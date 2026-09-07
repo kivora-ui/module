@@ -220,5 +220,5 @@ export type { AudioPlayerContextValue } from './components/player/audio-player';
 export type { PlayerSource, PlayerSnapshot, PlayerEvent, PlayerAdBreak, PlayerControlsVariant, PlayerOrientation, PlayerProgram, PlayerQueueItem } from './components/player/types';
 export { OfflineDownloadManager, OfflineUnsupportedError, useOfflineDownloads } from './components/player/offline';
 export type { OfflineFileSystem } from './components/player/offline';
-export { createOfflineDownloadManager, nativeOfflineFileSystem } from './components/player/offline-native';
+export { createOfflineDownloadManager } from './components/player/offline-native';
 export type { OfflineDownloadState, OfflineDownloadEntry, OfflineDrmProvider } from './components/player/types';
