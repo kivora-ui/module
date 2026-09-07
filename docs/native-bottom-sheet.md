@@ -31,4 +31,24 @@ El panel se cierra deslizando hacia abajo, pulsando el fondo, con Atrás de Andr
 
 En la app: **Ajustes → Ver componentes → BottomSheet**. El ejemplo permite comprobar contenido largo, teclado y cierre sin modificar los datos de la farmacia.
 
-La apertura monta el modal en la misma actualización que `open`, sin esperar a un efecto posterior. La transición dura 180 ms y conserva la preferencia de reducir movimiento. Al cerrar, el contenido permanece montado hasta terminar la animación. En la galería, el estado del ejemplo está aislado para que abrir el panel o escribir una nota no vuelva a renderizar el resto de ejemplos.
+La apertura monta el modal en la misma actualización que `open`, sin esperar a un efecto posterior. La entrada dura 320 ms y la salida 380 ms por defecto, con una curva `Easing.out(Easing.cubic)` que desacelera progresivamente, y conserva la preferencia de reducir movimiento. Al cerrar, el contenido permanece montado hasta terminar la animación. En la galería, el estado del ejemplo está aislado para que abrir el panel o escribir una nota no vuelva a renderizar el resto de ejemplos.
+
+## Ajustar la animación
+
+`animationDuration` controla la entrada y `closingAnimationDuration` la salida en milisegundos (mínimo 1). Por defecto, el cierre dura 60 ms más que la entrada. `animationEasing` controla la curva de ambas transiciones. La configuración de cierre también se usa con el fondo, Atrás de Android y el movimiento final tras soltar un gesto una vez abierto. El arrastre sigue el dedo del usuario.
+
+```tsx
+import { Easing } from 'react-native-reanimated';
+
+<BottomSheet
+  open={open}
+  onOpenChange={setOpen}
+  animationDuration={420}
+  closingAnimationDuration={480}
+  animationEasing={Easing.inOut(Easing.cubic)}
+>
+  {children}
+</BottomSheet>
+```
+
+Mantén `<BottomSheet>` en el árbol durante el cierre; desmontarlo con `{open && ...}` impide completar la animación de salida.

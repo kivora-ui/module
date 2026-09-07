@@ -29,13 +29,13 @@ export function KivoraProvider({
   const { setColorScheme } = useNativewindColorScheme();
 
   const [systemColorMode, setSystemColorMode] = React.useState<"light" | "dark">(
-    () => Appearance.getColorScheme() ?? "light"
+    () => Appearance.getColorScheme() === "dark" ? "dark" : "light"
   );
 
   React.useEffect(() => {
     if (colorMode !== "system") return;
     const subscription = Appearance.addChangeListener(({ colorScheme }) => {
-      setSystemColorMode(colorScheme ?? "light");
+      setSystemColorMode(colorScheme === "dark" ? "dark" : "light");
     });
     return () => subscription.remove();
   }, [colorMode]);

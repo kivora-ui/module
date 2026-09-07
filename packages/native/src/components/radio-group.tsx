@@ -95,14 +95,14 @@ export const RadioGroupItem: React.ForwardRefExoticComponent<
       transform: [{ scale: 0.7 + progress.value * 0.3 }],
     }));
     const controlClass = cn(
-      "h-4 w-4 shrink-0 items-center justify-center rounded-full border border-primary bg-background",
+      "h-6 w-6 shrink-0 items-center justify-center rounded-full border border-primary bg-background",
       invalid && "border-destructive",
       className,
     );
     const indicator = (
       <SelectionView
         pointerEvents="none"
-        className="h-2 w-2 rounded-full bg-primary"
+        className="h-3 w-3 rounded-full bg-primary"
         style={indicatorStyle}
       />
     );

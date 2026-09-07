@@ -15,7 +15,7 @@ Son 31 familias nuevas. Drawer y Sheet inferior utilizan Gorhom; ScrollArea util
 - Table nativo aporta composición visual; no incluye DataTable con ordenación, paginación, selección y filtros.
 - Tooltip se abre con pulsación o pulsación larga y se cierra automáticamente tras cinco segundos.
 - Popover flota sobre la pantalla, anclado al trigger o a PopoverAnchor, sin desplazar el contenido. Admite side, align, offsets, colisiones, asChild y cierre exterior/Atrás. Se ajusta al teclado y permite desplazar su contenido.
-- HoverCard se abre con pulsación en móvil.
+- HoverCard solo está disponible en web; en nativo utiliza Popover o Tooltip.
 - Los eventos táctiles son `onPress`, los campos usan `onChangeText` y los contenedores reciben `ViewProps`. No se pueden trasladar propiedades DOM ni hijos de Recharts directamente a React Native.
 - ChartContainer nativo recibe `data: { label, value, key? }[]`, dibuja barras táctiles y comparte la selección con ChartTooltip. No incorpora el motor Recharts ni todos sus tipos de gráfico.
 - Calendar recibe `localeCode`, `selected`, `onSelect`, `minDate`, `maxDate` y `disabled`. Usa fechas locales y ofrece selección simple, múltiple y de rango. DatePicker añade aplicación/cancelación, mes, año y hora de 12/24 horas.

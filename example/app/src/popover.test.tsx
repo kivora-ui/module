@@ -7,17 +7,33 @@ vi.mock('react-native', () => ({
     React.useImperativeHandle(ref, () => ({ measureInWindow: vi.fn() }), []);
     return React.createElement('button', props);
   }),
-  View: 'view', StyleSheet: { absoluteFill: {} },
+  View: 'view', Text: 'text', StyleSheet: { absoluteFill: {} },
 }));
 vi.mock('react-native-safe-area-context', () => ({ useSafeAreaInsets: vi.fn() }));
 vi.mock('react-native-reanimated', () => ({ useReducedMotion: vi.fn() }));
 vi.mock('react-native-keyboard-controller', () => ({ KeyboardProvider: 'provider' }));
 import { Popover, PopoverTrigger, PopoverClose } from '../../../packages/native/src/components/popover';
-import { Pressable } from 'react-native';
+import { Pressable, Text } from 'react-native';
 import { Tooltip, TooltipTrigger } from '../../../packages/native/src/components/tooltip';
 
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
 const event = () => ({ defaultPrevented: false, preventDefault() { this.defaultPrevented = true; } });
+
+it('preserves an inline text trigger without adding button layout', async () => {
+  let tree!: ReactTestRenderer;
+  await act(() => { tree = create(<Tooltip><Text>Before{' '}
+    <TooltipTrigger asChild><Text className="underline">Help</Text></TooltipTrigger>
+    {' '}after.</Text></Tooltip>); });
+  try {
+    const trigger = tree.root.findAllByType('text')[1];
+    expect(tree.root.findAllByType('button')).toHaveLength(0);
+    expect(trigger.props.className).toBe('underline');
+    await act(() => trigger.props.onPress(event()));
+    expect(trigger.props.accessibilityState.expanded).toBe(true);
+  } finally {
+    await act(() => tree.unmount());
+  }
+});
 
 it('keeps a long-pressed tooltip open on release and closes automatically', async () => {
   vi.useFakeTimers();

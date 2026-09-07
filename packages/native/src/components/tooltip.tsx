@@ -67,6 +67,7 @@ export function Tooltip({
 export function TooltipTrigger({
   asChild,
   children,
+  className,
   ...props
 }: TooltipTriggerProps) {
   const context = React.useContext(TooltipContext);
@@ -76,7 +77,7 @@ export function TooltipTrigger({
     <PopoverTrigger
       asChild={asChild}
       accessibilityRole="button"
-      className="min-h-12 justify-center"
+      className={className ?? (asChild ? child?.props.className : "min-h-12 justify-center")}
       {...props}
       onPressIn={(event) => {
         longPressed.current = false;

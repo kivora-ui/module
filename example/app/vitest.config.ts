@@ -5,7 +5,7 @@ const require = createRequire(import.meta.url);
 // Library sources must use the app's React and native peers, as they do in Metro.
 export default defineConfig({
   resolve: {
-    alias: ['react', 'react/jsx-runtime', 'react-native', 'react-native-reanimated',
+    alias: ['react', 'react/jsx-runtime', 'react-native', 'react-native-reanimated', 'lucide-react-native/icons/chevron-down',
       'react-native-safe-area-context', 'react-native-keyboard-controller'].map(name => ({
         find: new RegExp(`^${name.replaceAll('/', '\\/')}$`), replacement: require.resolve(name),
       })),

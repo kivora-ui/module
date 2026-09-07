@@ -45,7 +45,7 @@ export const Checkbox: React.ForwardRefExoticComponent<
       transform: [{ scale: 0.7 + 0.3 * progress.value }],
     }));
     const controlClass = cn(
-      "h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded-md border border-input bg-background",
+      "h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-md border border-input bg-background",
       isChecked && "border-primary",
       className,
     );

@@ -313,7 +313,7 @@ const ExampleAvatar = React.memo(function ExampleAvatar() {
 const ExampleCollapsible = React.memo(function ExampleCollapsible() {
   return (
     <K.Collapsible>
-      <K.CollapsibleTrigger className="min-h-12 justify-center">
+      <K.CollapsibleTrigger>
         <Text className={text}>Ver instrucciones</Text>
       </K.CollapsibleTrigger>
       <K.CollapsibleContent>
@@ -344,18 +344,6 @@ const ExampleDialog = React.memo(function ExampleDialog() {
   );
 });
 
-const ExampleHoverCard = React.memo(function ExampleHoverCard() {
-  return (
-    <K.HoverCard>
-      <K.HoverCardTrigger className="min-h-12 justify-center">
-        <Text className={text}>Ver proveedor</Text>
-      </K.HoverCardTrigger>
-      <K.HoverCardContent>
-        <Text className={text}>Distribuciones Oliva · Entrega diaria</Text>
-      </K.HoverCardContent>
-    </K.HoverCard>
-  );
-});
 
 const ExampleLabel = React.memo(function ExampleLabel() {
   return (
@@ -435,9 +423,15 @@ const ExampleTooltip = React.memo(function ExampleTooltip() {
   return (
     <K.TooltipProvider>
       <K.Tooltip>
-        <K.TooltipTrigger>
-          <Text className={text}>Stock mínimo</Text>
-        </K.TooltipTrigger>
+        <K.PopoverAnchor asChild>
+          <Text className={text}>
+            Configura el{' '}
+            <K.TooltipTrigger asChild accessibilityHint="Pulsa para conocer qué significa stock mínimo">
+              <Text className="rounded-sm bg-primary/10 px-0.5 font-semibold text-primary underline">stock mínimo ⓘ</Text>
+            </K.TooltipTrigger>
+            {' '}para recibir avisos de reposición.
+          </Text>
+        </K.PopoverAnchor>
         <K.TooltipContent>
           Umbral utilizado para los avisos de reposición.
         </K.TooltipContent>
@@ -537,11 +531,6 @@ const examples = [
     name: 'Dialog',
     description: 'Diálogo centrado con cierre y botón Atrás.',
     content: <ExampleDialog />,
-  },
-  {
-    name: 'HoverCard',
-    description: 'Ficha contextual que se abre al pulsar en móvil.',
-    content: <ExampleHoverCard />,
   },
   {
     name: 'Label',

@@ -54,12 +54,6 @@ export type {
   DialogTitleProps,
   DialogTriggerProps
 } from "./components/dialog";
-export { HoverCard, HoverCardContent, HoverCardTrigger } from "./components/hover-card";
-export type {
-  HoverCardContentProps,
-  HoverCardProps,
-  HoverCardTriggerProps
-} from "./components/hover-card";
 export { Input } from "./components/input";
 export type { InputProps } from "./components/input";
 export { Label } from "./components/label";

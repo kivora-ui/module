@@ -14,7 +14,7 @@ import GorhomBottomSheet, {
   type BottomSheetBackdropProps,
   type BottomSheetBackgroundProps,
 } from "@gorhom/bottom-sheet";
-import { ReduceMotion } from "react-native-reanimated";
+import { Easing, ReduceMotion, type WithTimingConfig } from "react-native-reanimated";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { cn } from "@kivora/theme";
@@ -25,7 +25,15 @@ import { KeyboardSheetScrollView } from "../lib/keyboard-sheet-scroll-view";
 export interface BottomSheetProps extends ViewProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Opening duration in milliseconds. Defaults to 320; minimum 1. */
+  animationDuration?: number;
+  /** Closing duration. Defaults to animationDuration + 60 ms; minimum 1. */
+  closingAnimationDuration?: number;
+  /** Timing curve shared by opening and closing. Defaults to Easing.out(Easing.cubic). */
+  animationEasing?: WithTimingConfig["easing"];
 }
+
+const DEFAULT_ANIMATION_EASING = Easing.out(Easing.cubic);
 
 function SheetBackground({ style }: BottomSheetBackgroundProps) {
   return (
@@ -57,38 +65,55 @@ export function BottomSheet({
   onOpenChange,
   children,
   className,
+  animationDuration = 320,
+  closingAnimationDuration,
+  animationEasing = DEFAULT_ANIMATION_EASING,
   ...props
 }: BottomSheetProps) {
   const sheet = React.useRef<GorhomBottomSheet>(null);
   const [mounted, setMounted] = React.useState(open);
+  const [hasOpened, setHasOpened] = React.useState(false);
   const { height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const { resolvedColorMode } = useKivoraTheme();
-  const animationConfigs = useBottomSheetTimingConfigs({
-    duration: 180,
+  const openingDuration = Number.isFinite(animationDuration) ? Math.max(1, animationDuration) : 320;
+  const openingConfigs = useBottomSheetTimingConfigs({
+    duration: openingDuration,
+    easing: animationEasing,
     reduceMotion: ReduceMotion.System,
   });
-  const latest = React.useRef({ open, onOpenChange });
-  latest.current = { open, onOpenChange };
+  const closingConfigs = useBottomSheetTimingConfigs({
+    duration: closingAnimationDuration !== undefined && Number.isFinite(closingAnimationDuration)
+      ? Math.max(1, closingAnimationDuration)
+      : openingDuration + 60,
+    easing: animationEasing,
+    reduceMotion: ReduceMotion.System,
+  });
+  const latest = React.useRef({ open, onOpenChange, openingConfigs, closingConfigs });
+  latest.current = { open, onOpenChange, openingConfigs, closingConfigs };
 
   React.useLayoutEffect(() => {
     if (open) {
       Keyboard.dismiss();
       setMounted(true);
-      sheet.current?.expand();
+      sheet.current?.expand(latest.current.openingConfigs);
     } else {
-      sheet.current?.close();
+      sheet.current?.close(latest.current.closingConfigs);
     }
   }, [open]);
 
   const close = React.useCallback(() => {
     Keyboard.dismiss();
-    sheet.current?.close();
+    sheet.current?.close(latest.current.closingConfigs);
   }, []);
   const onClose = React.useCallback(() => {
     Keyboard.dismiss();
     setMounted(false);
+    setHasOpened(false);
     if (latest.current.open) latest.current.onOpenChange(false);
+  }, []);
+  const onChange = React.useCallback((index: number) => {
+    if (index >= 0) setHasOpened(true);
   }, []);
 
   // Mount in the same commit as the opening prop. Retain only for the exit
@@ -108,7 +133,9 @@ export function BottomSheet({
           <GorhomBottomSheet
             ref={sheet}
             index={0}
-            animationConfigs={animationConfigs}
+            // Mount with the opening timing; subsequent backdrop and gesture
+            // transitions use the slightly slower closing timing.
+            animationConfigs={hasOpened || !open ? closingConfigs : openingConfigs}
             enableDynamicSizing
             enablePanDownToClose
             maxDynamicContentSize={Math.max(1, height * 0.8 - insets.top)}
@@ -124,6 +151,7 @@ export function BottomSheet({
             android_keyboardInputMode="adjustResize"
             enableBlurKeyboardOnGesture
             onClose={onClose}
+            onChange={onChange}
           >
             <KeyboardSheetScrollView
               bottomOffset={24}

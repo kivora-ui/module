@@ -6,6 +6,8 @@ import {
   type ViewProps,
 } from "react-native";
 import { RevealMotion } from "./reveal-motion";
+import { cn } from "@kivora/theme";
+import { ExpansionIndicator } from "./expansion-indicator";
 
 interface CollapsibleContextValue {
   open: boolean;
@@ -54,6 +56,7 @@ export function Collapsible({
 
 export interface CollapsibleTriggerProps extends PressableProps {
   asChild?: boolean;
+  showIndicator?: boolean;
 }
 
 export const CollapsibleTrigger: React.ForwardRefExoticComponent<
@@ -62,7 +65,7 @@ export const CollapsibleTrigger: React.ForwardRefExoticComponent<
 > = React.forwardRef<
   React.ComponentRef<typeof Pressable>,
   CollapsibleTriggerProps
->(({ disabled, onPress, ...props }, ref) => {
+>(({ disabled, onPress, children, className, showIndicator = true, asChild: _asChild, ...props }, ref) => {
   const context = React.useContext(CollapsibleContext);
 
   return (
@@ -71,12 +74,20 @@ export const CollapsibleTrigger: React.ForwardRefExoticComponent<
       accessibilityRole="button"
       accessibilityState={{ expanded: !!context?.open, disabled: !!disabled }}
       disabled={disabled}
+      className={cn("min-h-12 flex-row items-center justify-between gap-3", disabled && "opacity-50", className)}
       onPress={(event) => {
         context?.setOpen(!context.open);
         onPress?.(event);
       }}
       {...props}
-    />
+    >
+      {(state) => (
+        <>
+          {typeof children === "function" ? children(state) : children}
+          {showIndicator && <ExpansionIndicator open={!!context?.open} />}
+        </>
+      )}
+    </Pressable>
   );
 });
 CollapsibleTrigger.displayName = "CollapsibleTrigger";

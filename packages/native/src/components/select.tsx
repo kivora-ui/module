@@ -191,6 +191,7 @@ export function SelectItem({
   value,
   className,
   onPress,
+  children,
   ...props
 }: SelectItemProps) {
   const select = useSelect();
@@ -209,7 +210,13 @@ export function SelectItem({
         select.setValue(value);
       }}
       {...props}
-    />
+    >
+      {React.Children.map(children, (child) =>
+        typeof child === "string" || typeof child === "number" ? (
+          <Text className="text-sm text-foreground">{child}</Text>
+        ) : child,
+      )}
+    </Pressable>
   );
 }
 

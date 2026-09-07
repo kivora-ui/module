@@ -8,7 +8,9 @@ import {
   type ViewProps,
 } from "react-native";
 import { cn } from "@kivora/theme";
+import { ExpansionIndicator } from "./expansion-indicator";
 import Animated, {
+  Easing,
   ReduceMotion,
   useAnimatedStyle,
   useSharedValue,
@@ -191,7 +193,7 @@ export const AccordionTrigger: React.ForwardRefExoticComponent<
       >
         {children}
       </Text>
-      <Text className="ml-4 text-muted-foreground">{isOpen ? "-" : "+"}</Text>
+      <View className="ml-4"><ExpansionIndicator open={!!isOpen} /></View>
     </Pressable>
   );
 });
@@ -214,7 +216,8 @@ export const AccordionContent: React.ForwardRefExoticComponent<
 
     React.useLayoutEffect(() => {
       height.value = withTiming(isOpen ? contentHeight : 0, {
-        duration: 200,
+        duration: 320,
+        easing: Easing.inOut(Easing.cubic),
         reduceMotion: ReduceMotion.System,
       });
     }, [isOpen, contentHeight, height]);

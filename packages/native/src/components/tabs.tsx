@@ -60,7 +60,7 @@ export const TabsList: React.ForwardRefExoticComponent<
   ({ className, ...props }, ref) => (
     <View
       ref={ref}
-      className={cn("flex-row self-start rounded-md bg-muted p-1", className)}
+      className={cn("w-full flex-row rounded-md bg-muted p-1", className)}
       {...props}
     />
   ),
@@ -91,7 +91,7 @@ export const TabsTrigger: React.ForwardRefExoticComponent<
         accessibilityState={{ selected: isActive, disabled: !!disabled }}
         disabled={disabled}
         className={cn(
-          "rounded-sm px-3 py-1.5",
+          "min-w-0 flex-1 items-center justify-center rounded-sm px-3 py-1.5",
           disabled && "opacity-50",
           className,
         )}
@@ -105,7 +105,7 @@ export const TabsTrigger: React.ForwardRefExoticComponent<
         />
         <Text
           className={cn(
-            "text-sm font-medium text-muted-foreground",
+            "text-center text-sm font-medium text-muted-foreground",
             isActive && "text-foreground",
             textClassName,
           )}
