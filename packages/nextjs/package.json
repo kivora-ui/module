@@ -19,7 +19,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "tsup src/index.ts --format esm,cjs --dts && node scripts/copy-styles.mjs",
+    "build": "tsup && node scripts/copy-styles.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",
     "test": "vitest run --passWithNoTests"
