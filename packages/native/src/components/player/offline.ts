@@ -11,8 +11,32 @@ export interface OfflineFileSystem {
   readFile(path: string): Promise<string>;
   writeFile(path: string, contents: string): Promise<void>;
   unlink(path: string): Promise<void>;
-  downloadFile(options: { fromUrl: string; toFile: string; progress?: (progress: { bytesWritten: number; contentLength: number }) => void }): { jobId: number; promise: Promise<{ statusCode: number }> };
-  stopDownload(jobId: number): void;
+}
+
+/** Real background transfer, decoupled from the file-system concerns above so
+ * `offline-native.ts` can back it with a library that manages its own OS-level
+ * background session instead of `react-native-fs`. */
+export interface OfflineTransport {
+  /** Starts a new transfer. `id` is the download entry's stable id (`source.id`),
+   * used as the job's identity so a later app restart can re-attach to it. */
+  start(options: {
+    id: string;
+    fromUrl: string;
+    toFile: string;
+    onProgress: (progress: { bytesWritten: number; contentLength: number }) => void;
+    onDone: () => void;
+    onError: (message: string) => void;
+  }): void;
+  /** Cancels an in-flight transfer. No-op if `id` has no active job. */
+  stop(id: string): void;
+  /** Called once when the manager is constructed. Re-attaches the given
+   * callbacks to whatever transfers survived an app restart, and returns the
+   * ids of the ones it found. */
+  resumeExisting(callbacks: {
+    onProgress: (id: string, progress: { bytesWritten: number; contentLength: number }) => void;
+    onDone: (id: string) => void;
+    onError: (id: string, message: string) => void;
+  }): Promise<string[]>;
 }
 
 export class OfflineUnsupportedError extends Error {
@@ -40,10 +64,15 @@ export class OfflineDownloadManager {
   private readonly manifestPath: string;
   private readonly ready: Promise<void>;
 
-  constructor(private fs: OfflineFileSystem, private drmProvider?: OfflineDrmProvider) {
+  constructor(
+    private fs: OfflineFileSystem,
+    private transport: OfflineTransport,
+    private drmProvider?: OfflineDrmProvider,
+    private onDownloadComplete?: (entry: OfflineDownloadEntry) => void,
+  ) {
     this.mediaDir = `${fs.documentDirectoryPath}/kivora-downloads`;
     this.manifestPath = `${this.mediaDir}/manifest.json`;
-    this.ready = this.loadManifest();
+    this.ready = this.loadManifest().then(() => this.resumeAll());
   }
 
   getSnapshot = () => this.state;
@@ -67,6 +96,24 @@ export class OfflineDownloadManager {
     await this.fs.writeFile(this.manifestPath, JSON.stringify(this.state));
   }
 
+  /** Re-attaches to any transfer that survived an app restart. Any entry left
+   * 'downloading' in the manifest that the transport doesn't recognize was
+   * lost (OS discarded it, or resume failed) and is marked as errored. */
+  private async resumeAll() {
+    const pending = this.state.filter(entry => entry.state === 'downloading');
+    if (pending.length === 0) return;
+    const resumed = await this.transport.resumeExisting({
+      onProgress: (id, progress) => this.updateEntry(id, { progress: progress.contentLength > 0 ? progress.bytesWritten / progress.contentLength : 0 }),
+      onDone: id => this.handleDone(id),
+      onError: (id, message) => this.updateEntry(id, { state: 'error', error: message }),
+    });
+    const lost = pending.filter(entry => !resumed.includes(entry.id));
+    if (lost.length > 0) {
+      this.patch(this.state.map(entry => lost.some(l => l.id === entry.id) ? { ...entry, state: 'error', error: 'Download interrupted' } : entry));
+      await this.saveManifest();
+    }
+  }
+
   private extensionFor(mimeType?: string) {
     return mimeType?.includes('mp4') ? 'mp4' : 'bin';
   }
@@ -75,7 +122,18 @@ export class OfflineDownloadManager {
     this.patch(this.state.map(entry => entry.id === id ? { ...entry, ...patch } : entry));
   }
 
-  private jobs = new Map<string, number>();
+  private async handleDone(id: string) {
+    const toFile = this.localFileFor(id);
+    this.updateEntry(id, { state: 'downloaded', progress: 1, localUri: toFile });
+    await this.saveManifest();
+    const entry = this.state.find(item => item.id === id);
+    if (entry) this.onDownloadComplete?.(entry);
+  }
+
+  private localFileFor(id: string): string {
+    const entry = this.state.find(item => item.id === id);
+    return entry?.localUri ?? `${this.mediaDir}/${id}`;
+  }
 
   download = async (source: PlayerSource): Promise<void> => {
     const reason = unsupportedReason(source, !!this.drmProvider);
@@ -85,36 +143,24 @@ export class OfflineDownloadManager {
     if (existing && existing.state !== 'error') return;
 
     const toFile = `${this.mediaDir}/${source.id}.${this.extensionFor(source.mimeType)}`;
-    this.patch([...this.state.filter(entry => entry.id !== source.id), { id: source.id, source, state: 'queued', progress: 0 }]);
+    this.patch([...this.state.filter(entry => entry.id !== source.id), { id: source.id, source, state: 'queued', progress: 0, localUri: toFile }]);
     this.updateEntry(source.id, { state: 'downloading' });
 
-    const { jobId, promise } = this.fs.downloadFile({
-      fromUrl: source.src,
-      toFile,
-      progress: ({ bytesWritten, contentLength }) => {
-        this.updateEntry(source.id, { progress: contentLength > 0 ? bytesWritten / contentLength : 0 });
-      },
+    await new Promise<void>(resolve => {
+      this.transport.start({
+        id: source.id,
+        fromUrl: source.src,
+        toFile,
+        onProgress: progress => this.updateEntry(source.id, { progress: progress.contentLength > 0 ? progress.bytesWritten / progress.contentLength : 0 }),
+        onDone: () => { void this.handleDone(source.id).then(resolve); },
+        onError: message => { this.updateEntry(source.id, { state: 'error', error: message }); void this.saveManifest().then(resolve); },
+      });
     });
-    this.jobs.set(source.id, jobId);
-    try {
-      const result = await promise;
-      if (result.statusCode >= 200 && result.statusCode < 300) {
-        this.updateEntry(source.id, { state: 'downloaded', progress: 1, localUri: toFile });
-      } else {
-        this.updateEntry(source.id, { state: 'error', error: `HTTP ${result.statusCode}` });
-      }
-    } catch (error) {
-      this.updateEntry(source.id, { state: 'error', error: error instanceof Error ? error.message : String(error) });
-    } finally {
-      this.jobs.delete(source.id);
-    }
-    await this.saveManifest();
   };
 
   remove = async (id: string): Promise<void> => {
     await this.ready;
-    const jobId = this.jobs.get(id);
-    if (jobId !== undefined) { this.fs.stopDownload(jobId); this.jobs.delete(id); }
+    this.transport.stop(id);
     const entry = this.state.find(item => item.id === id);
     if (entry?.localUri) {
       try { await this.fs.unlink(entry.localUri); } catch { /* already gone: nothing to clean up */ }

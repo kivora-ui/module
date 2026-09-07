@@ -1,11 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { DRMType } from 'react-native-video';
-import { OfflineDownloadManager, OfflineUnsupportedError, type OfflineFileSystem } from './offline';
-import type { PlayerSource } from './types';
+import { OfflineDownloadManager, OfflineUnsupportedError, type OfflineFileSystem, type OfflineTransport } from './offline';
+import type { OfflineDownloadEntry, PlayerSource } from './types';
 
 function createFakeFileSystem(): OfflineFileSystem & { files: Map<string, string> } {
   const files = new Map<string, string>();
-  let nextJobId = 1;
   return {
     files,
     documentDirectoryPath: '/fake/documents',
@@ -21,17 +20,35 @@ function createFakeFileSystem(): OfflineFileSystem & { files: Map<string, string
       if (!files.has(path)) throw new Error('ENOENT: no such file');
       files.delete(path);
     },
-    downloadFile: ({ toFile, progress }) => {
-      const jobId = nextJobId++;
-      const promise = (async () => {
-        progress?.({ bytesWritten: 100, contentLength: 100 });
-        files.set(toFile, 'fake-mp4-bytes');
-        return { statusCode: 200 };
-      })();
-      return { jobId, promise };
-    },
-    stopDownload: () => {},
   };
+}
+
+type FakeJob = { id: string; toFile: string; onProgress: (p: { bytesWritten: number; contentLength: number }) => void; onDone: () => void; onError: (message: string) => void };
+
+/** Fake transport: by default it "succeeds instantly" on `start`, writing the file
+ * into the shared `files` map. Tests override `startImpl` to simulate progress,
+ * failures, or a never-resolving in-flight job. */
+function createFakeTransport(files: Map<string, string>) {
+  const stopped: string[] = [];
+  const jobs = new Map<string, FakeJob>();
+  let startImpl: (job: FakeJob) => void = job => {
+    job.onProgress({ bytesWritten: 100, contentLength: 100 });
+    files.set(job.toFile, 'fake-mp4-bytes');
+    job.onDone();
+  };
+  const transport: OfflineTransport & { stopped: string[]; setStartImpl: (impl: (job: FakeJob) => void) => void } = {
+    stopped,
+    setStartImpl: impl => { startImpl = impl; },
+    start: ({ id, fromUrl, toFile, onProgress, onDone, onError }) => {
+      const job: FakeJob = { id, toFile, onProgress, onDone, onError };
+      jobs.set(id, job);
+      void fromUrl;
+      startImpl(job);
+    },
+    stop: id => { stopped.push(id); jobs.delete(id); },
+    resumeExisting: async () => [],
+  };
+  return transport;
 }
 
 const dashSource: PlayerSource = { id: 'dash', title: 'Sintel', src: 'https://example.com/dash.mpd', mimeType: 'application/dash+xml' };
@@ -41,25 +58,29 @@ const mp4Source: PlayerSource = { id: 'flower', title: 'Flower', src: 'https://e
 
 describe('OfflineDownloadManager — unsupported sources', () => {
   it('rejects DASH sources immediately with reason "segmented-format"', async () => {
-    const manager = new OfflineDownloadManager(createFakeFileSystem());
+    const fs = createFakeFileSystem();
+    const manager = new OfflineDownloadManager(fs, createFakeTransport(fs.files));
     await expect(manager.download(dashSource)).rejects.toMatchObject({ reason: 'segmented-format', sourceId: 'dash' });
     expect(manager.getSnapshot()).toEqual([]);
   });
 
   it('rejects HLS sources immediately with reason "segmented-format"', async () => {
-    const manager = new OfflineDownloadManager(createFakeFileSystem());
+    const fs = createFakeFileSystem();
+    const manager = new OfflineDownloadManager(fs, createFakeTransport(fs.files));
     await expect(manager.download(hlsSource)).rejects.toBeInstanceOf(OfflineUnsupportedError);
     expect(manager.getSnapshot()).toEqual([]);
   });
 
   it('rejects DRM sources immediately when no drmProvider is configured', async () => {
-    const manager = new OfflineDownloadManager(createFakeFileSystem());
+    const fs = createFakeFileSystem();
+    const manager = new OfflineDownloadManager(fs, createFakeTransport(fs.files));
     await expect(manager.download(drmSource)).rejects.toMatchObject({ reason: 'drm', sourceId: 'drm-film' });
     expect(manager.getSnapshot()).toEqual([]);
   });
 
   it('does not reject a plain progressive MP4 source', async () => {
-    const manager = new OfflineDownloadManager(createFakeFileSystem());
+    const fs = createFakeFileSystem();
+    const manager = new OfflineDownloadManager(fs, createFakeTransport(fs.files));
     await expect(manager.download(mp4Source)).resolves.toBeUndefined();
   });
 });
@@ -67,7 +88,7 @@ describe('OfflineDownloadManager — unsupported sources', () => {
 describe('OfflineDownloadManager — downloading a supported MP4 source', () => {
   it('transitions queued → downloading → downloaded and exposes a playable local source', async () => {
     const fs = createFakeFileSystem();
-    const manager = new OfflineDownloadManager(fs);
+    const manager = new OfflineDownloadManager(fs, createFakeTransport(fs.files));
     const snapshots: string[][] = [];
     manager.subscribe(() => snapshots.push(manager.getSnapshot().map(entry => entry.state)));
 
@@ -88,16 +109,14 @@ describe('OfflineDownloadManager — downloading a supported MP4 source', () => 
 
   it('reports growing progress while the download is in flight', async () => {
     const fs = createFakeFileSystem();
-    fs.downloadFile = ({ toFile, progress }) => {
-      const promise = (async () => {
-        progress?.({ bytesWritten: 25, contentLength: 100 });
-        progress?.({ bytesWritten: 100, contentLength: 100 });
-        fs.files.set(toFile, 'fake-mp4-bytes');
-        return { statusCode: 200 };
-      })();
-      return { jobId: 1, promise };
-    };
-    const manager = new OfflineDownloadManager(fs);
+    const transport = createFakeTransport(fs.files);
+    transport.setStartImpl(job => {
+      job.onProgress({ bytesWritten: 25, contentLength: 100 });
+      job.onProgress({ bytesWritten: 100, contentLength: 100 });
+      fs.files.set(job.toFile, 'fake-mp4-bytes');
+      job.onDone();
+    });
+    const manager = new OfflineDownloadManager(fs, transport);
     const progressValues: number[] = [];
     manager.subscribe(() => { progressValues.push(manager.getSnapshot()[0]!.progress); });
 
@@ -109,33 +128,36 @@ describe('OfflineDownloadManager — downloading a supported MP4 source', () => 
 
   it('does not start a second download for an id already downloaded', async () => {
     const fs = createFakeFileSystem();
-    let downloadCalls = 0;
-    const originalDownloadFile = fs.downloadFile;
-    fs.downloadFile = options => { downloadCalls++; return originalDownloadFile(options); };
-    const manager = new OfflineDownloadManager(fs);
+    const transport = createFakeTransport(fs.files);
+    let startCalls = 0;
+    const original = transport.start;
+    transport.start = options => { startCalls++; original(options); };
+    const manager = new OfflineDownloadManager(fs, transport);
 
     await manager.download(mp4Source);
     await manager.download(mp4Source);
 
-    expect(downloadCalls).toBe(1);
+    expect(startCalls).toBe(1);
   });
 });
 
 describe('OfflineDownloadManager — download failures', () => {
-  it('marks the entry as errored on a non-2xx HTTP status, without throwing', async () => {
+  it('marks the entry as errored on a transport error, without throwing', async () => {
     const fs = createFakeFileSystem();
-    fs.downloadFile = () => ({ jobId: 1, promise: Promise.resolve({ statusCode: 404 }) });
-    const manager = new OfflineDownloadManager(fs);
+    const transport = createFakeTransport(fs.files);
+    transport.setStartImpl(job => job.onError('HTTP 404'));
+    const manager = new OfflineDownloadManager(fs, transport);
 
     await expect(manager.download(mp4Source)).resolves.toBeUndefined();
 
     expect(manager.getSnapshot()[0]).toMatchObject({ state: 'error', error: 'HTTP 404' });
   });
 
-  it('marks the entry as errored when the download promise rejects, without throwing', async () => {
+  it('marks the entry as errored when the transport reports a network failure', async () => {
     const fs = createFakeFileSystem();
-    fs.downloadFile = () => ({ jobId: 1, promise: Promise.reject(new Error('network offline')) });
-    const manager = new OfflineDownloadManager(fs);
+    const transport = createFakeTransport(fs.files);
+    transport.setStartImpl(job => job.onError('network offline'));
+    const manager = new OfflineDownloadManager(fs, transport);
 
     await expect(manager.download(mp4Source)).resolves.toBeUndefined();
 
@@ -144,14 +166,15 @@ describe('OfflineDownloadManager — download failures', () => {
 
   it('retries a previously errored download', async () => {
     const fs = createFakeFileSystem();
+    const transport = createFakeTransport(fs.files);
     let attempt = 0;
-    fs.downloadFile = ({ toFile }) => {
+    transport.setStartImpl(job => {
       attempt++;
-      if (attempt === 1) return { jobId: 1, promise: Promise.resolve({ statusCode: 500 }) };
-      fs.files.set(toFile, 'fake-mp4-bytes');
-      return { jobId: 2, promise: Promise.resolve({ statusCode: 200 }) };
-    };
-    const manager = new OfflineDownloadManager(fs);
+      if (attempt === 1) { job.onError('server error'); return; }
+      fs.files.set(job.toFile, 'fake-mp4-bytes');
+      job.onDone();
+    });
+    const manager = new OfflineDownloadManager(fs, transport);
 
     await manager.download(mp4Source);
     expect(manager.getSnapshot()[0]).toMatchObject({ state: 'error' });
@@ -164,18 +187,18 @@ describe('OfflineDownloadManager — download failures', () => {
 describe('OfflineDownloadManager — manifest persistence', () => {
   it('persists a downloaded entry and reloads it in a fresh manager instance', async () => {
     const fs = createFakeFileSystem();
-    const manager = new OfflineDownloadManager(fs);
+    const manager = new OfflineDownloadManager(fs, createFakeTransport(fs.files));
     await manager.download(mp4Source);
 
     // Simulate an app restart: a brand-new manager over the same file system.
-    const restarted = new OfflineDownloadManager(fs);
+    const restarted = new OfflineDownloadManager(fs, createFakeTransport(fs.files));
     await new Promise(resolve => setTimeout(resolve, 0)); // let the async manifest load settle
     expect(restarted.getSnapshot()).toMatchObject([{ id: 'flower', state: 'downloaded' }]);
   });
 
   it('starts empty when no manifest file exists yet', async () => {
     const fs = createFakeFileSystem();
-    const manager = new OfflineDownloadManager(fs);
+    const manager = new OfflineDownloadManager(fs, createFakeTransport(fs.files));
     await new Promise(resolve => setTimeout(resolve, 0));
     expect(manager.getSnapshot()).toEqual([]);
   });
@@ -184,7 +207,7 @@ describe('OfflineDownloadManager — manifest persistence', () => {
 describe('OfflineDownloadManager — remove', () => {
   it('deletes the local file and the manifest entry for a downloaded item', async () => {
     const fs = createFakeFileSystem();
-    const manager = new OfflineDownloadManager(fs);
+    const manager = new OfflineDownloadManager(fs, createFakeTransport(fs.files));
     await manager.download(mp4Source);
     const [entry] = manager.getSnapshot();
     const localUri = entry!.localUri!;
@@ -194,29 +217,28 @@ describe('OfflineDownloadManager — remove', () => {
     expect(manager.getSnapshot()).toEqual([]);
     expect(fs.files.has(localUri)).toBe(false);
 
-    const restarted = new OfflineDownloadManager(fs);
+    const restarted = new OfflineDownloadManager(fs, createFakeTransport(fs.files));
     await new Promise(resolve => setTimeout(resolve, 0));
     expect(restarted.getSnapshot()).toEqual([]);
   });
 
   it('cancels an in-flight download job before removing it', async () => {
     const fs = createFakeFileSystem();
-    let stoppedJobId: number | undefined;
-    fs.stopDownload = jobId => { stoppedJobId = jobId; };
-    fs.downloadFile = () => ({ jobId: 42, promise: new Promise(() => {}) }); // never resolves
-    const manager = new OfflineDownloadManager(fs);
+    const transport = createFakeTransport(fs.files);
+    transport.setStartImpl(() => {}); // never calls onDone/onError — stays in flight
+    const manager = new OfflineDownloadManager(fs, transport);
 
     const pending = manager.download(mp4Source);
     await manager.remove('flower');
 
-    expect(stoppedJobId).toBe(42);
+    expect(transport.stopped).toEqual(['flower']);
     expect(manager.getSnapshot()).toEqual([]);
     void pending; // intentionally left unresolved; the fake job never settles
   });
 
   it('does not throw when removing an id whose file is already gone', async () => {
     const fs = createFakeFileSystem();
-    const manager = new OfflineDownloadManager(fs);
+    const manager = new OfflineDownloadManager(fs, createFakeTransport(fs.files));
     await manager.download(mp4Source);
     const [entry] = manager.getSnapshot();
     fs.files.delete(entry!.localUri!); // simulate the file having disappeared out-of-band
@@ -226,7 +248,8 @@ describe('OfflineDownloadManager — remove', () => {
   });
 
   it('is a no-op for an id that was never downloaded', async () => {
-    const manager = new OfflineDownloadManager(createFakeFileSystem());
+    const fs = createFakeFileSystem();
+    const manager = new OfflineDownloadManager(fs, createFakeTransport(fs.files));
     await expect(manager.remove('does-not-exist')).resolves.toBeUndefined();
   });
 });
