@@ -1,5 +1,6 @@
 "use client";
 
+import { UploadSessionStatus } from './upload-session';
 import {
   createContext,
   useContext,
@@ -206,6 +207,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       <KivoraProvider colorMode={state.settings.dark ? "dark" : "light"}>
         <TooltipProvider>
           {children}
+          <UploadSessionStatus />
           <Toaster richColors position="bottom-right" />
         </TooltipProvider>
       </KivoraProvider>

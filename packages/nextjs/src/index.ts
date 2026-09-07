@@ -443,3 +443,19 @@ export {
   CardTitle
 } from "./components/card";
 export { lightTheme, darkTheme, breakpoints } from "@kivora/theme";
+export { Barcode } from './components/barcode';
+export type { BarcodeProps } from './components/barcode';
+export { QRCode } from './components/qr-code';
+export type { QRCodeProps } from './components/qr-code';
+export { generateCode, barcodeFormats } from '@kivora/codes';
+export type { CodeOptions, GeneratedCode, BarcodeFormat, QRErrorCorrectionLevel } from '@kivora/codes';
+
+export { FileUpload, FileUploadStatus } from "./components/file-upload";
+export type { FileUploadProps, FileUploadSource, FileUploadSourceContext } from "./components/file-upload";
+export { UploadController } from "@kivora/upload";
+export type { UploadFile, UploadItem, UploadOptions, UploadStatus } from "@kivora/upload";
+
+export type { UploadMessages, UploadLocaleOptions } from "@kivora/upload";
+
+export type { UploadDashboardOptions } from "./components/upload-dashboard";
+

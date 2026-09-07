@@ -1,0 +1,1 @@
+module.exports = { dependency: { platforms: { android: { sourceDir: './android', packageImportPath: 'import com.kivora.upload.KivoraUploadPackage;', packageInstance: 'new KivoraUploadPackage()' }, ios: null } } };

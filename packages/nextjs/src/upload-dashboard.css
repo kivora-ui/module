@@ -1,0 +1,52 @@
+.kivora-upload-dashboard { isolation: isolate; padding: 0 12px 12px; }
+.kivora-upload-dashboard .uppy-Dashboard-inner {
+  width: 100%; max-width: 100%; border: 0; border-radius: 0;
+  background: var(--color-background); color: var(--color-foreground); font-family: inherit;
+}
+.kivora-upload-dashboard .uppy-Dashboard-AddFiles { border: 0; border-radius: 12px; margin: 8px; }
+.kivora-upload-dashboard .uppy-Dashboard-AddFiles-title { font-size: 18px; line-height: 1.5; color: var(--color-foreground); }
+.kivora-upload-dashboard .uppy-Dashboard-browse { color: var(--color-primary); font-weight: 600; }
+.kivora-upload-dashboard .uppy-DashboardTab-btn { border-radius: 10px; padding: 12px 8px; }
+.kivora-upload-dashboard .uppy-DashboardTab-btn:hover { background: var(--color-muted); }
+.kivora-upload-dashboard .uppy-DashboardTab-name { color: var(--color-muted-foreground); }
+.kivora-upload-dashboard .uppy-DashboardContent-bar,
+.kivora-upload-dashboard .uppy-StatusBar { background: var(--color-background); border: 0; box-shadow: none; color: var(--color-foreground); }
+.kivora-upload-dashboard .uppy-StatusBar.is-complete .uppy-StatusBar-progress { display: none; }
+.kivora-upload-dashboard .uppy-u-btn-primary { background: var(--color-primary); color: var(--color-primary-foreground); border-radius: 999px; }
+.kivora-upload-dashboard .uppy-Dashboard-Item-name { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kivora-upload-dashboard .uppy-Dashboard-Item-fileInfo { min-width: 0; }
+.kivora-upload-dashboard .uppy-Dashboard-Item-fileInfoAndButtons { min-width: 0; }
+.kivora-upload-dashboard .uppy-Dashboard-Item-name a { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kivora-upload-dashboard .uppy-Dashboard-Item,
+.kivora-upload-dashboard .uppy-DashboardTab { border: 0; }
+.kivora-upload-dashboard[data-kivora-controls] select,
+.kivora-upload-dashboard[data-kivora-controls] .uppy-DashboardContent-back { display: none; }
+@media (max-width: 480px) {
+  .kivora-upload-dashboard { isolation: isolate; padding: 0 12px 12px; }
+  .kivora-upload-dashboard .uppy-Dashboard-AddFiles { margin: 8px; }
+}
+.kivora-upload-files { min-height: 360px; max-height: 60dvh; overflow-y: auto; padding: 12px 24px 24px; }
+.kivora-upload-files[data-upload-view="grid"] { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px; align-content: start; }
+.kivora-upload-file { min-width: 0; }
+.kivora-upload-thumbnail { position: relative; display: flex; align-items: center; justify-content: center; background: var(--color-muted); border-radius: 10px; height: 128px; margin-bottom: 10px; }
+.kivora-upload-thumbnail img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+.kivora-upload-thumbnail > svg:last-child { position: absolute; right: 6px; bottom: 6px; background: var(--color-background); border-radius: 50%; }
+.kivora-upload-file-info { min-width: 0; flex: 1; }
+.kivora-upload-files[data-upload-view="list"] .kivora-upload-file-info { display: flex; flex-direction: column; gap: 6px; }
+.kivora-upload-files[data-upload-view="list"] .kivora-upload-file-info > * { margin-top: 0; }
+.kivora-upload-files[data-upload-view="list"] .kivora-upload-file-actions button { height: 20px; }
+.kivora-upload-file-heading { display: flex; align-items: center; gap: 4px; min-width: 0; }
+.kivora-upload-file-actions { display: flex; flex-shrink: 0; gap: 0; }
+.kivora-upload-files[data-upload-view="list"] .kivora-upload-file { display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 10px; transition: background-color 150ms ease; }
+@media (hover: hover) {
+  .kivora-upload-files[data-upload-view="list"] .kivora-upload-file:hover { background-color: var(--color-muted); }
+}
+.kivora-upload-files[data-upload-view="list"] .kivora-upload-file:focus-within { background-color: var(--color-muted); }
+@media (prefers-reduced-motion: reduce) {
+  .kivora-upload-files[data-upload-view="list"] .kivora-upload-file { transition: none; }
+}
+.kivora-upload-files[data-upload-view="list"] .kivora-upload-thumbnail { width: 56px; height: 56px; flex-shrink: 0; margin: 0; }
+@media (max-width: 480px) {
+  .kivora-upload-files { padding: 8px 16px 16px; }
+  .kivora-upload-files[data-upload-view="grid"] { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+}

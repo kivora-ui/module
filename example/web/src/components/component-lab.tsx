@@ -1,6 +1,7 @@
 "use client";
+import { getUploadSession } from './upload-session';
 
-import { useState, type ReactNode } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import Link from "next/link";
 import * as K from "@kivora/nextjs";
 import { es } from "date-fns/locale";
@@ -15,6 +16,16 @@ const options = [
 ];
 const notify = () => K.toast.success("Acción de prueba completada");
 
+function FileUploadDemo() {
+  const [controller] = useState(getUploadSession);
+  const [variant, setVariant] = useState<'simple' | 'advanced'>('advanced');
+  const [locale, setLocale] = useState('es');
+  const [camera, setCamera] = useState(true);
+  return <div className="grid gap-4"><div className="flex gap-2">
+    <K.Button variant={variant === 'simple' ? 'default' : 'outline'} onClick={() => setVariant('simple')}>Simple</K.Button>
+    <K.Button variant={variant === 'advanced' ? 'default' : 'outline'} onClick={() => setVariant('advanced')}>Advanced</K.Button>
+  </div><div className="flex flex-wrap items-center gap-4"><div className="min-w-48"><label htmlFor="upload-language">Idioma / Language</label><K.Select inputId="upload-language" instanceId="upload-language" aria-label="Idioma / Language" isSearchable={false} options={[{ value: 'es', label: 'Español' }, { value: 'en', label: 'English' }]} value={{ value: locale, label: locale === 'es' ? 'Español' : 'English' }} onChange={option => option && setLocale(option.value)} /></div><label><input type="checkbox" checked={camera} onChange={event => setCamera(event.target.checked)} /> {locale === "es" ? "Cámara" : "Camera"}</label></div><K.FileUpload controller={controller} variant={variant} locale={locale} camera={camera} showStatus={false} /></div>;
+}
 function DateDemo() {
   const [date, setDate] = useState<K.DatePickerValue>();
   return (
@@ -122,10 +133,40 @@ function ThemeDemo() {
   );
 }
 
+function QRCodeDemo() {
+  const [value, setValue] = useState('https://example.com');
+  return <div className="grid gap-4">
+    <K.Input aria-label="Contenido del QR" value={value} onChange={event => setValue(event.target.value)} />
+    <K.QRCode value={value} size={200} />
+  </div>;
+}
+
+function BarcodeDemo() {
+  const samples: Record<K.BarcodeFormat, string> = {
+    code128: 'KIVORA-12345', code39: 'KIVORA-12345', ean13: '5901234123457',
+    ean8: '96385074', upca: '012345678905', interleaved2of5: '12345678',
+    qrcode: 'https://example.com', datamatrix: 'KIVORA-12345', pdf417: 'KIVORA-12345', azteccode: 'KIVORA-12345',
+  };
+  const [format, setFormat] = useState<K.BarcodeFormat>('code128');
+  const [value, setValue] = useState(samples.code128);
+  return <div className="grid gap-4">
+    <select aria-label="Formato del código" className="rounded-md border border-input bg-background p-2" value={format} onChange={event => {
+      const next = event.target.value as K.BarcodeFormat; setFormat(next); setValue(samples[next]);
+    }}>
+      {K.barcodeFormats.map(item => <option key={item} value={item}>{item}</option>)}
+    </select>
+    <K.Input aria-label="Contenido del código de barras" value={value} onChange={event => setValue(event.target.value)} />
+    <K.Barcode value={value} format={format} displayValue />
+  </div>;
+}
+
 type Example = { name: string; description: string; render: () => ReactNode };
 // One entry per source component family. The E2E suite checks this list against
 // packages/nextjs/src/components so new families cannot silently lose coverage.
 export const examples: Record<string, Example> = {
+  'file-upload': { name: 'FileUpload', description: 'Selecciona y sube archivos. Pausa, reanuda o reintenta.', render: () => <FileUploadDemo /> },
+  'qr-code': { name: 'QRCode', description: 'Genera un QR local para un enlace o texto.', render: () => <QRCodeDemo /> },
+  barcode: { name: 'Barcode', description: 'Code 128, EAN, UPC, Data Matrix, PDF417 y Aztec.', render: () => <BarcodeDemo /> },
   accordion: {
     name: "Accordion",
     description: "Información desplegable",

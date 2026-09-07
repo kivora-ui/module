@@ -1,0 +1,80 @@
+import { chromium, expect } from '@playwright/test';
+const browser = await chromium.launch({ args: ['--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream'] });
+try {
+ for (const width of [1100, 375, 320]) {
+  const page = await browser.newPage({viewport:{width,height:900}});
+  page.on('pageerror', error => console.log('PAGE ERROR',error.message));
+  await page.addInitScript(() => {
+   window.uploadTracks = [];
+   const enumerate = navigator.mediaDevices.enumerateDevices.bind(navigator.mediaDevices);
+   navigator.mediaDevices.enumerateDevices = async () => {
+    const devices = await enumerate();
+    const camera = devices.find(device => device.kind === 'videoinput');
+    return camera ? [...devices, {deviceId: 'secondary-test-camera', kind: 'videoinput', groupId: camera.groupId, label: 'Secondary test camera'}] : devices;
+   };
+   const original = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+   navigator.mediaDevices.getUserMedia = async (...args) => {
+    const stream = await original(...args); window.uploadTracks.push(...stream.getTracks()); return stream;
+   };
+  });
+  await page.goto('http://127.0.0.1:3000/componentes');
+  await page.getByRole('textbox',{name:'Buscar componentes'}).fill('FileUpload');
+  await page.getByRole('button',{name:'Seleccionar archivos',exact:true}).click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog.getByText('Mi dispositivo',{exact:true})).toBeVisible();
+  await page.mouse.click(3,3); await expect(dialog).toBeVisible();
+  const bounds = await dialog.boundingBox();
+  expect(bounds.x).toBeGreaterThanOrEqual(0); expect(bounds.x + bounds.width).toBeLessThanOrEqual(width);
+  await dialog.locator('[data-upload-modal-close]').click();
+  await page.getByText(/^Espa.ol$/).click();
+  await page.getByRole('option', {name: 'English', exact: true}).or(page.getByRole('button', {name: 'English', exact: true})).click();
+  await page.getByRole('button',{name:'Choose files',exact:true}).click();
+  await expect(dialog.getByText('My Device',{exact:true})).toBeVisible();
+  await dialog.locator('.uppy-DashboardTab-btn').filter({hasText:'Camera'}).click();
+  await expect.poll(() => page.evaluate(() => window.uploadTracks.length)).toBeGreaterThan(0);
+  const deviceSelect = dialog.locator('select').first();
+  await expect(deviceSelect).toBeHidden();
+  const deviceLabel = await deviceSelect.locator('option').first().textContent();
+  await dialog.locator('[data-upload-actions]').getByText(deviceLabel, {exact:true}).click();
+  await page.getByRole('option', {name:deviceLabel,exact:true}).or(page.getByRole('button',{name:deviceLabel,exact:true})).click();
+  const footerBounds = await dialog.locator('[data-upload-actions]').boundingBox();
+  const dashboardBounds = await dialog.locator('.kivora-upload-dashboard').boundingBox();
+  expect(footerBounds.y).toBeGreaterThan(dashboardBounds.y);
+  await page.screenshot({path:`example/app/build/upload-controls-${width}.png`});
+  await expect(dialog.locator('[data-upload-actions] button').filter({hasText: 'Cancel'})).toBeVisible();
+  await dialog.locator('[data-upload-actions] button').filter({hasText: 'Cancel'}).click();
+  await expect(dialog.getByText('My Device',{exact:true})).toBeVisible();
+  await dialog.locator('[data-upload-modal-close]').click();
+  await expect.poll(() => page.evaluate(() => window.uploadTracks.every(track => track.readyState === 'ended'))).toBe(true);
+  await page.getByRole('button',{name:'Choose files',exact:true}).click();
+  const previousCount = await page.evaluate(() => window.uploadTracks.length);
+  await dialog.locator('.uppy-DashboardTab-btn').filter({hasText:'Audio'}).click();
+  await expect.poll(() => page.evaluate(() => window.uploadTracks.length)).toBeGreaterThan(previousCount);
+  await expect(dialog.locator('[data-upload-actions] button').filter({hasText: 'Cancel'})).toBeVisible();
+  await dialog.locator('[data-upload-actions] button').filter({hasText: 'Cancel'}).click();
+  await expect(dialog.getByText('My Device',{exact:true})).toBeVisible();
+  await dialog.locator('[data-upload-modal-close]').click();
+  await expect.poll(() => page.evaluate(() => window.uploadTracks.every(track => track.readyState === 'ended'))).toBe(true);
+  await page.getByRole('button',{name:'Choose files',exact:true}).click();
+  await page.locator('.uppy-Dashboard input[type=file]').first().setInputFiles({name:'dashboard-test-'+('long-name-'.repeat(8))+'.txt',mimeType:'text/plain',buffer:Buffer.from('synthetic upload test')});
+  await page.getByRole('button',{name:'Upload',exact:true}).click();
+  await page.locator('[data-upload-view] [role=status]').filter({hasText:'Completed'}).waitFor({ timeout: 15000 }).catch(async error => { console.log(await dialog.innerText()); throw error; });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByText('Upload complete', {exact:true})).not.toBeVisible();
+  await dialog.getByRole('button', {name:'List view',exact:true}).click();
+  await expect(page.locator('[data-upload-view]')).toHaveAttribute('data-upload-view','list');
+  await dialog.getByRole('button', {name:'Grid view',exact:true}).click();
+  await expect(page.locator('[data-upload-view]')).toHaveAttribute('data-upload-view','grid');
+  await dialog.getByRole('button', {name:'Add more',exact:true}).click();
+  await expect(dialog.getByText('My Device',{exact:true})).toBeVisible();
+  await dialog.locator('[data-upload-actions]').getByRole('button',{name:'Back',exact:true}).click();
+  await expect(page.locator('[data-upload-view]')).toBeVisible();
+  await expect(page.locator('[data-sonner-toast]')).toHaveCount(0);
+  await dialog.locator('[data-upload-modal-close]').click();
+  await page.getByRole('button',{name:'Choose files',exact:true}).click();
+  await expect(page.locator('[data-upload-view] [role=status]').filter({hasText:'Completed'})).toBeVisible();
+  await page.screenshot({path:`example/app/build/upload-dashboard-${width}.png`});
+  console.log('PASS',width,'modal bounds, backdrop, ES/EN, capture cleanup, real upload, no toast, persistent feedback');
+  await page.close();
+ }
+} finally {await browser.close();}

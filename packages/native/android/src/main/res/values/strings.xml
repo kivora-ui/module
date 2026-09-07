@@ -1,0 +1,7 @@
+<resources>
+  <string name="kivora_upload_channel">File uploads</string>
+  <string name="kivora_upload_active">Uploading file</string>
+  <string name="kivora_upload_complete">Upload complete</string>
+  <string name="kivora_upload_failed">Upload failed</string>
+  <string name="kivora_upload_cancel">Cancel</string>
+</resources>

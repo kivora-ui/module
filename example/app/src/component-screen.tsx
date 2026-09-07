@@ -1,3 +1,5 @@
+import { pick, isErrorWithCode, errorCodes } from '@react-native-documents/picker';
+import { launchCamera, launchImageLibrary, type ImagePickerResponse } from 'react-native-image-picker';
 import { tableExamples } from './table-examples';
 import { FlashList } from '@shopify/flash-list';
 import { ExampleStateContext, useExampleState } from './example-state';
@@ -450,7 +452,83 @@ const ExampleSkeleton = React.memo(function ExampleSkeleton() {
   );
 });
 
+let backgroundUploadSession: Promise<K.UploadController> | undefined;
+async function pickUploadMedia(camera: boolean) {
+  await K.toast.requestPermission();
+  const result: ImagePickerResponse = camera
+    ? await launchCamera({ mediaType: 'photo', saveToPhotos: false })
+    : await launchImageLibrary({ mediaType: 'mixed', selectionLimit: 10 });
+  if (result.didCancel) return [];
+  if (result.errorCode) throw new Error(result.errorMessage || result.errorCode);
+  return (result.assets ?? []).map(asset => {
+    if (!asset.uri || asset.fileSize === undefined) throw new Error('Cannot read selected media.');
+    const name = asset.fileName || `photo-${Date.now()}.jpg`;
+    const type = asset.type || 'image/jpeg';
+    return { name, type, size: asset.fileSize, data: { uri: asset.uri, name, type } };
+  });
+}
+function FileUploadExample() {
+  const [controller, setController] = React.useState<K.UploadController>();
+  const [error, setError] = React.useState('');
+  React.useEffect(() => {
+    let mounted = true;
+    backgroundUploadSession ??= K.createBackgroundUploadController({ endpoint: 'http://127.0.0.1:1080/files', maxFiles: 20 });
+    void backgroundUploadSession.then(value => { if (mounted) setController(value); }).catch(error => { if (mounted) setError(String(error)); });
+    return () => { mounted = false; };
+  }, []);
+  if (!controller) return <Text className="text-foreground">{error || 'Preparing uploads...'}</Text>;
+  return <K.FileUpload controller={controller} variant="advanced" locale="es" sources={[
+    { id: 'camera', label: 'Cámara', pickFiles: () => pickUploadMedia(true) },
+    { id: 'photos', label: 'Fotos y vídeos', pickFiles: () => pickUploadMedia(false) },
+  ]} pickFiles={async () => {
+    try {
+      await K.toast.requestPermission();
+      const selected = await pick({ allowMultiSelection: true });
+      return await Promise.all(selected.map(async file => {
+        if (file.size === null) throw new Error('Cannot determine file size.');
+        if (file.size > 50 * 1024 * 1024) throw new Error('Maximum file size is 50 MB.');
+        const name = file.name ?? 'file';
+        return { name, size: file.size, type: file.type ?? 'application/octet-stream', data: { uri: file.uri, name, type: file.type ?? 'application/octet-stream' } };
+      }));
+    } catch (error) {
+      if (isErrorWithCode(error) && error.code === errorCodes.OPERATION_CANCELED) return [];
+      throw error;
+    }
+  }} />;
+}
+
+function QRCodeExample() {
+  const [value, setValue] = useExampleState('QRCode:value', 'https://example.com');
+  return <View className="gap-4">
+    <K.Input accessibilityLabel="Contenido del QR" value={value} onChangeText={setValue} />
+    <K.QRCode value={value} size={200} accessibilityLabel="Código QR generado" />
+  </View>;
+}
+
+function BarcodeExample() {
+  const [value, setValue] = useExampleState('Barcode:value', 'KIVORA-12345');
+  const [format, setFormat] = useExampleState<K.BarcodeFormat>('Barcode:format', 'code128');
+  const samples: Record<K.BarcodeFormat, string> = {
+    code128: 'KIVORA-12345', code39: 'KIVORA-12345', ean13: '5901234123457',
+    ean8: '96385074', upca: '012345678905', interleaved2of5: '12345678',
+    qrcode: 'https://example.com', datamatrix: 'KIVORA-12345', pdf417: 'KIVORA-12345', azteccode: 'KIVORA-12345',
+  };
+  return <View className="gap-4">
+    <K.Select value={format} onValueChange={next => {
+      setFormat(next as K.BarcodeFormat); setValue(samples[next as K.BarcodeFormat]);
+    }}>
+      <K.SelectTrigger accessibilityLabel="Formato del código"><K.SelectValue /></K.SelectTrigger>
+      <K.SelectContent>{K.barcodeFormats.map(item => <K.SelectItem key={item} value={item}>{item}</K.SelectItem>)}</K.SelectContent>
+    </K.Select>
+    <K.Input accessibilityLabel="Contenido del código de barras" value={value} onChangeText={setValue} />
+    <K.Barcode value={value} format={format} width={240} displayValue />
+  </View>;
+}
+
 const examples = [
+  { name: 'FileUpload', description: 'Selecciona archivos para subirlos automáticamente. Consulta el progreso y cancela la subida desde las notificaciones.', content: <FileUploadExample /> },
+  { name: 'QRCode', description: 'Genera un QR local para un enlace o texto.', content: <QRCodeExample /> },
+  { name: 'Barcode', description: 'Code 128, EAN, UPC, Data Matrix, PDF417 y Aztec.', content: <BarcodeExample /> },
   {
     name: 'BottomSheet',
     description: 'Panel Gorhom con gestos, desplazamiento y teclado.',

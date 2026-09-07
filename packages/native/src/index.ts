@@ -196,3 +196,18 @@ export * from "./components/toggle";
 export * from "./components/toggle-group";
 
 export * from "./components/typography";
+export { Barcode } from './components/barcode';
+export type { BarcodeProps } from './components/barcode';
+export { QRCode } from './components/qr-code';
+export type { QRCodeProps } from './components/qr-code';
+export { generateCode, barcodeFormats } from '@kivora/codes';
+export type { CodeOptions, GeneratedCode, BarcodeFormat, QRErrorCorrectionLevel } from '@kivora/codes';
+
+export { FileUpload } from "./components/file-upload";
+export type { FileUploadProps, FileUploadSource, FileUploadSourceContext } from "./components/file-upload";
+export { UploadController } from "@kivora/upload";
+export type { UploadFile, UploadItem, UploadOptions, UploadStatus } from "@kivora/upload";
+
+export { createBackgroundUploadController } from "./lib/background-upload";
+
+export type { UploadMessages, UploadLocaleOptions } from "@kivora/upload";

@@ -3,3 +3,14 @@
 @import "slick-carousel/slick/slick.css";
 @import "slick-carousel/slick/slick-theme.css";
 @import "./carousel.css";
+
+@import "@uppy/core/css/style.min.css";
+@import "@uppy/dashboard/css/style.min.css";
+@import "@uppy/webcam/css/style.min.css";
+@import "@uppy/audio/css/style.min.css";
+@import "@uppy/screen-capture/css/style.min.css";
+@import "@uppy/image-editor/css/style.min.css";
+@import "@uppy/image-generator/css/style.min.css";
+@import "@uppy/url/css/style.min.css";
+@import "./upload-dashboard.css";
+
