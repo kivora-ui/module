@@ -35,13 +35,36 @@ function unsupportedReason(source: PlayerSource, hasDrmProvider: boolean): 'segm
 export class OfflineDownloadManager {
   private state: OfflineDownloadEntry[] = [];
   private listeners = new Set<() => void>();
+  private readonly mediaDir: string;
+  private readonly manifestPath: string;
+  private readonly ready: Promise<void>;
 
-  constructor(private fs: OfflineFileSystem, private drmProvider?: OfflineDrmProvider) {}
+  constructor(private fs: OfflineFileSystem, private drmProvider?: OfflineDrmProvider) {
+    this.mediaDir = `${fs.documentDirectoryPath}/kivora-downloads`;
+    this.manifestPath = `${this.mediaDir}/manifest.json`;
+    this.ready = this.loadManifest();
+  }
 
   getSnapshot = () => this.state;
   getServerSnapshot = () => this.state;
   subscribe = (listener: () => void) => { this.listeners.add(listener); return () => { this.listeners.delete(listener); }; };
   private patch(next: OfflineDownloadEntry[]) { this.state = next; this.listeners.forEach(listener => listener()); }
+
+  private async loadManifest() {
+    try {
+      if (await this.fs.exists(this.manifestPath)) {
+        const raw = await this.fs.readFile(this.manifestPath);
+        this.patch(JSON.parse(raw) as OfflineDownloadEntry[]);
+      }
+    } catch {
+      // Missing or corrupt manifest: start from an empty, recoverable state.
+    }
+  }
+
+  private async saveManifest() {
+    await this.fs.mkdir(this.mediaDir).catch(() => {});
+    await this.fs.writeFile(this.manifestPath, JSON.stringify(this.state));
+  }
 
   private extensionFor(mimeType?: string) {
     return mimeType?.includes('mp4') ? 'mp4' : 'bin';
@@ -54,11 +77,11 @@ export class OfflineDownloadManager {
   download = async (source: PlayerSource): Promise<void> => {
     const reason = unsupportedReason(source, !!this.drmProvider);
     if (reason) throw new OfflineUnsupportedError(reason, source.id);
+    await this.ready;
     const existing = this.state.find(entry => entry.id === source.id);
     if (existing && existing.state !== 'error') return;
 
-    const mediaDir = `${this.fs.documentDirectoryPath}/kivora-downloads`;
-    const toFile = `${mediaDir}/${source.id}.${this.extensionFor(source.mimeType)}`;
+    const toFile = `${this.mediaDir}/${source.id}.${this.extensionFor(source.mimeType)}`;
     this.patch([...this.state.filter(entry => entry.id !== source.id), { id: source.id, source, state: 'queued', progress: 0 }]);
     this.updateEntry(source.id, { state: 'downloading' });
 
@@ -79,6 +102,7 @@ export class OfflineDownloadManager {
     } catch (error) {
       this.updateEntry(source.id, { state: 'error', error: error instanceof Error ? error.message : String(error) });
     }
+    await this.saveManifest();
   };
 
   getPlaybackSource = (id: string): PlayerSource | undefined => {

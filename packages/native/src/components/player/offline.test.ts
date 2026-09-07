@@ -160,3 +160,23 @@ describe('OfflineDownloadManager — download failures', () => {
     expect(manager.getSnapshot()[0]).toMatchObject({ state: 'downloaded' });
   });
 });
+
+describe('OfflineDownloadManager — manifest persistence', () => {
+  it('persists a downloaded entry and reloads it in a fresh manager instance', async () => {
+    const fs = createFakeFileSystem();
+    const manager = new OfflineDownloadManager(fs);
+    await manager.download(mp4Source);
+
+    // Simulate an app restart: a brand-new manager over the same file system.
+    const restarted = new OfflineDownloadManager(fs);
+    await new Promise(resolve => setTimeout(resolve, 0)); // let the async manifest load settle
+    expect(restarted.getSnapshot()).toMatchObject([{ id: 'flower', state: 'downloaded' }]);
+  });
+
+  it('starts empty when no manifest file exists yet', async () => {
+    const fs = createFakeFileSystem();
+    const manager = new OfflineDownloadManager(fs);
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(manager.getSnapshot()).toEqual([]);
+  });
+});
