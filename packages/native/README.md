@@ -343,3 +343,13 @@ The application supplies the adapters and their permission handling. The Android
 The advanced BottomSheet navigates from source tiles to a dedicated source screen, with a back action. A source may provide `render({ addFiles, close, messages })` to embed a custom provider screen, or `pickFiles()` to open a system picker. The latter closes the sheet before launching the picker.
 
 Use `locale="es"` or `locale="en"` (default), and `messages: Partial<UploadMessages>` for overrides or additional languages. Translate custom provider labels, descriptions and screens in the application. The Android background notification uses native string resources (English and Spanish) according to the system locale, independently of the component locale. Applications can provide translated `kivora_upload_*` Android resources for more languages.
+
+## Video and audio player
+
+`Player`, `PlayerController`, `AudioPlayerProvider` and `useAudioPlayer` provide
+native media playback, episode selection, audio persistence across screens and
+ad breaks. Orientation can follow the device or force landscape for OTT playback.
+Starting a player closes the previous audio or video player. Install the peer
+dependencies `react-native-video@6.19.2` and `react-native-orientation-locker@1.7.0`,
+configure orientation support and rebuild your native app. See [the native player guide](../../docs/native-player.md) for
+setup, examples and platform limitations.

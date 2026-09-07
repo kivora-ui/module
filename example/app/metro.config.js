@@ -11,6 +11,8 @@ const singleton = [
   'react-native-worklets',
   'react-native-keyboard-controller',
   'react-native-svg',
+  'react-native-video',
+  'react-native-orientation-locker',
   'react-native-safe-area-context',
   'react-native-gesture-handler',
 ];

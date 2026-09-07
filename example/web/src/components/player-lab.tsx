@@ -49,7 +49,7 @@ export function PlayerLab() {
     image: `/player-thumbnails/sintel/${[3, 7, 11][index]}.jpg`, progress: index === episode ? 0.34 : 0,
   }));
   const overlays = useMemo<PlayerOverlay[]>(() => [
-    { id: 'brand', phases: ['content', 'loading', 'splash', 'ended'], render: () => controlsVariant === 'compact' || controlsVariant === 'standard' ? <span className="absolute right-4 top-4 rounded-full bg-black/50 px-3 py-1 text-xs font-semibold tracking-widest text-white">KIVORA PLAY</span> : null },
+    { id: 'brand', phases: ['content', 'loading', 'splash', 'ended'], render: () => controlsVariant === 'compact' || controlsVariant === 'standard' ? <span className="absolute left-4 top-4 rounded-full bg-black/50 px-3 py-1 text-xs font-semibold tracking-widest text-white">KIVORA PLAY</span> : null },
     { id: 'advertising', phases: ['ad'], render: () => <span className="absolute left-4 top-4 rounded bg-amber-400 px-3 py-1 text-xs font-semibold text-black">{locale === 'es' ? 'Publicidad · Demo' : 'Advertisement · Demo'}</span> },
   ], [locale, controlsVariant]);
   return <div className="mx-auto grid max-w-5xl gap-6 pb-60">
@@ -85,7 +85,7 @@ export function PlayerLab() {
         <Button type="submit" className="justify-self-start">Cargar stream</Button>{error && <p role="alert">{error}</p>}
       </form>
     </details>
-    <section className="rounded-xl bg-muted/40 p-4"><h2 className="font-semibold">Audio persistente</h2><p className="my-2 text-sm text-muted-foreground">Se mantiene en el footer al navegar. Pulsa la flecha para ampliar el reproductor.</p><div className="flex flex-wrap gap-2"><Button onClick={() => audio.play({ id: 'audio-demo', title: 'Kivora · Audio de prueba', src: '/player-fixtures/audio.mp3', mimeType: 'audio/mpeg', poster })}>Reproducir audio</Button><Button variant="outline" onClick={audio.close}>Cerrar audio</Button><Link href="/componentes" className="p-2 text-sm underline">Ir a componentes</Link></div></section>
+    <section className="rounded-xl bg-muted/40 p-4"><h2 className="font-semibold">Audio persistente</h2><p className="my-2 text-sm text-muted-foreground">Se mantiene en el footer al navegar y puede contener anuncios. Pulsa la flecha para ampliar el reproductor.</p><div className="flex flex-wrap gap-2"><Button onClick={() => audio.play({ id: 'audio-demo', title: 'Kivora · Audio de prueba', src: '/player-fixtures/audio.mp3', mimeType: 'audio/mpeg', poster })}>Reproducir audio</Button><Button variant="outline" onClick={() => audio.play({ id: 'audio-demo-ads', title: 'Kivora · Audio de prueba', src: '/player-fixtures/audio.mp3', mimeType: 'audio/mpeg', poster, ads: { breaks: [{ id: 'audio-preroll', src: '/player-fixtures/audio.mp3', mimeType: 'audio/mpeg', at: 'pre', duration: 6, skipAfter: 2 }] } })}>Reproducir audio con anuncio</Button><Button variant="outline" onClick={audio.close}>Cerrar audio</Button><Link href="/componentes" className="p-2 text-sm underline">Ir a componentes</Link></div></section>
     <details><summary className="cursor-pointer text-sm font-medium">Eventos del plugin de analítica</summary><ol className="mt-3 space-y-1 font-mono text-xs text-muted-foreground">{events.map((event, index) => <li key={`${event.timestamp}-${index}`}>{event.type} · {event.phase} · {event.time.toFixed(1)} s</li>)}</ol></details>
   </div>;
 }

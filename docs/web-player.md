@@ -345,3 +345,23 @@ Controller unit tests cover lifecycle cleanup, plugin failures, source isolation
 ad initialization and error handling. Commercial DRM, persistent commercial
 licenses, live delivery, vendor ad integrations and Safari/Firefox/device matrices
 need integration testing with the deployment's media services.
+
+### Mobile layout
+
+At player widths up to 650px, all video variants use one 16:9 card with
+superimposed circular transport, top actions and a bottom title/time/seek row.
+Settings and episodes open in sheets outside the video crop; episodes start
+closed and hide central transport while open. The sheet portal follows the
+player in fullscreen. Audio keeps its existing dock layout.
+
+Run `PLAYER_BASE_URL=http://127.0.0.1:3001 node scripts/check-player-mobile.mjs`
+against the example to check 320/390/650px layouts, all control variants,
+settings, episodes and playback.
+
+### Settings layout
+
+`settingsLayout="tabs"` (default) groups settings into Quality, Audio, Subtitles
+and Speed, with scrollable options for long track lists. Native audio exposes
+Audio and Speed. On web this applies to the mobile bottom sheet.
+Use `settingsLayout="list"` to restore the previous settings layout.
+Circular video controls use translucent backgrounds without outline borders.

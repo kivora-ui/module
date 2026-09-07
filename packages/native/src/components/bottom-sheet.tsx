@@ -7,9 +7,11 @@ import {
   TextInput,
   type TextInputProps,
   type ViewProps,
+  type ScrollViewProps,
 } from "react-native";
 import GorhomBottomSheet, {
   BottomSheetBackdrop,
+  BottomSheetScrollView,
   useBottomSheetTimingConfigs,
   type BottomSheetBackdropProps,
   type BottomSheetBackgroundProps,
@@ -24,6 +26,8 @@ import { KeyboardSheetScrollView } from "../lib/keyboard-sheet-scroll-view";
 
 export interface BottomSheetProps extends ViewProps {
   open: boolean;
+  /** Disable keyboard-aware scrolling for sheets without text fields. */
+  keyboardAware?: boolean;
   onOpenChange: (open: boolean) => void;
   /** Opening duration in milliseconds. Defaults to 320; minimum 1. */
   animationDuration?: number;
@@ -32,6 +36,8 @@ export interface BottomSheetProps extends ViewProps {
   /** Timing curve shared by opening and closing. Defaults to Easing.out(Easing.cubic). */
   animationEasing?: WithTimingConfig["easing"];
 }
+
+const PlainSheetScrollView = BottomSheetScrollView as unknown as React.ComponentType<ScrollViewProps & { bottomOffset?: number }>;
 
 const DEFAULT_ANIMATION_EASING = Easing.out(Easing.cubic);
 
@@ -62,6 +68,7 @@ function SheetBackdrop(props: BottomSheetBackdropProps) {
 /** A native Modal hosts Gorhom so sheets retain theme/context and Android back handling. */
 export function BottomSheet({
   open,
+  keyboardAware = true,
   onOpenChange,
   children,
   className,
@@ -70,6 +77,7 @@ export function BottomSheet({
   animationEasing = DEFAULT_ANIMATION_EASING,
   ...props
 }: BottomSheetProps) {
+  const Scrollable = keyboardAware ? KeyboardSheetScrollView : PlainSheetScrollView;
   const sheet = React.useRef<GorhomBottomSheet>(null);
   const [mounted, setMounted] = React.useState(open);
   const [hasOpened, setHasOpened] = React.useState(false);
@@ -153,8 +161,9 @@ export function BottomSheet({
             onClose={onClose}
             onChange={onChange}
           >
-            <KeyboardSheetScrollView
-              bottomOffset={24}
+            <Scrollable
+              {...(keyboardAware ? { bottomOffset: 24 } : {})}
+              nestedScrollEnabled
               keyboardShouldPersistTaps="handled"
               contentContainerStyle={{
                 paddingBottom: Math.max(insets.bottom, 16),
@@ -163,7 +172,7 @@ export function BottomSheet({
               <View {...props} className={cn("gap-4 px-4 pb-4", className)}>
                 {children}
               </View>
-            </KeyboardSheetScrollView>
+            </Scrollable>
           </GorhomBottomSheet>
         </KeyboardProvider>
       </GestureHandlerRootView>

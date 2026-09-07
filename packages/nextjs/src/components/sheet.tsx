@@ -106,12 +106,13 @@ export interface SheetContentProps
   extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> {
   side?: SheetSide;
   closeLabel?: string;
+  portalContainer?: HTMLElement | null;
 }
 
 export const SheetContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   SheetContentProps
->(({ side = "right", closeLabel = "Close", className, children, style, ...props }, ref) => {
+>(({ side = "right", closeLabel = "Close", portalContainer, className, children, style, ...props }, ref) => {
   const { open } = useSheetState();
   const viewport = useOverlayViewport(open, ref);
   const motionPreset = sideMotion[side];
@@ -119,7 +120,7 @@ export const SheetContent = React.forwardRef<
   return (
     <AnimatePresence>
       {open ? (
-        <SheetPortal forceMount>
+        <SheetPortal forceMount container={portalContainer}>
           <SheetOverlay />
           <DialogPrimitive.Content forceMount asChild {...props}>
             <motion.div
