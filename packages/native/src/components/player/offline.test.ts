@@ -120,3 +120,43 @@ describe('OfflineDownloadManager — downloading a supported MP4 source', () => 
     expect(downloadCalls).toBe(1);
   });
 });
+
+describe('OfflineDownloadManager — download failures', () => {
+  it('marks the entry as errored on a non-2xx HTTP status, without throwing', async () => {
+    const fs = createFakeFileSystem();
+    fs.downloadFile = () => ({ jobId: 1, promise: Promise.resolve({ statusCode: 404 }) });
+    const manager = new OfflineDownloadManager(fs);
+
+    await expect(manager.download(mp4Source)).resolves.toBeUndefined();
+
+    expect(manager.getSnapshot()[0]).toMatchObject({ state: 'error', error: 'HTTP 404' });
+  });
+
+  it('marks the entry as errored when the download promise rejects, without throwing', async () => {
+    const fs = createFakeFileSystem();
+    fs.downloadFile = () => ({ jobId: 1, promise: Promise.reject(new Error('network offline')) });
+    const manager = new OfflineDownloadManager(fs);
+
+    await expect(manager.download(mp4Source)).resolves.toBeUndefined();
+
+    expect(manager.getSnapshot()[0]).toMatchObject({ state: 'error', error: 'network offline' });
+  });
+
+  it('retries a previously errored download', async () => {
+    const fs = createFakeFileSystem();
+    let attempt = 0;
+    fs.downloadFile = ({ toFile }) => {
+      attempt++;
+      if (attempt === 1) return { jobId: 1, promise: Promise.resolve({ statusCode: 500 }) };
+      fs.files.set(toFile, 'fake-mp4-bytes');
+      return { jobId: 2, promise: Promise.resolve({ statusCode: 200 }) };
+    };
+    const manager = new OfflineDownloadManager(fs);
+
+    await manager.download(mp4Source);
+    expect(manager.getSnapshot()[0]).toMatchObject({ state: 'error' });
+
+    await manager.download(mp4Source);
+    expect(manager.getSnapshot()[0]).toMatchObject({ state: 'downloaded' });
+  });
+});
