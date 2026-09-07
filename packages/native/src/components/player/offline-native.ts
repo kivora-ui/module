@@ -31,35 +31,70 @@ function nativeOfflineFileSystem(): OfflineFileSystem {
  * same lazy-require reasoning as above. This library backs transfers with a real
  * OS-level background session (URLSession on iOS, WorkManager/DownloadManager on
  * Android), so a download survives the app being closed and can be re-attached
- * to after a restart via `checkForExistingDownloads()`. */
+ * to after a restart via `getExistingDownloadTasks()`. */
 let cachedTransport: OfflineTransport | undefined;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const jobs = new Map<string, any>();
 function nativeTransport(): OfflineTransport {
   if (!cachedTransport) {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const downloader = require('@kesha-antonov/react-native-background-downloader').default
-      ?? require('@kesha-antonov/react-native-background-downloader');
+    const { createDownloadTask, getExistingDownloadTasks, completeHandler } = require('@kesha-antonov/react-native-background-downloader');
     cachedTransport = {
       start: ({ id, fromUrl, toFile, onProgress, onDone, onError }) => {
-        downloader
-          .download({ id, url: fromUrl, destination: toFile })
+        const task = createDownloadTask({ id, url: fromUrl, destination: toFile });
+        jobs.set(id, task);
+        task
           .begin(() => {})
           .progress(({ bytesDownloaded, bytesTotal }: { bytesDownloaded: number; bytesTotal: number }) =>
             onProgress({ bytesWritten: bytesDownloaded, contentLength: bytesTotal }))
-          .done(() => onDone())
-          .error(({ error }: { error: string }) => onError(error));
+          .done(({ location, bytesDownloaded, bytesTotal }: { location: string; bytesDownloaded: number; bytesTotal: number }) => {
+            const result = completeHandler(id);
+            if (result instanceof Promise) {
+              void result.catch(() => {});
+            }
+            onDone();
+          })
+          .error(({ error }: { error: string }) => {
+            const result = completeHandler(id);
+            if (result instanceof Promise) {
+              void result.catch(() => {});
+            }
+            onError(error);
+          });
+        task.start();
       },
       stop: id => {
-        downloader.checkForExistingDownloads().then((tasks: Array<{ id: string; stop: () => void }>) => {
-          tasks.find(task => task.id === id)?.stop();
-        });
+        const task = jobs.get(id);
+        if (task) {
+          jobs.delete(id);
+          void task.stop().catch(() => {});
+        }
       },
       resumeExisting: async ({ onProgress, onDone, onError }) => {
-        const tasks: Array<{ id: string; progress: (cb: (p: { bytesDownloaded: number; bytesTotal: number }) => void) => unknown; done: (cb: () => void) => unknown; error: (cb: (e: { error: string }) => void) => unknown }>
-          = await downloader.checkForExistingDownloads();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        const tasks = (await getExistingDownloadTasks()) as Array<{ id: string; progress: (cb: (p: { bytesDownloaded: number; bytesTotal: number }) => void) => unknown; done: (cb: () => void) => unknown; error: (cb: (e: { error: string }) => void) => unknown }>;
         for (const task of tasks) {
-          task.progress(({ bytesDownloaded, bytesTotal }) => onProgress(task.id, { bytesWritten: bytesDownloaded, contentLength: bytesTotal }));
-          task.done(() => onDone(task.id));
-          task.error(({ error }) => onError(task.id, error));
+          jobs.set(task.id, task);
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          task.progress(({ bytesDownloaded, bytesTotal }: { bytesDownloaded: number; bytesTotal: number }) => onProgress(task.id, { bytesWritten: bytesDownloaded, contentLength: bytesTotal }));
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          task.done(() => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            const result = completeHandler(task.id);
+            if (result instanceof Promise) {
+              void result.catch(() => {});
+            }
+            onDone(task.id);
+          });
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          task.error(({ error }: { error: string }) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            const result = completeHandler(task.id);
+            if (result instanceof Promise) {
+              void result.catch(() => {});
+            }
+            onError(task.id, error);
+          });
         }
         return tasks.map(task => task.id);
       },
