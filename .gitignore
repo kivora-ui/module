@@ -8,3 +8,12 @@ storybook-static
 .worktrees
 .superpowers
 .patches/
+
+.uploads/
+
+# Generated synthetic player demo assets (scripts/create-player-fixtures.mjs)
+example/web/public/player-fixtures/
+
+# Native library build artifacts
+packages/native/android/build/
+packages/native/android/.gradle/

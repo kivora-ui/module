@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "predev": "pnpm --filter @kivora/theme build && pnpm --filter @kivora/nextjs build",
+    "predev": "pnpm --filter @kivora/nextjs... build",
     "dev": "next dev --hostname 127.0.0.1",
-    "prebuild": "pnpm --filter @kivora/theme build && pnpm --filter @kivora/nextjs build",
+    "prebuild": "pnpm --filter @kivora/nextjs... build",
     "build": "next build",
     "start": "next start --hostname 127.0.0.1",
     "typecheck": "tsc --noEmit",

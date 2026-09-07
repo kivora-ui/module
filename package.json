@@ -22,11 +22,16 @@
     "test:datepicker:e2e": "playwright test tests/date-picker.playwright.spec.ts --browser=chromium --reporter=line",
     "dev:app": "pnpm --filter @kivora/example-app start",
     "android:app": "pnpm --filter @kivora/example-app android",
-    "build:app": "pnpm --filter @kivora/theme build && pnpm --filter @kivora/example-app build",
-    "test:app": "pnpm --filter @kivora/example-app test"
+    "build:app": "pnpm --filter @kivora/native... build && pnpm --filter @kivora/example-app build",
+    "test:app": "pnpm --filter @kivora/example-app test",
+    "publish:codes": "pnpm --filter @kivora/codes typecheck && pnpm --filter @kivora/codes test && pnpm --filter @kivora/codes build && pnpm --filter @kivora/codes publish --access public --publish-branch main",
+    "dev:uploads": "node scripts/upload-server.mjs",
+    "publish:upload": "pnpm --filter @kivora/upload typecheck && pnpm --filter @kivora/upload test && pnpm --filter @kivora/upload build && pnpm --filter @kivora/upload publish --access public --publish-branch main"
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1",
+    "@tus/file-store": "^2.1.1",
+    "@tus/server": "^2.4.5",
     "@types/node": "^26.4.1",
     "@types/react": "^19.2.18",
     "tsup": "^8.5.1",

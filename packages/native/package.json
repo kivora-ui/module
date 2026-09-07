@@ -18,7 +18,9 @@
   "files": [
     "dist",
     "src",
-    "README.md"
+    "README.md",
+    "android",
+    "react-native.config.cjs"
   ],
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts",
@@ -27,12 +29,14 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "@kivora/codes": "workspace:*",
     "@gorhom/bottom-sheet": "^5.2.14",
     "@kivora/theme": "workspace:*",
     "class-variance-authority": "^0.7.1",
     "lucide-react-native": "^1.40.0",
     "prismjs": "^1.30.0",
-    "react-native-reanimated-carousel": "4.0.3"
+    "react-native-reanimated-carousel": "4.0.3",
+    "@kivora/upload": "workspace:*"
   },
   "peerDependencies": {
     "@notifee/react-native": "^9.1.8",
