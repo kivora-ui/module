@@ -1,16 +1,16 @@
 # @kivora/theme
 
-**La base de diseño compartida por Kivora para web y React Native.**
+**Kivora's shared design foundation for web and React Native.**
 
-Temas claro y oscuro, tipos TypeScript, breakpoints y utilidades sin dependencias de React ni React Native. Este paquete contiene datos y helpers; los componentes se encuentran en **[@kivora/nextjs](https://www.npmjs.com/package/@kivora/nextjs)** y **[@kivora/native](https://www.npmjs.com/package/@kivora/native)**.
+Light and dark themes, TypeScript types, breakpoints, and utilities with no React or React Native dependencies. This package provides data and helpers; components are available in **[@kivora/nextjs](https://www.npmjs.com/package/@kivora/nextjs)** and **[@kivora/native](https://www.npmjs.com/package/@kivora/native)**.
 
-## Instalación
+## Installation
 
 ```sh
-pnpm add @kivora/theme
+npm install @kivora/theme
 ```
 
-## Uso
+## Usage
 
 ```ts
 import {
@@ -27,51 +27,53 @@ const theme = mergeTheme(lightTheme, {
 });
 
 theme.color.primary;                   // '#262626'
-darkTheme.color.background;            // color de fondo del tema oscuro
+darkTheme.color.background;            // dark theme background color
 getBreakpoint(900);                    // 'tablet'
 resolveColorMode('system', 'dark');     // 'dark'
 cn('p-2', false && 'hidden', 'p-4');     // 'p-4'
 ```
 
-`mergeTheme` conserva los valores no sobrescritos del tema base y devuelve un nuevo objeto cuando recibe overrides. No modifica estilos ni aplica un tema por sí solo.
+`mergeTheme` preserves base theme values that are not overridden and returns a new object when overrides are provided. It does not modify styles or apply a theme on its own.
 
 ## API
 
-| Exportación | Función |
+| Export | Purpose |
 | --- | --- |
-| `lightTheme`, `darkTheme` | Objetos con `color`, `radius`, `spacing` y `fontSize` |
-| `mergeTheme(base, override?)` | Combinar un tema con valores parciales |
+| `lightTheme`, `darkTheme` | Objects containing `color`, `radius`, `spacing`, and `fontSize` |
+| `mergeTheme(base, override?)` | Merge a theme with partial overrides |
 | `breakpoints` | `{ mobile: 0, tablet: 768, desktop: 1024 }` |
-| `getBreakpoint(width)` | Resolver `mobile`, `tablet` o `desktop` a partir del ancho |
-| `resolveColorMode(mode, systemMode)` | Resolver `light`, `dark` o `system` sin leer APIs del dispositivo |
-| `cn(...inputs)` | Combinar clases condicionales y resolver conflictos con clsx y tailwind-merge |
+| `getBreakpoint(width)` | Resolve `mobile`, `tablet`, or `desktop` from a width |
+| `resolveColorMode(mode, systemMode)` | Resolve `light`, `dark`, or `system` without reading device APIs |
+| `cn(...inputs)` | Combine conditional classes and resolve conflicts using clsx and tailwind-merge |
 
-También se exportan los tipos `KivoraTheme`, `KivoraColorTokens`, `ColorMode`, `DeepPartial` y `Breakpoint`, entre otros. Hay salidas ESM, CommonJS y declaraciones TypeScript.
+Exported types include `KivoraTheme`, `KivoraColorTokens`, `ColorMode`, `DeepPartial`, and `Breakpoint`, among others. ESM, CommonJS, and TypeScript declarations are included.
 
-Los breakpoints son valores numéricos: usa píxeles CSS en web y el ancho de layout de React Native en la app. El helper no instala listeners de resize.
+Breakpoints are numeric values: use CSS pixels on the web and React Native layout width in native apps. The helper does not register resize listeners.
 
-## Estilos web con Tailwind CSS 4
+## Web styles with Tailwind CSS 4
+
+In an application with Tailwind CSS 4 configured, add these imports to your global CSS:
 
 ```css
 @import "tailwindcss";
 @import "@kivora/theme/tailwind.css";
 ```
 
-El archivo expone colores semánticos y estilos para modo oscuro. Si utilizas `@kivora/nextjs/styles.css`, ese import ya incluye el tema y Tailwind.
+The stylesheet exposes semantic colors and dark mode styles. If you use `@kivora/nextjs/styles.css`, that import already includes the theme and Tailwind.
 
-El objeto JavaScript y las variables CSS son representaciones separadas. Cambiar un objeto con `mergeTheme` no reescribe las variables del navegador. Personaliza el CSS para cambiar las clases de Tailwind.
+The JavaScript object and CSS variables are separate representations. Updating an object with `mergeTheme` does not rewrite browser variables. Customize the CSS to change Tailwind classes.
 
 ## React Native
 
-Los objetos de tema y los helpers se pueden consumir desde React Native. El archivo `tailwind.css` es para web: configura NativeWind y las variables de color siguiendo el README de [@kivora/native](https://www.npmjs.com/package/@kivora/native).
+Theme objects and helpers can be used in React Native. The `tailwind.css` file is for the web: configure NativeWind and color variables following the [@kivora/native](https://www.npmjs.com/package/@kivora/native) README.
 
-No se exporta un preset Tailwind ni un objeto llamado `tokens`. Usa `lightTheme`, `darkTheme` y las exportaciones documentadas arriba.
+There is no exported Tailwind preset or object named `tokens`. Use `lightTheme`, `darkTheme`, and the exports documented above.
 
-## El ecosistema Kivora
+## The Kivora ecosystem
 
-| Paquete | Uso |
+| Package | Purpose |
 | --- | --- |
-| [@kivora/nextjs](https://www.npmjs.com/package/@kivora/nextjs) | Componentes Next.js para escritorio, tablet y web móvil |
-| [@kivora/native](https://www.npmjs.com/package/@kivora/native) | Componentes React Native, gestos y paneles inferiores |
+| [@kivora/nextjs](https://www.npmjs.com/package/@kivora/nextjs) | Next.js components for desktop, tablet, and mobile web |
+| [@kivora/native](https://www.npmjs.com/package/@kivora/native) | React Native components, gestures, and bottom sheets |
 
-El monorepo muestra ambos módulos en Farmacia Oliva, con ejemplos de gestión y venta en tienda. La base visual es compartida; cada renderer conserva las interacciones de su plataforma.
+Use [@kivora/init](https://www.npmjs.com/package/@kivora/init) to configure platform components in an existing application. Theme can also be used independently, without installing the components.

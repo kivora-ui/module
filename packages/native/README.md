@@ -1,47 +1,45 @@
 # @kivora/native
 
-Instalación asistida, una vez publicado el CLI: ejecuta `npx @kivora/init` dentro de tu aplicación. La primera receta admite React Native Community CLI 0.85.3–0.85.x con NativeWind 4; otras combinaciones requieren configuración manual. Usa `--dry-run` para revisar el plan. Consulta [@kivora/init](https://www.npmjs.com/package/@kivora/init).
+**React Native components with the same visual language as Kivora for Next.js.**
 
-**Componentes React Native con el mismo lenguaje visual que Kivora para Next.js.**
+Forms, tables, calendars, panels, and carousels in TypeScript, with neutral themes, dark mode, gestures, and animations. The documented setup uses React Native Community CLI, **without Expo**.
 
-Formularios, tablas, calendarios, paneles y carruseles en TypeScript, con temas neutros, modo oscuro, gestos y animaciones. El ejemplo Android utiliza React Native Community CLI, **sin Expo**.
+Building a website too? Use **[@kivora/nextjs](https://www.npmjs.com/package/@kivora/nextjs)**. Both packages share **[@kivora/theme](https://www.npmjs.com/package/@kivora/theme)**; you do not need to install the web package in your native application.
 
-¿También construyes una web? Usa **[@kivora/nextjs](https://www.npmjs.com/package/@kivora/nextjs)**. Los dos módulos comparten la base de **[@kivora/theme](https://www.npmjs.com/package/@kivora/theme)**; no necesitas instalar el paquete web en tu aplicación nativa.
+## Installation
 
-## Instalación
+### Using the installer
 
-Instala el paquete en una aplicación React Native existente. Esta receta corresponde a la configuración del ejemplo: React Native 0.85.3, React 19.2.3, NativeWind 4.2.6 y Reanimated 4.3.0, con la nueva arquitectura.
+From your application directory:
 
 ```sh
-pnpm add @kivora/native nativewind@4.2.6
-pnpm add react-native-gesture-handler@^2.30.0 react-native-safe-area-context@^5 react-native-svg@^15
-pnpm add react-native-reanimated@4.3.0 react-native-worklets@0.8.3
-pnpm add react-native-keyboard-controller@^1.22.0
-pnpm add @notifee/react-native@^9.1.8
-pnpm add -D tailwindcss@3.4.19
+npx @kivora/init
 ```
 
-El paquete ya depende de Gorhom Bottom Sheet, Reanimated Carousel y `@kivora/theme`. Las dependencias nativas requieren volver a compilar la aplicación; recargar Metro no basta.
+The [@kivora/init](https://www.npmjs.com/package/@kivora/init) setup supports React Native Community CLI 0.85.3-0.85.x with NativeWind 4. Use `npx @kivora/init --dry-run` to review its changes. Other combinations require a compatibility review and manual configuration.
 
-Los rangos de peers del paquete admiten React 18+, React Native 0.74+, NativeWind 4.2.6 o 5 preview y Reanimated 3.16+. Esto no significa que todas las combinaciones sean compatibles entre sí. La receta siguiente usa NativeWind 4 y Reanimated 4; no mezcles su configuración con la de NativeWind 5 o Reanimated 3.
+### Manual installation
 
-## Configuración con NativeWind 4
+This setup uses React Native 0.85.3, React 19.2.3, NativeWind 4.2.6, and Reanimated 4.3.0 with the New Architecture. Add any missing dependencies to your application; review existing versions before changing them.
 
-### Carrusel, calendario, código y notificaciones
+```sh
+npm install @kivora/native nativewind@4.2.6
+npm install react-native-gesture-handler@^2.30.0 react-native-safe-area-context@^5 react-native-svg@^15
+npm install react-native-reanimated@4.3.0 react-native-worklets@0.8.3
+npm install react-native-keyboard-controller@^1.22.0
+npm install @notifee/react-native@^9.1.8
+npm install -D tailwindcss@3.4.19
+```
 
-`PopoverContent` se muestra flotando junto a `PopoverTrigger` (o un `PopoverAnchor` explícito), sin modificar la altura de la página. Comparte con web el ancho predeterminado de 288, separación de 8, borde, radio y animación de 160 ms. Admite `side="top|bottom|left|right"`, `align="start|center|end"`, `sideOffset`, `alignOffset`, `collisionPadding` y `avoidCollisions`. Trigger, Anchor y Close permiten `asChild` con un hijo que reenvíe su ref nativo. Se cierra al tocar fuera, con Atrás en Android o con PopoverClose; `onInteractOutside` permite cancelar ese cierre mediante `preventDefault()`. El panel se limita al espacio disponible, con desplazamiento interno para formularios y teclado. Se presenta en un Modal nativo transparente, por lo que los gestos exteriores cierran el panel antes de interactuar con la pantalla de fondo.
+The package already depends on Gorhom Bottom Sheet, Reanimated Carousel, and `@kivora/theme`. If you import Theme directly, also add it to your application's dependencies. Native dependencies require rebuilding the application; reloading Metro is not enough.
 
-`<Carousel settings={{ slidesToShow: 1.25 }}>` muestra una tarjeta completa y parte de la siguiente. Acepta otros decimales y funciona con bucle, flechas y gestos. Sin bucle, la última posición se ajusta al final del contenido.
+## Compatibility
 
-En `Calendar` y en `DatePicker` de días/rangos, pulsa la cabecera para abrir los meses, y el año para abrir una página de 12 años. Elegir año vuelve a meses; elegir mes vuelve a días. La selección se confirma al elegir un día y aplicar. Se respetan `minDate` y `maxDate` al navegar.
+The package's peer ranges allow React 18+, React Native 0.74+, NativeWind 4.2.6 or 5 preview, and Reanimated 3.16+. This does not mean every combination is compatible. The setup below uses NativeWind 4 and Reanimated 4; do not mix it with NativeWind 5 or Reanimated 3 configuration.
 
-`Code` resalta JSON, JavaScript, TypeScript, JSX/TSX, HTML, CSS, Python, Bash y SQL mediante tokens Prism renderizados como `Text` nativo. Conserva líneas y espacios, admite temas claro/oscuro/sistema y deja como texto plano los lenguajes desconocidos.
+The reference integration has been validated on Android without Expo; iOS has not been validated. The reference environment applies a patch to `react-native-css-interop@0.2.6` to fix Expo detection. That patch is not automatically distributed with this package; whether external installations need it remains to be verified.
 
-`toast`, `toast.success` y `toast.error` muestran **notificaciones locales del sistema**. Devuelven `Promise<string | undefined>`: el ID permite `await toast.dismiss(id)`; `undefined` indica permiso denegado. Los errores de entrega se propagan al llamante. No necesitan servidor ni Firebase. Configura `toast.configure({ smallIcon: 'ic_notification', channelName: 'Mi app' })` o monta el helper opcional `<Toaster smallIcon="ic_notification" />`. El icono debe existir como recurso Android. Declara `android.permission.POST_NOTIFICATIONS` en el manifiesto y recompila; en iOS instala los pods.
-
-El permiso se solicita al enviar la primera notificación, no al montar `Toaster`. El usuario puede desactivarlas desde el sistema. Por defecto permanecen en la bandeja hasta cerrarlas; `duration` solo configura el tiempo de retirada en Android. La API anterior de acciones con callbacks y posicionamiento visual se ha retirado: usa `data` para identificar acciones de aplicación y los eventos de Notifee si necesitas gestionar aperturas. Command, ContextMenu y NavigationMenu quedan disponibles únicamente en el paquete web.
-
-Para formularios, envuelve la aplicación en `KeyboardProvider` y usa `KeyboardAwareScrollView`, ambos de `react-native-keyboard-controller`. En FlashList usa `renderScrollComponent` con un ref reenviado. Reducir la altura con `KeyboardAvoidingView` por sí solo no garantiza que el campo enfocado quede visible. Los modales de `BottomSheet`, `Dialog` y `Sheet` integran su propio desplazamiento consciente del teclado. Consulta [la integración de teclado y paneles](../../docs/native-bottom-sheet.md).
+## NativeWind 4 setup
 
 ### 1. Babel
 
@@ -57,7 +55,9 @@ module.exports = {
 };
 ```
 
-Mantén el plugin de Worklets al final. Esta configuración es para Reanimated 4; una aplicación con Reanimated 3 utiliza su propio plugin y debe elegir versiones compatibles con su React Native.
+Keep the Worklets plugin last. This configuration is for Reanimated 4; applications using Reanimated 3 use its own plugin and must choose versions compatible with their React Native version.
+
+The Babel, Metro, and Tailwind examples use CommonJS. If your `package.json` declares `"type": "module"`, use the `.cjs` extension for these files. Preserve your application's existing options and plugins.
 
 ### 2. Metro
 
@@ -74,7 +74,7 @@ module.exports = withNativeWind(config, {
 });
 ```
 
-### 3. Tailwind y colores semánticos
+### 3. Tailwind and semantic colors
 
 **`tailwind.config.js`**
 
@@ -106,7 +106,7 @@ module.exports = {
 };
 ```
 
-Incluye el código fuente de Kivora en `content`: el paquete lo distribuye para que Metro y NativeWind puedan procesarlo. En un monorepo, ajusta esa ruta a la ubicación del paquete.
+Include Kivora's source code in `content`: the package ships it so Metro and NativeWind can process it. In a monorepo, adjust the path to the package's location.
 
 **`global.css`**
 
@@ -122,9 +122,9 @@ Incluye el código fuente de Kivora en `content`: el paquete lo distribuye para 
 /// <reference types="nativewind/types" />
 ```
 
-### 4. Provider y ejemplo funcional
+### 4. Provider and working example
 
-El provider resuelve el modo de color. Las variables de NativeWind definen los colores que dibujan los componentes: aplica ambas cosas en la raíz.
+The provider resolves the color mode. NativeWind variables define the colors rendered by components: apply both at the root.
 
 **`App.tsx`**
 
@@ -135,6 +135,7 @@ import { Text, View } from 'react-native';
 import { vars } from 'nativewind';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { Button, KivoraProvider } from '@kivora/native';
 
 function themeVariables(dark: boolean) {
@@ -172,61 +173,173 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <KivoraProvider colorMode={dark ? 'dark' : 'light'}>
-          <View style={themeVariables(dark)} className="flex-1 bg-background">
-            <SafeAreaView style={{ flex: 1 }}>
-              <View className="gap-4 p-6">
-                <Text className="text-xl font-semibold text-foreground">
-                  Farmacia Oliva
-                </Text>
-                <Button onPress={() => setDark(value => !value)}>
-                  <Text className="text-primary-foreground">
-                    {dark ? 'Activar modo claro' : 'Activar modo oscuro'}
+        <KeyboardProvider>
+          <KivoraProvider colorMode={dark ? 'dark' : 'light'}>
+            <View style={themeVariables(dark)} className="flex-1 bg-background">
+              <SafeAreaView style={{ flex: 1 }}>
+                <View className="gap-4 p-6">
+                  <Text className="text-xl font-semibold text-foreground">
+                    My application
                   </Text>
-                </Button>
-              </View>
-            </SafeAreaView>
-          </View>
-        </KivoraProvider>
+                  <Button onPress={() => setDark(value => !value)}>
+                    <Text className="text-primary-foreground">
+                      {dark ? 'Switch to light mode' : 'Switch to dark mode'}
+                    </Text>
+                  </Button>
+                </View>
+              </SafeAreaView>
+            </View>
+          </KivoraProvider>
+        </KeyboardProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }
 ```
 
-En React Native, coloca los textos dentro de `Text`. `themeOverrides` cambia el objeto del contexto de Kivora; no sustituye las variables aplicadas con `vars`.
+In React Native, place text inside `Text`. `themeOverrides` changes the Kivora context object; it does not replace the variables applied through `vars`.
 
-Reinicia Metro con su caché limpia después de configurar Babel, Metro y Tailwind, y ejecuta el comando Android de tu proyecto para reconstruir el binario.
+Restart Metro with a cleared cache after configuring Babel, Metro, and Tailwind, then run your project's Android command to rebuild the binary.
 
-## Qué incluye
+## QR codes and barcodes
 
-- **Formularios:** Input, Select, Checkbox, Switch, RadioGroup, Slider, Calendar y DatePicker.
-- **Presentación:** Card, Badge, Avatar, Attachment, Typography y estados de carga.
-- **Interacción:** Accordion, Tabs, Dialog, Sheet, BottomSheet y Carousel.
-- **Datos:** Table, paginación y controles para componer búsqueda, filtros, ordenación y selección.
+```tsx
+import { QRCode, Barcode } from '@kivora/native';
 
-El catálogo tiene **59 familias nativas**. El ejemplo Farmacia Oliva ofrece 60 demostraciones en **Ajustes → Ver componentes**, incluyendo tres ejemplos de tabla. La galería usa FlashList 2; FlashList no es un requisito de instalación de esta librería.
+<QRCode value="https://example.com" size={200} />
+<Barcode value="5901234123457" format="ean13" width={280} displayValue />
+<Barcode value="KIVORA-12345" format="datamatrix" width={180} />
+```
 
-Los paneles inferiores utilizan Gorhom v5. El carousel usa Reanimated Carousel, con navegación táctil, flechas, indicadores, reproducción automática, bucle y orientación vertical. Los componentes adaptan sus animaciones a la interacción nativa; consulta las props TypeScript para las opciones de cada uno.
+Generation is local. Both components support `foreground` and `background` as opaque `#RRGGBB` colors, `margin`, `displayValue`, `fallback`, and `onError`. QRCode accepts `size` and `errorCorrectionLevel` (`L`, `M`, `Q`, `H`; default `M`). Barcode accepts `width`, optional `height`, and `format` (default `code128`). Without a height, the intrinsic aspect ratio determines it.
 
-## Compatibilidad con la web
+Available formats: `qrcode`, `code128`, `code39`, `ean13`, `ean8`, `upca`, `interleaved2of5`, `datamatrix`, `pdf417`, and `azteccode`. EAN/UPC values must include the correct check digit. Use strings to preserve leading zeroes. Invalid input renders an error or your `fallback`, calls `onError` if supplied, and removes the previous code.
 
-Comparte nombres, patrones de composición y diseño con [@kivora/nextjs](https://www.npmjs.com/package/@kivora/nextjs), con diferencias según la plataforma:
+Colors default to black on white independently of the theme. Preserve the quiet zone and use a large enough size for scanning. `generateCode` and `barcodeFormats` are also exported for SVG generation outside React. No camera or scanning feature is included. See [@kivora/codes](https://www.npmjs.com/package/@kivora/codes) for format rules and limits.
 
-| Área | React Native |
+Rendering uses `react-native-svg`, already a peer dependency of this package. Dimensions use native layout units.
+
+## Included components
+
+- **Forms:** Input, Select, Checkbox, Switch, RadioGroup, Slider, Calendar, and DatePicker.
+- **Presentation:** Card, Badge, Avatar, Attachment, Typography, and loading states.
+- **Interaction:** Accordion, Tabs, Dialog, Sheet, BottomSheet, and Carousel.
+- **Data:** Table, pagination, and controls for composing search, filtering, sorting, and selection.
+
+The TypeScript declarations included in the package describe component props. FlashList is not required to install this library.
+
+Bottom sheets use Gorhom v5. The carousel uses Reanimated Carousel, with touch navigation, arrows, indicators, autoplay, looping, and vertical orientation. Components adapt their animations to native interaction; see the TypeScript props for available options.
+
+## Carousel, calendar, code, and notifications
+
+### BottomSheet animation
+
+`BottomSheet` opens in 320 ms and closes in 380 ms by default, using `Easing.out(Easing.cubic)` to slow down gradually as it reaches its destination. Set `animationDuration` for opening and `closingAnimationDuration` for closing (milliseconds, minimum 1). Closing defaults to the opening duration plus 60 ms. `animationEasing` controls the curve for both:
+
+```tsx
+import { Easing } from 'react-native-reanimated';
+import { BottomSheet } from '@kivora/native';
+
+<BottomSheet
+  open={open}
+  onOpenChange={setOpen}
+  animationDuration={420}
+  closingAnimationDuration={480}
+  animationEasing={Easing.inOut(Easing.cubic)}
+>
+  {children}
+</BottomSheet>
+```
+
+Keep the component mounted and control visibility through `open` so its exit animation can finish. These settings also apply when dismissing through the backdrop or Android Back and when the sheet settles after a drag; the drag itself follows the user's finger. The system's reduced-motion preference is respected.
+
+### Component behavior
+
+`PopoverContent` floats next to `PopoverTrigger` (or an explicit `PopoverAnchor`) without changing the page height. It shares the web version's default width of 288, gap of 8, border, radius, and 160 ms animation. Supports `side="top|bottom|left|right"`, `align="start|center|end"`, `sideOffset`, `alignOffset`, `collisionPadding`, and `avoidCollisions`. Trigger, Anchor, and Close support `asChild` with a child that forwards its native ref. It closes on outside taps, Android Back, or PopoverClose; `onInteractOutside` can prevent closing through `preventDefault()`. The panel is constrained to the available space, with internal scrolling for forms and the keyboard. It renders in a transparent native Modal, so outside gestures close the panel before interacting with the underlying screen.
+
+`<Carousel settings={{ slidesToShow: 1.25 }}>` displays one full card and part of the next. It accepts other fractional values and works with looping, arrows, and gestures. Without looping, the final position aligns with the end of the content.
+
+In `Calendar` and day/range `DatePicker` views, tap the header to open month selection, then the year to open a page of 12 years. Choosing a year returns to months; choosing a month returns to days. Confirm the selection by choosing a day and applying it. Navigation respects `minDate` and `maxDate`.
+
+`Code` highlights JSON, JavaScript, TypeScript, JSX/TSX, HTML, CSS, Python, Bash, and SQL using Prism tokens rendered as native `Text`. It preserves lines and spacing, supports light/dark/system themes, and displays unknown languages as plain text.
+
+`toast`, `toast.success`, and `toast.error` display **local system notifications**. They return `Promise<string | undefined>`: use the ID with `await toast.dismiss(id)`; `undefined` means permission was denied. Delivery errors propagate to the caller. No server or Firebase is required. Configure `toast.configure({ smallIcon: 'ic_notification', channelName: 'My app' })` or mount the optional `<Toaster smallIcon="ic_notification" />` helper. The icon must exist as an Android resource. Declare `android.permission.POST_NOTIFICATIONS` in the manifest and rebuild; install pods on iOS.
+
+Permission is requested when the first notification is sent, not when `Toaster` mounts. Users can disable notifications through system settings. By default, notifications stay in the tray until dismissed; `duration` only controls removal timing on Android. The previous callback-based action and visual positioning API has been removed: use `data` to identify application actions and Notifee events to handle notification opens. Command, ContextMenu, and NavigationMenu are available only in the web package.
+
+For forms, wrap the application in `KeyboardProvider` and use `KeyboardAwareScrollView`, both from `react-native-keyboard-controller`. In FlashList, use `renderScrollComponent` with a forwarded ref. Reducing height with `KeyboardAvoidingView` alone does not guarantee that the focused field stays visible. BottomSheet, Dialog, and Sheet modals integrate their own keyboard-aware scrolling.
+
+Checkbox and Radio indicators are 24 units tall, matching Switch. Tabs fill their container and divide the available width between triggers. Collapsible triggers include a rotating indicator; set `showIndicator={false}` to supply your own. Accordion uses a 320 ms eased transition and respects reduced motion.
+
+HoverCard is no longer exported by the native package. Use Popover or Tooltip for contextual information on touch screens.
+
+For an inline tooltip, nest a `Text` trigger inside the sentence and use `asChild`. This preserves normal text wrapping with no button height or padding. Anchor the popover to the outer paragraph so positioning does not depend on measuring a nested text span:
+
+```tsx
+<Tooltip>
+  <PopoverAnchor asChild>
+    <Text>
+      Configure the{' '}
+      <TooltipTrigger asChild>
+        <Text className="rounded-sm bg-primary/10 px-0.5 font-semibold text-primary underline">minimum stock</Text>
+      </TooltipTrigger>
+      {' '}to receive replenishment alerts.
+    </Text>
+  </PopoverAnchor>
+  <TooltipContent>The threshold for replenishment alerts.</TooltipContent>
+</Tooltip>
+```
+
+## Web compatibility
+
+Shares names, composition patterns, and design with [@kivora/nextjs](https://www.npmjs.com/package/@kivora/nextjs), with platform-specific differences:
+
+| Area | React Native |
 | --- | --- |
-| Menús de filtros en móvil | Panel inferior con gestos |
-| Table | Primitivos de composición; no es el DataTable de TanStack de la web |
-| Carousel | Opciones comunes y API de navegación; no replica todas las opciones de react-slick |
-| Chart | Visualizaciones nativas sencillas; no reproduce toda la API de Recharts |
-| DropdownMenu / Resizable | Exclusivos del paquete web |
-| BottomSheet | Componente específico del paquete nativo |
+| Mobile filter menus | Bottom sheet with gestures |
+| Table | Composable primitives; not the web package's TanStack DataTable |
+| Carousel | Shared options and navigation API; does not replicate every react-slick option |
+| Chart | Simple native visualizations; does not reproduce the full Recharts API |
+| DropdownMenu / Resizable / HoverCard | Web package only |
+| BottomSheet | Native package only |
 
-La aplicación de referencia está validada en **Android sin Expo**. iOS no se ha validado. El README principal del monorepo incluye capturas reales de la app, la web responsive y el modo tablet; el ejemplo nativo se encuentra en `example/app`.
+## Other Kivora packages
 
-## Otros módulos de Kivora
-
-| Paquete | Uso |
+| Package | Purpose |
 | --- | --- |
-| [@kivora/nextjs](https://www.npmjs.com/package/@kivora/nextjs) | Componentes para Next.js y web responsive |
-| [@kivora/theme](https://www.npmjs.com/package/@kivora/theme) | Temas, tipos, breakpoints y utilidades comunes |
+| [@kivora/nextjs](https://www.npmjs.com/package/@kivora/nextjs) | Next.js components and responsive web UI |
+| [@kivora/theme](https://www.npmjs.com/package/@kivora/theme) | Shared themes, types, breakpoints, and utilities |
+| [@kivora/init](https://www.npmjs.com/package/@kivora/init) | Assisted installation and configuration |
+
+## File uploads
+
+`FileUpload` starts uploads automatically and hides the inline file list by default. Use `createBackgroundUploadController` on Android for local system notifications with progress, cancellation and completion or failure alerts. Set `showStatus` to `true` to opt in to the inline list, including when using a foreground-only controller. Create an `UploadController` with your Tus endpoint and pass it as `controller`. On Native, also provide `pickFiles: () => Promise<UploadFile[]>` using your document or media picker. The example app includes a document picker adapter. Keep the controller alive for the upload session and call `dispose()` when it ends. The default JavaScript transport is foreground-only. The Android background controller described below persists its jobs. See [@kivora/upload](https://www.npmjs.com/package/@kivora/upload) for the controller contract.
+
+With `showStatus={true}`, FileUpload shows local image thumbnails and file-type icons for PDF, documents, spreadsheets, archives, audio, video and other files. Unsupported or unreadable images fall back to an image icon. Previews do not upload file contents; browser object URLs are released when the preview unmounts.
+
+Uploads now start automatically. File names use one line with ellipsis; status and formatted size appear underneath. Use `createBackgroundUploadController` for persistent Android uploads and system completion notifications. Rebuild the native app after installation. iOS background transfers are not implemented.
+
+### Advanced file sources
+
+Set `variant="advanced"` to open a BottomSheet when the user presses Choose files. The sheet includes the default `pickFiles` source and any configured `sources: FileUploadSource[]`. Each source has a stable `id`, a `label`, an optional React `icon`, and `pickFiles(): Promise<UploadFile[]>`. Return an empty array on cancellation, or reject to display an error. Selection starts uploading automatically; the inline status list remains hidden by default.
+
+```tsx
+<FileUpload
+  controller={controller}
+  variant="advanced"
+  pickFiles={pickDocuments}
+  sources={[
+    { id: 'camera', label: 'Camera', pickFiles: takePhoto },
+    { id: 'photos', label: 'Photos and videos', pickFiles: pickMedia },
+    { id: 'drive', label: 'Company drive', pickFiles: pickCompanyFiles },
+  ]}
+/>
+```
+
+The application supplies the adapters and their permission handling. The Android example uses `react-native-image-picker` for camera/gallery and the system document picker for files (including installed document providers). Camera/gallery adapters return local file URIs. Remote adapters must obtain authorized local files before submitting them to the background controller. No cloud credentials or OAuth flows are bundled. The example's persistent upload transport is Android-only; iOS camera integrations also require the relevant Info.plist usage descriptions and a pod installation.
+
+### Source screens and localisation
+
+The advanced BottomSheet navigates from source tiles to a dedicated source screen, with a back action. A source may provide `render({ addFiles, close, messages })` to embed a custom provider screen, or `pickFiles()` to open a system picker. The latter closes the sheet before launching the picker.
+
+Use `locale="es"` or `locale="en"` (default), and `messages: Partial<UploadMessages>` for overrides or additional languages. Translate custom provider labels, descriptions and screens in the application. The Android background notification uses native string resources (English and Spanish) according to the system locale, independently of the component locale. Applications can provide translated `kivora_upload_*` Android resources for more languages.

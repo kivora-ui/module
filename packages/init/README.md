@@ -1,19 +1,19 @@
 # @kivora/init
 
-Instala y configura Kivora en una aplicación existente. Requiere Node.js 20.19 o superior (además de los requisitos de tu framework).
+Install and configure Kivora in an existing application. Requires Node.js 20.19 or later, in addition to your framework's requirements.
 
 ```sh
 npx @kivora/init
 ```
 
-La versión inicial del instalador es `0.1.0`. Para completar una instalación desde npm también deben estar publicadas las librerías de Kivora que instala.
+Run the command in the application directory containing its `package.json`. The installer adds [@kivora/nextjs](https://www.npmjs.com/package/@kivora/nextjs) or [@kivora/native](https://www.npmjs.com/package/@kivora/native), depending on the platform.
 
-## Funcionamiento
+## How it works
 
-1. Lee el `package.json` de la aplicación y detecta Next.js o React Native. Si encuentra ambos o ninguno, pregunta `nextjs` o `native`. La selección no instala ni migra el framework.
-2. Detecta npm, pnpm, Yarn o Bun a partir de `packageManager` y los lockfiles, incluyendo los del workspace superior. Rechaza gestores en conflicto.
-3. Prepara un plan completo y comprueba versiones, entradas y configuraciones antes de escribir archivos. Muestra archivos y comandos, y pide confirmación para aplicarlos.
-4. Guarda copias, adapta los archivos e instala únicamente dependencias que faltan. Conserva las versiones declaradas de las dependencias existentes.
+1. Reads the application's `package.json` and detects Next.js or React Native. If it finds both or neither, it asks you to choose `nextjs` or `native`. This selection does not install or migrate the framework.
+2. Detects npm, pnpm, Yarn, or Bun from `packageManager` and lockfiles, including those in a parent workspace. Conflicting package managers are rejected.
+3. Prepares a complete plan and checks versions, entry points, and configuration before writing files. Shows the files and commands, then asks for confirmation.
+4. Creates backups, updates the files, and installs only missing dependencies. Preserves the declared versions of existing dependencies.
 
 ```sh
 npx @kivora/init --dry-run
@@ -21,52 +21,61 @@ npx @kivora/init --cwd ./apps/web --framework nextjs --yes
 npx @kivora/init --framework native --skip-install --yes
 ```
 
-`--dry-run` muestra el contenido actual y propuesto sin escribir ni ejecutar instalaciones. `--skip-install` escribe la configuración y muestra los comandos pendientes. En CI, usa `--yes`; si la detección es ambigua, también `--framework`. `--package-manager npm|pnpm|yarn|bun` permite elegir el gestor cuando no hay uno definido; no permite sustituir el gestor existente.
+`--dry-run` shows the current and proposed content without writing files or installing packages. `--skip-install` writes the configuration and shows the remaining install commands. In CI, use `--yes` and also `--framework` if detection is ambiguous. `--package-manager npm|pnpm|yarn|bun` lets you choose a manager when none is defined; it does not replace an existing manager.
 
 ## Next.js
 
-Soporta Next.js 13+, React/React DOM 18+, Tailwind 4.1 y entradas `app/layout`, `src/app/layout`, `pages/_app` o `src/pages/_app` en TSX, JSX o JS. Puede integrar ambos routers cuando coexisten.
+The setup requires Next.js 13+, React/React DOM 18+, and Tailwind versions from 4.1 up to, but excluding, 5. It recognizes `app/layout`, `src/app/layout`, `pages/_app`, and `src/pages/_app` entry points in TSX, JSX, or JS. It can integrate both routers when they coexist.
 
-- Instala `@kivora/nextjs`, `tailwindcss` y `@tailwindcss/postcss` si faltan.
-- Añade Kivora a `transpilePackages` y configura el plugin PostCSS conservando otras opciones estáticas.
-- Genera `kivora-provider.tsx`/`.jsx` con una frontera `use client`, y `kivora.css` con la ruta `@source` correspondiente.
-- Monta el provider dentro de `<body>` en App Router o alrededor del resultado del componente en Pages Router. Importa el CSS desde la entrada antes de sus estilos existentes.
+- Installs `@kivora/nextjs`, `tailwindcss`, and `@tailwindcss/postcss` if missing.
+- Adds Kivora to `transpilePackages` and configures the PostCSS plugin while preserving other static options.
+- Generates `kivora-provider.tsx`/`.jsx` with a `use client` boundary, and `kivora.css` with the appropriate `@source` path.
+- Mounts the provider inside `<body>` for App Router or around the component's output for Pages Router. Imports CSS from the entry point before its existing styles.
 
-No migra Tailwind 3. Las configuraciones con funciones, spreads u opciones dinámicas se rechazan con el archivo que necesita revisión. Las clases y variables de Kivora son globales: comprueba el aspecto de tu aplicación después de integrar los estilos.
+It does not migrate Tailwind 3. Configurations containing functions, spreads, or dynamic options are rejected with a message identifying the file to review. Kivora's classes and variables are global: check your application's appearance after integrating the styles.
 
 ## React Native
 
-La primera receta se limita a React Native Community CLI **0.85.3–0.85.x**, React 19.2, NativeWind 4.2.6+, Reanimated 4.3.x y Worklets 0.8.3+. Es la combinación del ejemplo del repositorio. No migra Reanimated 3, NativeWind 5 ni proyectos Expo.
+The setup uses React Native Community CLI and accepts these ranges:
 
-- Instala `@kivora/native`, NativeWind, Reanimated, Worklets, Gesture Handler, Safe Area Context, SVG, Keyboard Controller, Notifee y Tailwind 3.4.19 si faltan.
-- Adapta Babel, Metro y Tailwind estáticos conservando plugins, opciones, colores y rutas existentes. Babel y Tailwind usan CommonJS, con `.cjs` para proyectos ESM.
-- Reutiliza el archivo CSS de Metro si ya existe una llamada `withNativeWind` con `input` literal; en caso contrario crea `kivora.css` junto a `App`.
-- Integra `App` o `src/App` (TSX, JSX o JS) con providers de gestos, safe area, teclado y Kivora, además de variables semánticas de color y tipos NativeWind.
-- Añade el permiso Android `POST_NOTIFICATIONS` si existe el manifiesto y aún no lo declara.
+| Dependency | Supported versions |
+| --- | --- |
+| React Native | `>=0.85.3 <0.86` |
+| React | `>=19.2 <20` |
+| NativeWind | `>=4.2.6 <5` |
+| Reanimated | `>=4.3.0 <4.4` |
+| Worklets | `>=0.8.3 <0.9` |
+| Tailwind CSS | `>=3.4.17 <4` |
 
-Después, instala los pods en iOS con el procedimiento de tu proyecto, reinicia Metro y recompila la aplicación. Para las notificaciones, configura un icono Android existente. El CLI no ejecuta builds nativos ni modifica Gradle, Podfile o recursos gráficos. iOS no está validado. La verificación externa del parche local de `react-native-css-interop` sigue pendiente antes de publicar la receta nativa.
+The application must have `@react-native/babel-preset` and `@react-native/metro-config` from the 0.85 series. The installer does not migrate Reanimated 3, NativeWind 5, or Expo projects. If an existing dependency declares a range extending beyond the supported limits, installation stops so you can review compatibility.
 
-## Conservación y recuperación
+- Installs `@kivora/native`, NativeWind, Reanimated, Worklets, Gesture Handler, Safe Area Context, SVG, Keyboard Controller, Notifee, and Tailwind 3.4.19 if missing.
+- Updates static Babel, Metro, and Tailwind configurations while preserving existing plugins, options, colors, and paths. Babel and Tailwind use CommonJS, with `.cjs` files for ESM projects.
+- Reuses Metro's CSS file when an existing `withNativeWind` call has a literal `input`; otherwise, creates `kivora.css` next to `App`.
+- Integrates `App` or `src/App` (TSX, JSX, or JS) with gesture, safe area, keyboard, and Kivora providers, plus semantic color variables and NativeWind types.
+- Adds the Android `POST_NOTIFICATIONS` permission if the manifest exists and does not already declare it.
 
-Los archivos de usuario se analizan sin ejecutar sus configuraciones. Una configuración incompatible, una entrada no reconocida o un archivo generado con contenido diferente cancela el plan completo antes de escribir. Volver a ejecutar el CLI sobre su propia configuración no duplica imports, providers ni plugins. Si personalizas los archivos generados, el CLI los conserva y comunica el conflicto.
+Afterward, install iOS pods using your project's workflow, restart Metro, and rebuild the application. Configure an existing Android icon for notifications. The CLI does not run native builds or modify Gradle, Podfile, or image resources. iOS has not been validated. See the [Native compatibility notes](https://www.npmjs.com/package/@kivora/native#compatibility).
 
-Las copias están en `.kivora/backups/<id>/`. `manifest.json` relaciona cada ruta original con su archivo `.bak`; `backup: null` indica que el archivo no existía. Para recuperar manualmente, copia cada `.bak` a su ruta original y elimina únicamente los archivos nuevos que quieras deshacer. Conserva estas copias hasta revisar los cambios; no las publiques porque pueden contener configuración privada.
+## Preserving files and recovering changes
 
-Si el gestor devuelve un error, se restauran los archivos modificados, el manifiesto y los lockfiles de la aplicación y del gestor. `node_modules`, los efectos de scripts de instalación y una interrupción abrupta del proceso no son una transacción reversible. Ante esos casos, usa las copias y reinstala las dependencias con tu gestor.
+User files are parsed without executing their configurations. An incompatible configuration, an unrecognized entry point, or a generated file with different content cancels the entire plan before writing. Running the CLI again on its own configuration does not duplicate imports, providers, or plugins. If you customize generated files, the CLI preserves them and reports the conflict.
 
-## Desarrollo y publicación
+Backups are stored in `.kivora/backups/<id>/`. `manifest.json` maps each original path to its `.bak` file; `backup: null` means the file did not previously exist. To recover manually, copy each `.bak` to its original path and remove only the newly created files you want to undo. Keep these backups until you have reviewed the changes; do not publish them, as they may contain private configuration.
 
-Desde la raíz del repositorio:
+If the package manager returns an error, the modified files, manifest, and application and package manager lockfiles are restored. Changes to `node_modules`, installation script side effects, and abrupt process termination are not a reversible transaction. In those cases, use the backups and reinstall dependencies with your package manager.
+
+## Help and troubleshooting
 
 ```sh
-node packages/init/src/cli.mjs --help
-node packages/init/src/cli.mjs --cwd /ruta/a/una/app --dry-run
-pnpm --filter @kivora/init test
-pnpm --filter @kivora/init build
-pnpm --dir packages/init pack
-pnpm publish:init
+npx @kivora/init --help
+npx @kivora/init --cwd ./my-app --dry-run
 ```
 
-El ejecutable se publica directamente como ESM con shebang; no necesita un bundle generado. Los scripts `build`, `typecheck` y `lint` verifican la sintaxis JavaScript. Los tests usan proyectos temporales e instalaciones simuladas; no sustituyen una instalación real desde npm ni la compilación de apps externas. Publica las librerías de plataforma y Theme antes de anunciar el comando.
+- **No unique platform detected:** use `--framework nextjs` or `--framework native` inside an application that already has that framework installed.
+- **Unrecognized configuration:** review the reported file. Functions, spreads, and dynamic exports may require manual integration following the platform package's README.
+- **Conflicting package managers:** keep the lockfile for your project's package manager and check `packageManager` before running the command again.
+- **Incompatible dependency:** review the declared range; the installer does not replace existing versions to force installation.
+- **Installation error:** check the package manager's error and the backups. Review dependencies before running the command again.
 
-Referencias de las recetas: [NativeWind 4](https://www.nativewind.dev/docs/getting-started/installation), [Tailwind con Next.js](https://tailwindcss.com/docs/installation/framework-guides/nextjs) y [compatibilidad de Reanimated](https://docs.swmansion.com/react-native-reanimated/docs/guides/compatibility/).
+Setup references: [NativeWind 4](https://www.nativewind.dev/docs/getting-started/installation), [Tailwind with Next.js](https://tailwindcss.com/docs/installation/framework-guides/nextjs), and [Reanimated compatibility](https://docs.swmansion.com/react-native-reanimated/docs/guides/compatibility/).

@@ -43,6 +43,12 @@ La revisión histórica de las tres librerías en la tabla superior no incluye e
 
 ## 2. Preparar la cuenta de npm
 
+### Nuevo paquete de códigos
+
+`@kivora/codes` es un quinto paquete público y una dependencia de Next.js y Native. Preparar su versión inicial junto con sus consumidores y publicarlo primero con `pnpm publish:codes`. Se valida con `pnpm --filter @kivora/codes test` y se empaqueta con `pnpm --dir packages/codes pack`.
+
+Los filtros `./packages/*` ya incluyen Codes. Las listas de cuatro paquetes de esta guía corresponden al estado anterior al generador: añadir Codes al changeset inicial si sigue en `0.0.0` y revisar las versiones de sus consumidores. El build incorpora la licencia del motor bwip-js; los tests comprueban lectura independiente de los diez formatos.
+
 Para publicar bajo `@kivora`, necesitas controlar ese scope mediante el usuario correspondiente o una organización de npm en la que tengas permisos de publicación. La revisión local no comprueba la disponibilidad del scope ni los permisos de tu cuenta.
 
 ```powershell
@@ -256,3 +262,5 @@ La política para cambios incompatibles en `0.x` es una decisión del proyecto. 
 Desde `1.0.0`, usar versionado semántico: `patch` para correcciones compatibles, `minor` para funcionalidades compatibles y `major` para cambios incompatibles.
 
 Es normal que los paquetes terminen con versiones distintas. Por ejemplo, un arreglo exclusivo de Native puede dejar `@kivora/native` en `0.1.1` y los otros dos en `0.1.0`.
+
+El paquete `@kivora/upload` debe publicarse antes de Native y Next.js: `pnpm publish:upload`.
