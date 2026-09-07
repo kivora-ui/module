@@ -1,5 +1,6 @@
 import { OfflineDownloadManager, type OfflineFileSystem, type OfflineTransport } from './offline';
 import type { OfflineDownloadEntry, OfflineDrmProvider } from './types';
+import { notifyDownloadComplete } from './offline-notifications';
 
 /** The only file in this package that touches `react-native-fs` — and even
  * here `require` stays inside the function body. `react-native-fs`'s own JS
@@ -105,7 +106,7 @@ function nativeTransport(): OfflineTransport {
 
 export function createOfflineDownloadManager(
   drmProvider?: OfflineDrmProvider,
-  onDownloadComplete?: (entry: OfflineDownloadEntry) => void,
+  onDownloadComplete: (entry: OfflineDownloadEntry) => void = entry => { void notifyDownloadComplete(entry.source.title); },
 ): OfflineDownloadManager {
   return new OfflineDownloadManager(nativeOfflineFileSystem(), nativeTransport(), drmProvider, onDownloadComplete);
 }

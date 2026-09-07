@@ -347,3 +347,28 @@ describe('OfflineDownloadManager — remove', () => {
     await expect(manager.remove('does-not-exist')).resolves.toBeUndefined();
   });
 });
+
+describe('OfflineDownloadManager — completion callback', () => {
+  it('calls onDownloadComplete exactly once, with the finished entry, on success', async () => {
+    const fs = createFakeFileSystem();
+    const completed: OfflineDownloadEntry[] = [];
+    const manager = new OfflineDownloadManager(fs, createFakeTransport(fs.files), undefined, entry => completed.push(entry));
+
+    await manager.download(mp4Source);
+
+    expect(completed).toHaveLength(1);
+    expect(completed[0]).toMatchObject({ id: 'flower', state: 'downloaded' });
+  });
+
+  it('does not call onDownloadComplete when the download errors', async () => {
+    const fs = createFakeFileSystem();
+    const transport = createFakeTransport(fs.files);
+    transport.setStartImpl(job => job.onError('network offline'));
+    const completed: OfflineDownloadEntry[] = [];
+    const manager = new OfflineDownloadManager(fs, transport, undefined, entry => completed.push(entry));
+
+    await manager.download(mp4Source);
+
+    expect(completed).toEqual([]);
+  });
+});
