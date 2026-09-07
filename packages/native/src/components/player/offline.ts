@@ -74,6 +74,8 @@ export class OfflineDownloadManager {
     this.patch(this.state.map(entry => entry.id === id ? { ...entry, ...patch } : entry));
   }
 
+  private jobs = new Map<string, number>();
+
   download = async (source: PlayerSource): Promise<void> => {
     const reason = unsupportedReason(source, !!this.drmProvider);
     if (reason) throw new OfflineUnsupportedError(reason, source.id);
@@ -85,13 +87,14 @@ export class OfflineDownloadManager {
     this.patch([...this.state.filter(entry => entry.id !== source.id), { id: source.id, source, state: 'queued', progress: 0 }]);
     this.updateEntry(source.id, { state: 'downloading' });
 
-    const { promise } = this.fs.downloadFile({
+    const { jobId, promise } = this.fs.downloadFile({
       fromUrl: source.src,
       toFile,
       progress: ({ bytesWritten, contentLength }) => {
         this.updateEntry(source.id, { progress: contentLength > 0 ? bytesWritten / contentLength : 0 });
       },
     });
+    this.jobs.set(source.id, jobId);
     try {
       const result = await promise;
       if (result.statusCode >= 200 && result.statusCode < 300) {
@@ -101,7 +104,21 @@ export class OfflineDownloadManager {
       }
     } catch (error) {
       this.updateEntry(source.id, { state: 'error', error: error instanceof Error ? error.message : String(error) });
+    } finally {
+      this.jobs.delete(source.id);
     }
+    await this.saveManifest();
+  };
+
+  remove = async (id: string): Promise<void> => {
+    await this.ready;
+    const jobId = this.jobs.get(id);
+    if (jobId !== undefined) { this.fs.stopDownload(jobId); this.jobs.delete(id); }
+    const entry = this.state.find(item => item.id === id);
+    if (entry?.localUri) {
+      try { await this.fs.unlink(entry.localUri); } catch { /* already gone: nothing to clean up */ }
+    }
+    this.patch(this.state.filter(item => item.id !== id));
     await this.saveManifest();
   };
 

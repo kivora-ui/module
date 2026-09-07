@@ -180,3 +180,53 @@ describe('OfflineDownloadManager — manifest persistence', () => {
     expect(manager.getSnapshot()).toEqual([]);
   });
 });
+
+describe('OfflineDownloadManager — remove', () => {
+  it('deletes the local file and the manifest entry for a downloaded item', async () => {
+    const fs = createFakeFileSystem();
+    const manager = new OfflineDownloadManager(fs);
+    await manager.download(mp4Source);
+    const [entry] = manager.getSnapshot();
+    const localUri = entry!.localUri!;
+
+    await manager.remove('flower');
+
+    expect(manager.getSnapshot()).toEqual([]);
+    expect(fs.files.has(localUri)).toBe(false);
+
+    const restarted = new OfflineDownloadManager(fs);
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(restarted.getSnapshot()).toEqual([]);
+  });
+
+  it('cancels an in-flight download job before removing it', async () => {
+    const fs = createFakeFileSystem();
+    let stoppedJobId: number | undefined;
+    fs.stopDownload = jobId => { stoppedJobId = jobId; };
+    fs.downloadFile = () => ({ jobId: 42, promise: new Promise(() => {}) }); // never resolves
+    const manager = new OfflineDownloadManager(fs);
+
+    const pending = manager.download(mp4Source);
+    await manager.remove('flower');
+
+    expect(stoppedJobId).toBe(42);
+    expect(manager.getSnapshot()).toEqual([]);
+    void pending; // intentionally left unresolved; the fake job never settles
+  });
+
+  it('does not throw when removing an id whose file is already gone', async () => {
+    const fs = createFakeFileSystem();
+    const manager = new OfflineDownloadManager(fs);
+    await manager.download(mp4Source);
+    const [entry] = manager.getSnapshot();
+    fs.files.delete(entry!.localUri!); // simulate the file having disappeared out-of-band
+
+    await expect(manager.remove('flower')).resolves.toBeUndefined();
+    expect(manager.getSnapshot()).toEqual([]);
+  });
+
+  it('is a no-op for an id that was never downloaded', async () => {
+    const manager = new OfflineDownloadManager(createFakeFileSystem());
+    await expect(manager.remove('does-not-exist')).resolves.toBeUndefined();
+  });
+});
