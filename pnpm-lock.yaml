@@ -278,6 +278,9 @@ importers:
         specifier: '>=15'
         version: 15.15.5(react-native@0.87.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.8))(react@19.2.8)
     devDependencies:
+      '@kesha-antonov/react-native-background-downloader':
+        specifier: ^4.6.2
+        version: 4.6.2(react-native@0.87.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.8))
       '@notifee/react-native':
         specifier: ^9.1.8
         version: 9.1.8(react-native@0.87.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.8))
@@ -1779,6 +1782,11 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
+
+  '@kesha-antonov/react-native-background-downloader@4.6.2':
+    resolution: {integrity: sha512-W4BpGQIwJ0PRjqbTGyY+DCKXcKvLP0P+oLOQERjttdQ2k/YaMZEakGnRcM5FnjaGfoi2b/BSZ6F96HXlEN7lrQ==}
+    peerDependencies:
+      react-native: '>=0.57.0'
 
   '@mdx-js/react@3.1.1':
     resolution: {integrity: sha512-f++rKLQgUVYDAtECQ6fn/is15GkEH9+nZPM3MS0RcxVqoTfawHvDlSCH7JbMhAM6uJ32v3eXLvLmLvjGu7PTQw==}
@@ -7971,6 +7979,10 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.6.0
+
+  '@kesha-antonov/react-native-background-downloader@4.6.2(react-native@0.87.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.8))':
+    dependencies:
+      react-native: 0.87.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.8)
 
   '@mdx-js/react@3.1.1(@types/react@19.2.18)(react@19.2.3)':
     dependencies:

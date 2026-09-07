@@ -39,6 +39,7 @@
     "react-native-reanimated-carousel": "4.0.3"
   },
   "peerDependencies": {
+    "@kesha-antonov/react-native-background-downloader": "^4.6.2",
     "@notifee/react-native": "^9.1.8",
     "nativewind": "^4.2.6 || ^5.0.0-0",
     "react": ">=18",
@@ -54,6 +55,7 @@
     "react-native-video": "6.19.2"
   },
   "devDependencies": {
+    "@kesha-antonov/react-native-background-downloader": "^4.6.2",
     "@notifee/react-native": "^9.1.8",
     "@types/prismjs": "^1.26.6",
     "@types/react": "^19.2.18",
