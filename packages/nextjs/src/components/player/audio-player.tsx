@@ -3,6 +3,7 @@ import * as React from 'react';
 import { Player, type PlayerProps } from './player';
 import { PlayerController } from './controller';
 import type { PlayerSource } from './types';
+import { DismissAudioContext } from './playback-context';
 
 export interface AudioPlayerContextValue {
   controller: PlayerController;
@@ -20,8 +21,10 @@ export function AudioPlayerProvider({ children, ...props }: React.PropsWithChild
     close: () => { controller.pause(); setSource(undefined); },
   }), [controller]);
   return <AudioContext.Provider value={value}>
-    {children}
-    {source && <Player {...props} controller={controller} source={source} autoPlay presentation={props.presentation ?? 'footer'} />}
+    <DismissAudioContext.Provider value={value.close}>
+      {children}
+      {source && <Player {...props} controller={controller} source={source} autoPlay presentation={props.presentation ?? 'footer'} />}
+    </DismissAudioContext.Provider>
   </AudioContext.Provider>;
 }
 export function useAudioPlayer(): AudioPlayerContextValue {

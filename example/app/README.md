@@ -82,3 +82,10 @@ pnpm --filter @kivora/example-app exec node scripts/android.mjs assembleDebug -P
 Para probar manualmente: añade un producto en Mostrador, confirma el cobro, consulta el ticket en Ventas y comprueba que el stock ha bajado en Inventario. Recibe unidades, cambia el tema y reinicia la app para verificar la persistencia.
 
 Con Python 3 y el emulador de ejemplo abierto, `python example/app/tests/android-smoke.py` desde la raíz recorre ese flujo por accesibilidad. Crea una venta y una entrada de mercancía de demostración; guarda una captura en `example/app/build/android-smoke.png`. Ejecuta una sola prueba de UI a la vez.
+
+## Player nativo
+
+En **Ajustes → Probar player** puedes probar DASH, HLS, MP4, episodios, ajustes,
+pantalla completa y anuncios. El audio persiste al navegar y se cierra al
+reproducir vídeo. Las muestras de audio y publicidad vienen incluidas en la app.
+Consulta [la guía del player nativo](../../docs/native-player.md).

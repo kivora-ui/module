@@ -11,9 +11,11 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
+import { OrientationLocker, PORTRAIT } from 'react-native-orientation-locker';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import {
   KivoraProvider,
+  AudioPlayerProvider,
   KeyboardScrollView,
   Button,
   Card,
@@ -51,9 +53,10 @@ import { cartTotal, checkout, restock, setQuantity } from './src/store';
 import { useStore } from './src/use-store';
 import { themeVariables } from './src/theme';
 import { ComponentScreen } from './src/component-screen';
+import { PlayerScreen } from './src/player-screen';
 
 type Screen =
-  'Inicio' | 'Mostrador' | 'Inventario' | 'Ventas' | 'Ajustes' | 'Componentes';
+  'Inicio' | 'Mostrador' | 'Inventario' | 'Ventas' | 'Ajustes' | 'Componentes' | 'Player';
 const navigation: { name: Screen; icon: LucideIcon }[] = [
   { name: 'Inicio', icon: Home },
   { name: 'Mostrador', icon: ShoppingBag },
@@ -233,7 +236,7 @@ function Pharmacy() {
       if (receipt) setReceipt(null);
       else if (restocking) setRestocking(null);
       else if (cartOpen) setCartOpen(false);
-      else if (screen === 'Componentes') navigate('Ajustes');
+      else if (screen === 'Componentes' || screen === 'Player') navigate('Ajustes');
       else if (screen !== 'Inicio') navigate('Inicio');
       else return false;
       return true;
@@ -282,6 +285,8 @@ function Pharmacy() {
       <View style={themeVariables(dark)} className="flex-1 bg-background">
         <StatusBar barStyle={dark ? 'light-content' : 'dark-content'} />
         <SafeAreaView className="flex-1" edges={['top', 'bottom']}>
+          <OrientationLocker orientation={PORTRAIT} />
+          <AudioPlayerProvider>
           {!ready ? (
             <View className="flex-1 items-center justify-center gap-4 p-6">
               <ActivityIndicator color={ink} />
@@ -340,7 +345,7 @@ function Pharmacy() {
                 </Text>
               )}
               <View className="flex-1">
-                {screen === 'Componentes' ? (
+                {screen === 'Player' ? (<PlayerScreen onBack={() => navigate('Ajustes')} />) : screen === 'Componentes' ? (
                   <ComponentScreen onBack={() => navigate('Ajustes')} />
                 ) : (
                   <KeyboardScrollView
@@ -870,6 +875,7 @@ function Pharmacy() {
                               <Action onPress={() => navigate('Componentes')}>
                                 Ver componentes
                               </Action>
+                              <Action onPress={() => navigate('Player')}>Probar player</Action>
                             </Card>
                             <Card className="gap-4 p-5">
                               <CardTitle>Apariencia y avisos</CardTitle>
@@ -967,7 +973,7 @@ function Pharmacy() {
                 {navigation.map(({ name, icon: Icon }) => {
                   const selected =
                     screen === name ||
-                    (screen === 'Componentes' && name === 'Ajustes');
+                    ((screen === 'Componentes' || screen === 'Player') && name === 'Ajustes');
                   return (
                     <Button
                       key={name}
@@ -990,6 +996,7 @@ function Pharmacy() {
               </View>
             </>
           )}
+        </AudioPlayerProvider>
         </SafeAreaView>
         <Toaster smallIcon="ic_notification" channelName="Farmacia Oliva" />
       </View>

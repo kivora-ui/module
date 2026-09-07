@@ -12,7 +12,10 @@ storybook-static
 .uploads/
 
 # Generated synthetic player demo assets (scripts/create-player-fixtures.mjs)
-example/web/public/player-fixtures/
+example/web/public/player-fixtures/*
+# Keep the default audio demo usable without generating the video fixtures.
+!example/web/public/player-fixtures/audio.mp3
+!example/web/public/player-fixtures/poster.png
 
 # Native library build artifacts
 packages/native/android/build/

@@ -100,13 +100,12 @@
 .kivora-player-episode-progress { height: 2px; margin-top: 8px; background: #ffffff40; }
 .kivora-player-episode-progress > div { background: #ff2451; }
 .kivora-player-center-with-queue { right: 22%; }
-.kivora-player-immersive .kivora-player-play-large { width: 82px; height: 82px; border: 2px solid white; background: #0001; }
+.kivora-player-immersive .kivora-player-play-large { width: 82px; height: 82px; border: none; background: #0001; }
 .kivora-player[data-controls-variant="compact"] .kivora-player-toolbar button { border-radius: 50%; background: #17171788; }
 .kivora-player[data-controls-variant="compact"] .kivora-player-central-play .kivora-player-play-large { width: 62px; height: 62px; background: #0006; border: none; }
 .kivora-player[data-controls-variant="cinema"] .kivora-player-seek-range, .kivora-player[data-controls-variant="cinema"] .kivora-player-seek-thumb { background: white; border-color: white; }
-.kivora-player[data-controls-variant="series"] .kivora-player-central-play { bottom: 30%; }
 .kivora-player-chrome .kivora-player-settings { position: absolute; right: 16px; bottom: calc(100% + 6px); width: min(440px, calc(100% - 32px)); padding: 16px; background: #15171cf5; border-radius: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); box-shadow: 0 8px 30px #0005; pointer-events: auto; color: white; }
-.kivora-player-chrome .kivora-player-settings, .kivora-player-chrome .kivora-player-downloads { --color-background: #191c23; --color-foreground: #fff; --color-popover: #191c23; --color-popover-foreground: #fff; --color-muted: #292d37; --color-muted-foreground: #b8bdc8; --color-accent: #343947; --color-accent-foreground: #fff; --color-input: #444a57; }
+.kivora-player-select-menu, .kivora-player-chrome .kivora-player-settings, .kivora-player-chrome .kivora-player-downloads { --color-background: #191c23; --color-foreground: #fff; --color-popover: #191c23; --color-popover-foreground: #fff; --color-muted: #292d37; --color-muted-foreground: #b8bdc8; --color-accent: #343947; --color-accent-foreground: #fff; --color-input: #444a57; }
 .kivora-player-chrome .kivora-player-downloads { max-height: 130px; overflow: auto; padding: 0 8px; background: #171920ee; border-radius: 8px; }
 @container (max-width: 650px) {
   .kivora-player-chrome .kivora-player-controls { padding: 7px 12px 9px; }
@@ -126,25 +125,67 @@
   .kivora-player-central-play { gap: 12px; }
   .kivora-player-chrome .kivora-player-settings { padding: 10px; gap: 6px; font-size: 10px; bottom: calc(100% + 2px); }
 }
-@container (max-width: 420px) {
-  .kivora-player-immersive .kivora-player-stage { aspect-ratio: 4/3; }
-  .kivora-player-program { display: none; }
-  .kivora-player-program h2 { font-size: 17px; }
-  .kivora-player-heading strong { font-size: 13px; }
-  .kivora-player-badge { display: none; }
-  .kivora-player-queue { width: 38%; bottom: 76px; top: 54px; }
-  .kivora-player-queue-heading { font-size: 9px; }
-  .kivora-player-episode { min-height: 46px; }
-  .kivora-player-episode > div { padding: 22px 5px 5px; }
-  .kivora-player-episode strong { font-size: 9px; }
-  .kivora-player-episode span, .kivora-player-episode-progress { display: none; }
-  .kivora-player-center-with-queue { right: 35%; }
-  .kivora-player[data-controls-variant="series"] .kivora-player-central-play { bottom: 25%; }
-  .kivora-player-central-play > button:not(.kivora-player-play-large) { display: none; }
-  .kivora-player-chrome .kivora-player-toolbar { gap: 0; }
-  .kivora-player-chrome .kivora-player-toolbar button { width: 28px; }
-  .kivora-player-immersive .kivora-player-stage:has(.kivora-player-settings, .kivora-player-downloads) { min-height: 300px; }
-}
 @media (prefers-reduced-motion: reduce) {
   .kivora-player-chrome, .kivora-player-immersive .kivora-player-central-play, .kivora-player-episode { transition: none; }
 }
+
+.kivora-player-audio-ad { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 12px; }
+.kivora-player-audio-ad-label { border: 1px solid currentColor; border-radius: 4px; padding: 2px 6px; font-weight: 600; }
+
+/* Mobile video: the complete player, including chrome, stays inside 16:9. */
+.kivora-player[data-mobile="true"] .kivora-player-stage { aspect-ratio: 16 / 9; min-height: 0; }
+.kivora-player[data-mobile="true"] .kivora-player-chrome { background: linear-gradient(180deg, #0004, transparent 32%, transparent 48%, #000c); }
+.kivora-player-mobile-actions { position: absolute; top: 10px; right: 10px; display: flex; gap: 6px; pointer-events: auto; }
+.kivora-player-mobile-actions button { width: 40px; height: 40px; border-radius: 50%; color: white; background: #18181880; border: none; backdrop-filter: blur(8px); }
+.kivora-player[data-mobile="true"] .kivora-player-central-play { gap: 14px; padding: 0; }
+.kivora-player[data-mobile="true"] .kivora-player-central-play button { width: 44px; height: 44px; border-radius: 50%; background: #18181880; border: none; backdrop-filter: blur(8px); }
+.kivora-player[data-mobile="true"] .kivora-player-central-play .kivora-player-play-large { width: 60px; height: 60px; background: #181818a0; }
+.kivora-player[data-mobile="true"] .kivora-player-chrome .kivora-player-controls { padding: 0 14px 4px; }
+.kivora-player-mobile-caption { display: flex; align-items: flex-end; gap: 12px; }
+.kivora-player-mobile-caption > div { flex: 1; min-width: 0; }
+.kivora-player-mobile-caption strong, .kivora-player-mobile-caption div span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kivora-player-mobile-caption strong { font-size: 14px; font-weight: 500; }
+.kivora-player-mobile-caption div span { font-size: 11px; color: #ffffffb0; }
+.kivora-player-mobile-caption > span { font-size: 10px; color: #ffffffc0; }
+.kivora-player[data-mobile="true"] .kivora-player-chrome .kivora-player-timeline > .kivora-player-time { display: none; }
+.kivora-player[data-mobile="true"] .kivora-player-seek { padding: 12px 0; }
+.kivora-player[data-mobile="true"] .kivora-player-seek-track { height: 2px; }
+.kivora-player[data-mobile="true"] .kivora-player-seek-range,
+.kivora-player[data-mobile="true"] .kivora-player-seek-thumb { background: white; border-color: white; }
+.kivora-player[data-mobile="true"] .kivora-player-seek-thumb { width: 10px; height: 10px; }
+.kivora-player[data-mobile="true"] .kivora-player-chrome .kivora-player-toolbar { display: none; }
+.kivora-player[data-mobile="true"][data-player-phase="ad"] .kivora-player-chrome .kivora-player-toolbar { display: flex; }
+.kivora-player[data-mobile="true"][data-player-phase="ad"] .kivora-player-chrome .kivora-player-toolbar > * { display: none; }
+.kivora-player[data-mobile="true"][data-player-phase="ad"] .kivora-player-chrome .kivora-player-toolbar > .text-xs,
+.kivora-player[data-mobile="true"][data-player-phase="ad"] .kivora-player-chrome .kivora-player-toolbar > .kivora-player-skip-ad,
+.kivora-player[data-mobile="true"][data-player-phase="ad"] .kivora-player-chrome .kivora-player-toolbar > button:first-child { display: inline-flex; }
+.kivora-player-mobile-sheet { --color-background: #191c23; --color-foreground: #fff; --color-input: #444a57; --color-accent: #343947; color: white; background: #191c23; max-height: 85dvh; }
+.kivora-player-mobile-sheet .kivora-player-controls { padding: 0; }
+.kivora-player-mobile-sheet .kivora-player-timeline,
+.kivora-player-mobile-sheet .kivora-player-toolbar > button:nth-child(-n+3),
+.kivora-player-mobile-sheet .kivora-player-toolbar > .kivora-player-transport { display: none; }
+.kivora-player-mobile-sheet .kivora-player-settings { position: static; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.kivora-player-mobile-episodes { display: grid; gap: 12px; }
+.kivora-player-mobile-episodes button { display: flex; align-items: center; gap: 12px; text-align: left; padding: 6px; border: 1px solid #ffffff30; border-radius: 10px; }
+.kivora-player-mobile-episodes button[aria-current="true"] { border-color: white; }
+.kivora-player-mobile-episodes img { width: 100px; aspect-ratio: 16/9; object-fit: cover; border-radius: 6px; }
+.kivora-player-mobile-episodes strong, .kivora-player-mobile-episodes small { display: block; }
+.kivora-player-mobile-episodes small { color: #ffffffa0; }
+
+.kivora-player-tabbed-sheet { height: min(70dvh, 560px); max-height: 85dvh; overflow: hidden; }
+.kivora-player-tabbed-sheet > h2 { flex-shrink: 0; }
+.kivora-player-settings-tabs { display: flex; flex: 1; flex-direction: column; min-height: 0; }
+.kivora-player-settings-tabs [role="tablist"] { flex-shrink: 0; gap: 8px; }
+.kivora-player-settings-tabs [role="tab"] { font-size: 12px; min-width: 0; min-height: 44px; }
+.kivora-player-settings-tabs .kivora-player-settings-panel { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; padding: 0 2px max(16px, env(safe-area-inset-bottom)); }
+.kivora-player-settings-panel[data-state="inactive"] { display: none; }
+.kivora-player-option-list { display: grid; gap: 8px; }
+.kivora-player-option-list button { display: flex; justify-content: space-between; align-items: center; min-height: 48px; padding: 12px 16px; text-align: left; border-radius: 8px; background: #ffffff08; }
+.kivora-player-option-list button[aria-checked="true"] { background: #ffffff18; }
+.kivora-player-option-list button:focus-visible { outline: 2px solid white; outline-offset: -2px; }
+.kivora-player-option-list button:disabled { opacity: .4; }
+.kivora-player-option-volume { display: grid; gap: 16px; padding: 16px 0; }
+
+.kivora-player-settings-actions { display: flex; flex-wrap: wrap; gap: 8px; flex-shrink: 0; }
+.kivora-player-settings-downloads { max-height: 25dvh; overflow-y: auto; flex-shrink: 0; }
+.kivora-player-settings-downloads .kivora-player-toolbar { display: none; }
