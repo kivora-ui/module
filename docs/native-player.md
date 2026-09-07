@@ -148,6 +148,42 @@ manager.getPlaybackSource(source.id); // PlayerSource with a local file:// src, 
 await manager.remove(source.id);
 ```
 
+### Background downloads and completion notifications
+
+Downloads started via `useOfflineDownloads`/`createOfflineDownloadManager` continue
+after the app is closed and resume automatically the next time it opens — no action
+required from the app. This is backed by
+[`@kesha-antonov/react-native-background-downloader`](https://github.com/kesha-antonov/react-native-background-downloader),
+which uses a real OS-level background session (`URLSession` on iOS,
+`WorkManager`/`DownloadManager` on Android) instead of a JS-thread transfer.
+
+A local notification ("Descarga completada") fires automatically via
+`@notifee/react-native` when a download finishes; pass your own
+`onDownloadComplete` to `createOfflineDownloadManager` to replace or extend that
+behavior.
+
+**Android:** on Android 14+, the background-downloader library requires its own
+foreground-service notification while a transfer is in progress — this is an
+OS requirement, not optional, and is separate from the completion notification
+above. The library also pulls in `com.tencent:mmkv-shared` as a native
+dependency; if your app already depends on a different MMKV version, pin it
+explicitly in your app's `build.gradle` to avoid a version conflict.
+
+**iOS:** background sessions require registering a completion handler in your
+app's `AppDelegate`. Add to `AppDelegate.swift` (or the equivalent in
+Objective-C):
+
+```swift
+func application(_ application: UIApplication, handleEventsForBackgroundURLSession identifier: String, completionHandler: @escaping () -> Void) {
+  RNBackgroundDownloader.setCompletionHandlerWithIdentifier(identifier, completionHandler: completionHandler)
+}
+```
+
+> This iOS integration step is implemented per the library's documented
+> requirement but has not been verified on a real iOS device or simulator in
+> this environment — the same caveat that already applies to the offline DRM
+> extension point. Verify manually on iOS before shipping.
+
 ## Android example
 
 Open **Ajustes → Probar player**. It includes DASH, HLS, MP4, episode selection,
