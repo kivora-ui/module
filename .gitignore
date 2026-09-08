@@ -20,3 +20,4 @@ example/web/public/player-fixtures/*
 # Native library build artifacts
 packages/native/android/build/
 packages/native/android/.gradle/
+/builds
