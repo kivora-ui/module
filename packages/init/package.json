@@ -1,6 +1,6 @@
 {
   "name": "@kivora/init",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Safely configure Kivora in an existing Next.js or React Native project.",
   "type": "module",
   "bin": { "kivora-init": "./src/cli.mjs" },

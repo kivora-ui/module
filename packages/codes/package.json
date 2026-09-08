@@ -1,6 +1,6 @@
 {
   "name": "@kivora/codes",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Local SVG generation for QR codes and barcodes, shared by Kivora web and native components.",
   "type": "module",
   "main": "./dist/index.cjs",

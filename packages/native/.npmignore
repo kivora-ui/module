@@ -1,0 +1,7 @@
+node_modules
+dist/*.tgz
+android/.gradle
+android/build
+android/.settings
+src/**/*.test.ts
+src/**/*.test.tsx

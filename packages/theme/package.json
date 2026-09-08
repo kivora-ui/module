@@ -1,6 +1,6 @@
 {
   "name": "@kivora/theme",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Shared design tokens, theme contracts and Tailwind v4 partial for Kivora UI.",
   "type": "module",
   "main": "./dist/index.cjs",
