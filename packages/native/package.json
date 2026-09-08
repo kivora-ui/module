@@ -20,6 +20,8 @@
     "src",
     "README.md",
     "android",
+    "ios",
+    "KivoraNative.podspec",
     "react-native.config.cjs"
   ],
   "scripts": {

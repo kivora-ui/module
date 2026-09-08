@@ -289,7 +289,7 @@ function Pharmacy() {
         <StatusBar barStyle={dark ? 'light-content' : 'dark-content'} />
         <SafeAreaView className="flex-1" edges={['top', 'bottom']}>
           <OrientationLocker orientation={PORTRAIT} />
-          <AudioPlayerProvider cast={GoogleCast} airPlay bottomOffset={81}>
+          <AudioPlayerProvider cast={GoogleCast} airPlay bottomOffset={tablet ? 144 : 81}>
           {!ready ? (
             <View className="flex-1 items-center justify-center gap-4 p-6">
               <ActivityIndicator color={ink} />

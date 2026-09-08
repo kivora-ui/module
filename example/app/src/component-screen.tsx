@@ -4,7 +4,8 @@ import { tableExamples } from './table-examples';
 import { FlashList } from '@shopify/flash-list';
 import { ExampleStateContext, useExampleState } from './example-state';
 import React, { useRef, useState } from 'react';
-import { Text, View, type ScrollViewProps } from 'react-native';
+import { Platform, Text, View, type ScrollViewProps } from 'react-native';
+import RNFS from 'react-native-fs';
 import { KeyboardScrollView, type KeyboardScrollViewRef } from '@kivora/native';
 import * as K from '@kivora/native';
 import { extendedComponentExamples } from './extended-component-examples';
@@ -453,11 +454,24 @@ const ExampleSkeleton = React.memo(function ExampleSkeleton() {
 });
 
 let backgroundUploadSession: Promise<K.UploadController> | undefined;
+async function createDemoUploadFile(): Promise<K.UploadFile[]> {
+  const content = `Kivora upload demo\n${new Date().toISOString()}\niOS native bridge`;
+  const name = `kivora-upload-demo-${Date.now()}.txt`;
+  const path = `${RNFS.TemporaryDirectoryPath || RNFS.CachesDirectoryPath}/${name}`;
+  await RNFS.writeFile(path, content, 'utf8');
+  const stats = await RNFS.stat(path);
+  return [{
+    name,
+    type: 'text/plain',
+    size: Number(stats.size),
+    data: { uri: `file://${path}`, name, type: 'text/plain' },
+  }];
+}
 async function pickUploadMedia(camera: boolean) {
   await K.toast.requestPermission();
   const result: ImagePickerResponse = camera
     ? await launchCamera({ mediaType: 'photo', saveToPhotos: false })
-    : await launchImageLibrary({ mediaType: 'mixed', selectionLimit: 10 });
+    : await launchImageLibrary({ mediaType: Platform.OS === 'ios' ? 'photo' : 'mixed', selectionLimit: 10 });
   if (result.didCancel) return [];
   if (result.errorCode) throw new Error(result.errorMessage || result.errorCode);
   return (result.assets ?? []).map(asset => {
@@ -478,6 +492,7 @@ function FileUploadExample() {
   }, []);
   if (!controller) return <Text className="text-foreground">{error || 'Preparing uploads...'}</Text>;
   return <K.FileUpload controller={controller} variant="advanced" locale="es" sources={[
+    { id: 'demo', label: 'Archivo de prueba', pickFiles: createDemoUploadFile },
     { id: 'camera', label: 'Cámara', pickFiles: () => pickUploadMedia(true) },
     { id: 'photos', label: 'Fotos y vídeos', pickFiles: () => pickUploadMedia(false) },
   ]} pickFiles={async () => {

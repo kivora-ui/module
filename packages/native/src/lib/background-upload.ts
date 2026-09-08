@@ -2,10 +2,10 @@ import { NativeModules, Platform } from 'react-native';
 import { UploadController, type UploadFile, type UploadOptions, type UploadTask } from '@kivora/upload';
 interface Record { id: string; uri: string; name: string; type: string; size: number; status: string; progress: number; url?: string; error?: string; }
 interface Bridge { enqueue(input: object): Promise<string>; list(): Promise<Record[]>; cancel(id: string): Promise<void>; }
-/** Android WorkManager uploads; restore persisted jobs when the application starts. */
+/** Native persisted uploads; restore recent jobs when the application starts. */
 export async function createBackgroundUploadController(options: Omit<UploadOptions, 'createTask' | 'onComplete'>): Promise<UploadController> {
   const bridge = NativeModules.KivoraUpload as Bridge | undefined;
-  if (Platform.OS !== 'android' || !bridge) throw new Error('Android background upload module is unavailable. Rebuild the native application.');
+  if ((Platform.OS !== 'android' && Platform.OS !== 'ios') || !bridge) throw new Error('Native background upload module is unavailable. Rebuild the native application.');
   const controller = new UploadController({ ...options, createTask: (file, config) => {
     let stopped = false;
     let timer: ReturnType<typeof setTimeout> | undefined;

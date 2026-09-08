@@ -37,7 +37,7 @@ The package already depends on Gorhom Bottom Sheet, Reanimated Carousel, and `@k
 
 The package's peer ranges allow React 18+, React Native 0.74+, NativeWind 4.2.6 or 5 preview, and Reanimated 3.16+. This does not mean every combination is compatible. The setup below uses NativeWind 4 and Reanimated 4; do not mix it with NativeWind 5 or Reanimated 3 configuration.
 
-The reference integration has been validated on Android without Expo; iOS has not been validated. The reference environment applies a patch to `react-native-css-interop@0.2.6` to fix Expo detection. That patch is not automatically distributed with this package; whether external installations need it remains to be verified.
+The reference integration has been validated on Android and on the iOS simulator without Expo. The package ships native code for Android plus an iOS bridge for player sleep-timer integration with `react-native-video`. The reference environment applies a patch to `react-native-css-interop@0.2.6` to fix Expo detection. That patch is not automatically distributed with this package; whether external installations need it remains to be verified.
 
 ## NativeWind 4 setup
 
@@ -313,11 +313,11 @@ Shares names, composition patterns, and design with [@kivora/nextjs](https://www
 
 ## File uploads
 
-`FileUpload` starts uploads automatically and hides the inline file list by default. Use `createBackgroundUploadController` on Android for local system notifications with progress, cancellation and completion or failure alerts. Set `showStatus` to `true` to opt in to the inline list, including when using a foreground-only controller. Create an `UploadController` with your Tus endpoint and pass it as `controller`. On Native, also provide `pickFiles: () => Promise<UploadFile[]>` using your document or media picker. The example app includes a document picker adapter. Keep the controller alive for the upload session and call `dispose()` when it ends. The default JavaScript transport is foreground-only. The Android background controller described below persists its jobs. See [@kivora/upload](https://www.npmjs.com/package/@kivora/upload) for the controller contract.
+`FileUpload` starts uploads automatically and hides the inline file list by default. Use `createBackgroundUploadController` on Android and iOS for persisted native uploads with progress and cancellation. Android also shows local system completion or failure notifications. Set `showStatus` to `true` to opt in to the inline list, including when using a foreground-only controller. Create an `UploadController` with your Tus endpoint and pass it as `controller`. On Native, also provide `pickFiles: () => Promise<UploadFile[]>` using your document or media picker. The example app includes a document picker adapter. Keep the controller alive for the upload session and call `dispose()` when it ends. The default JavaScript transport is foreground-only. The Android background controller described below persists its jobs. See [@kivora/upload](https://www.npmjs.com/package/@kivora/upload) for the controller contract.
 
 With `showStatus={true}`, FileUpload shows local image thumbnails and file-type icons for PDF, documents, spreadsheets, archives, audio, video and other files. Unsupported or unreadable images fall back to an image icon. Previews do not upload file contents; browser object URLs are released when the preview unmounts.
 
-Uploads now start automatically. File names use one line with ellipsis; status and formatted size appear underneath. Use `createBackgroundUploadController` for persistent Android uploads and system completion notifications. Rebuild the native app after installation. iOS background transfers are not implemented.
+Uploads now start automatically. File names use one line with ellipsis; status and formatted size appear underneath. Use `createBackgroundUploadController` for persisted native uploads on Android and iOS. Rebuild the native app after installation. Android adds system completion notifications; iOS resumes native Tus transfers from persisted app storage when the app restarts.
 
 ### Advanced file sources
 

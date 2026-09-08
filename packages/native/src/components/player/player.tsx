@@ -65,8 +65,11 @@ export function Player({ source, controller: provided, autoPlay = false, cast, a
   const [activity, setActivity] = React.useState(0);
   const t = translations[locale];
   const audio = source.type === 'audio';
-  const [width, setWidth] = React.useState(0);
-  const mobile = !audio && width <= 650;
+  // On React Native we want the handheld/tablet video experience to stay
+  // consistent with mobile instead of switching to the desktop inline layout
+  // once the container gets wide. That also keeps the visible player frame
+  // anchored to the 16:9 stage on tablets.
+  const mobile = !audio;
   const gradientId = React.useId();
   const [mobileQueueOpen, setMobileQueueOpen] = React.useState(false);
   const changeQueue = mobile ? setMobileQueueOpen : setQueueOpen;
@@ -156,7 +159,7 @@ export function Player({ source, controller: provided, autoPlay = false, cast, a
         : <ScrollView showsVerticalScrollIndicator={false} style={styles.episodeScroll} contentContainerStyle={styles.episodeList}>{episodeItems}</ScrollView>}
     </View>;
   if (state.phase === 'idle' && state.source) return null;
-  return <View {...props} testID={props.testID ?? (audio ? 'audio-player' : 'video-player')} style={[!audio && styles.root, style]} onLayout={event => { setWidth(event.nativeEvent.layout.width); props.onLayout?.(event); }}>
+  return <View {...props} testID={props.testID ?? (audio ? 'audio-player' : 'video-player')} style={[!audio && styles.root, style]} onLayout={props.onLayout}>
     {cast && <CastConnection sdk={cast} eligible={!unsupportedCast} controller={controller} bridge={castBridge} pauseLocal={pauseLocal} />}
     {!remote && !audio && (fullscreen || orientation === 'auto') && <OrientationLocker orientation={orientation === 'landscape' ? LANDSCAPE : UNLOCK} />}
     <View style={audio ? styles.audioStage : styles.stage}>
@@ -251,8 +254,8 @@ const styles = StyleSheet.create({
   mobileSubtitle: { color: '#ffffffb0', fontSize: 10 },
   mobileSeek: { marginTop: -10, marginBottom: -8, marginHorizontal: -10, width: 'auto' },
 
-  root: { borderRadius: 16, backgroundColor: '#171717', overflow: 'hidden' },
-  stage: { aspectRatio: 16 / 9, backgroundColor: '#000' }, audioStage: { height: 0 }, audioMedia: { width: 1, height: 1, position: 'absolute', opacity: 0 },
+  root: { width: '100%', borderRadius: 16, backgroundColor: '#171717', overflow: 'hidden' },
+  stage: { width: '100%', aspectRatio: 16 / 9, backgroundColor: '#000' }, audioStage: { height: 0 }, audioMedia: { width: 1, height: 1, position: 'absolute', opacity: 0 },
   heading: { position: 'absolute', top: 14, left: 16, right: 16 }, title: { color: '#fff', fontSize: 18, fontWeight: '600', textShadowColor: '#000', textShadowRadius: 5 }, subtitle: { color: '#a1a1a1', fontSize: 11, marginTop: 4 }, white: { color: '#fff', fontSize: 13 },
   center: { position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, alignItems: 'center', justifyContent: 'center' }, error: { position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, backgroundColor: '#171717dd', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 12 },
   controls: { paddingHorizontal: 8, paddingBottom: 4 }, timeline: { flexDirection: 'row', alignItems: 'center', gap: 8 }, time: { color: '#ddd', fontSize: 10, fontVariant: ['tabular-nums'] }, seek: { flex: 1 },

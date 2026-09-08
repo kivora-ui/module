@@ -32,6 +32,7 @@ export function AudioPresentation({ source, state, controller, cast, locale, onC
   const [now, setNow] = React.useState(Date.now);
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
+  const largeTablet = Math.min(width, height) >= 800;
   const foreground = useToken('--foreground');
   const contrast = useToken('--primary-foreground');
   const primary = useToken('--primary');
@@ -57,14 +58,23 @@ export function AudioPresentation({ source, state, controller, cast, locale, onC
   const cover = (size: number) => source.poster ? <Image source={{ uri: source.poster }} accessibilityLabel={source.title} style={{ width: size, height: size, borderRadius: size > 60 ? 20 : 8 }} /> : <View className="bg-secondary" style={{ width: size, height: size, borderRadius: size > 60 ? 20 : 8, alignItems: 'center', justifyContent: 'center' }}><Music2 color={primary} size={size > 60 ? 80 : 24} /></View>;
   const chooseTimer = (value: 15 | 30 | 45 | 60 | 'episode' | null) => { controller.setSleepTimer(value); setPanel(undefined); };
   const option = (label: string, selected: boolean, action: () => void) => <Pressable key={label} accessibilityRole="radio" accessibilityState={{ checked: selected }} onPress={action} className={selected ? 'bg-primary rounded-xl px-4 py-3' : 'bg-secondary rounded-xl px-4 py-3'} style={{ minHeight: 48 }}><Text className={selected ? 'text-primary-foreground text-base' : 'text-foreground text-base'}>{label}</Text></Pressable>;
-  const content = (full: boolean) => <View style={{ gap: full ? 24 : 16, width: '100%', maxWidth: 520, alignSelf: 'center' }}>
+  const content = (full: boolean) => {
+    const fullscreenTablet = full && largeTablet;
+    const coverSize = Math.max(120, Math.min(width - (fullscreenTablet ? 144 : 80), full ? height * (fullscreenTablet ? .3 : .37) : 220, fullscreenTablet ? 420 : 360));
+    return <View style={{
+      gap: full ? (fullscreenTablet ? 32 : 24) : 16,
+      width: '100%',
+      maxWidth: fullscreenTablet ? 640 : 520,
+      alignSelf: 'center',
+      ...(fullscreenTablet ? { minHeight: Math.max(0, height - insets.top - insets.bottom - 64), justifyContent: panel ? 'flex-start' : 'space-between' as const } : {}),
+    }}>
     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
       {iconButton(ChevronDown, panel ? (es ? 'Volver al reproductor' : 'Back to player') : (es ? 'Contraer reproductor' : 'Collapse player'), () => panel ? setPanel(undefined) : full ? setFullscreen(false) : setExpanded(false))}
       <Text className="text-muted-foreground text-xs font-semibold uppercase tracking-widest">{panel === 'timer' ? (es ? 'Temporizador' : 'Sleep timer') : panel === 'settings' ? (es ? 'Ajustes' : 'Settings') : (es ? 'Reproduciendo' : 'Now playing')}</Text>
       {full ? (onClose ? iconButton(X, es ? 'Cerrar audio' : 'Close audio', close) : <View style={{ width: 44 }} />) : iconButton(Maximize, es ? 'Pantalla completa' : 'Full screen', () => setFullscreen(true))}
     </View>
     {!panel && <>
-    <View style={{ alignItems: 'center' }}>{cover(Math.max(120, Math.min(width - 80, full ? height * .37 : 220, 360)))}</View>
+    <View style={{ alignItems: 'center' }}>{cover(coverSize)}</View>
     <View style={{ gap: 6 }}>
       <Text className="text-foreground text-2xl font-bold text-center" numberOfLines={2}>{source.title}</Text>
       {source.subtitle && <Text className="text-primary text-base text-center" numberOfLines={2}>{source.subtitle}</Text>}
@@ -102,6 +112,7 @@ export function AudioPresentation({ source, state, controller, cast, locale, onC
       {option(es ? (state.muted ? 'Activar sonido' : 'Silenciar') : (state.muted ? 'Unmute' : 'Mute'), state.muted, () => controller.setMuted(!state.muted))}
     </View>}
   </View>;
+  };
   return <>
     {footer ? <View className="bg-card border border-border rounded-2xl overflow-hidden" testID="audio-mini">
       <View style={{ flexDirection: 'row', alignItems: 'center', padding: 8, gap: 8 }}>
@@ -114,7 +125,7 @@ export function AudioPresentation({ source, state, controller, cast, locale, onC
     </View> : <View className="bg-card p-4">{content(false)}</View>}
     <BottomSheet open={expanded} onOpenChange={setExpanded} keyboardAware={false}>{content(false)}</BottomSheet>
     <Modal visible={fullscreen} onRequestClose={() => setFullscreen(false)} animationType="slide" statusBarTranslucent navigationBarTranslucent>
-      <View className="bg-background" style={{ flex: 1, paddingTop: insets.top, paddingBottom: insets.bottom }}><ScrollView contentContainerStyle={{ padding: 24, flexGrow: 1, justifyContent: 'space-between' }}>{content(true)}</ScrollView></View>
+      <View className="bg-background" style={{ flex: 1, paddingTop: insets.top, paddingBottom: insets.bottom }}><ScrollView contentContainerStyle={{ paddingTop: largeTablet ? 32 : 24, paddingBottom: Math.max(insets.bottom + 24, largeTablet ? 40 : 24), paddingHorizontal: largeTablet ? 40 : 24, flexGrow: 1 }}>{content(true)}</ScrollView></View>
     </Modal>
   </>;
 }
