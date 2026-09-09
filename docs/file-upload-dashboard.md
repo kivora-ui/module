@@ -1,5 +1,11 @@
 # FileUpload dashboard and Uppy review
 
+## Upload failures (web 0.2.1)
+
+The advanced dashboard shows a short localized alert per failed file instead of rendering the raw Tus error, response body or server HTML. Failed files remain available for retry and removal; closing and reopening the modal retains their status. Uppy informer messages keep their translated summary without transport details. Handled upload errors no longer feed the framework's development error overlay. Selection restrictions retain their messages, and the simple/native upload flows are unchanged.
+
+Regression tests live in `packages/nextjs/src/components/upload-errors.test.tsx` and exercise informer redaction, actual Uppy failure events, translated alerts, retry/removal and rejected upload starts.
+
 ## Current web implementation
 
 The web advanced view now uses real Uppy Dashboard plugins within a styled Kivora modal. Progress, file previews and errors remain inside this modal; no advanced upload toast is emitted. Backdrop clicks do not dismiss it. Escape and the explicit close button remain available. The simple view keeps its existing toast workflow. Native has not been changed by this web revision.

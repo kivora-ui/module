@@ -19,6 +19,7 @@ import { X, UploadCloud } from 'lucide-react';
 import { getUploadMessages, type UploadController } from '@kivora/upload';
 import { Button } from './button';
 import { UploadDashboardControls } from './upload-dashboard-controls';
+import { protectUploadErrorMessages, uploadLogger } from './upload-errors';
 import type { FileUploadProps } from './file-upload';
 
 export interface UploadDashboardOptions {
@@ -49,11 +50,12 @@ function getSession(controller: UploadController, config: UploadDashboardOptions
   const options = controller.getOptions();
   if (options.createTask) throw new Error('The web dashboard requires a Tus endpoint. Custom upload tasks are supported by simple mode.');
   const element = document.createElement('div');
-  const uppy = new Uppy<Meta, Body>({ autoProceed: false, restrictions: {
+  const uppy = new Uppy<Meta, Body>({ autoProceed: false, logger: uploadLogger, restrictions: {
     maxNumberOfFiles: options.maxFiles ?? 10,
     maxFileSize: options.maxFileSize ?? 50 * 1024 * 1024,
     allowedFileTypes: options.accept ?? null,
   } });
+  protectUploadErrorMessages(uppy);
   try {
     uppy.use(Tus, { endpoint: options.endpoint, headers: options.headers, retryDelays: [1000, 3000, 5000], storeFingerprintForResuming: false });
     uppy.use(Dashboard, { target: element, inline: true, width: '100%', height: 490, proudlyDisplayPoweredByUppy: false,
@@ -151,7 +153,7 @@ function DashboardPanel({ controller, locale, messages, camera = true, dashboard
     </section>}
     {error && <p role="alert" className="px-6 text-destructive">{error}</p>}
     <div ref={target} className="kivora-upload-dashboard min-w-0" />
-    <UploadDashboardControls target={target} label={t.sources} uppy={engine} messages={t} />
+    <UploadDashboardControls target={target} label={t.sources} uppy={engine} messages={t} locale={locale} />
   </>;
 }
 

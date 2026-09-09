@@ -4,6 +4,7 @@ import { Button } from './button';
 import { Select } from './select';
 import { Progress } from './progress';
 import { UploadFilePreview } from './upload-file-preview';
+import { uploadFailureMessage } from './upload-errors';
 import type Uppy from '@uppy/core';
 import type { Meta, Body } from '@uppy/core';
 import type Dashboard from '@uppy/dashboard';
@@ -12,7 +13,8 @@ import { LayoutGrid, List, Plus, File, CircleCheck, CircleAlert, LoaderCircle, P
 
 type NativeSelect = { element: HTMLSelectElement; label: string; value: string; disabled: boolean; options: { value: string; label: string; isDisabled: boolean }[] };
 /** Keep Uppy responsible for device changes, with Kivora controls outside its Preact tree. */
-export function UploadDashboardControls({ target, label, uppy, messages: t }: { target: React.RefObject<HTMLDivElement | null>; label: string; uppy?: Uppy<Meta, Body>; messages: UploadMessages }) {
+export function UploadDashboardControls({ target, label, uppy, messages: t, locale }: { target: React.RefObject<HTMLDivElement | null>; label: string; uppy?: Uppy<Meta, Body>; messages: UploadMessages; locale?: string }) {
+  const uploadFailure = uploadFailureMessage(locale);
   const [state, setState] = React.useState<{ selects: NativeSelect[]; cancel?: HTMLButtonElement; cancelLabel: string }>({ selects: [], cancelLabel: '' });
   const id = React.useId();
   const [previewId, setPreviewId] = React.useState<string>();
@@ -91,7 +93,7 @@ export function UploadDashboardControls({ target, label, uppy, messages: t }: { 
             </div>
             <div className="mt-1 text-xs text-muted-foreground" role="status">{status}{' \u00b7 '}{file.size == null ? '' : file.size < 1024 ? `${file.size} B` : file.size < 1048576 ? `${(file.size / 1024).toFixed(1)} KB` : `${(file.size / 1048576).toFixed(1)} MB`}{started && !complete && !failed ? ` \u00b7 ${progress}%` : ''}</div>
             {(view === 'list' || (started && !complete)) && <Progress aria-label={file.name} max={100} value={complete ? 100 : progress} size="sm" className="mt-2" indicatorClassName={failed ? 'bg-destructive motion-reduce:transition-none' : 'motion-reduce:transition-none'} />}
-            {failed && <p className="mt-1 text-xs text-destructive">{String(file.error)}</p>}
+            {failed && <p role="alert" className="mt-1 break-words text-xs text-destructive">{uploadFailure}</p>}
           </div>
 
         </article>;
@@ -118,6 +120,6 @@ export function UploadDashboardControls({ target, label, uppy, messages: t }: { 
       try { await uppy?.upload(); } catch { setUploadError(true); } finally { setStarting(false); }
     }}>{t.startUpload}</Button>}
   </footer>
-  {uploadError && <p role="alert" className="px-4 pb-3 text-sm text-destructive">{t.selectionError}</p>}
+  {uploadError && <p role="alert" className="px-4 pb-3 text-sm text-destructive">{uploadFailure}</p>}
   </>;
 }
