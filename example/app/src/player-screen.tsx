@@ -24,7 +24,7 @@ import { Image } from 'react-native';
 const audioUri = Image.resolveAssetSource(audioAsset).uri;
 const adUri = Image.resolveAssetSource(adAsset).uri;
 const introUri = Image.resolveAssetSource(require('../assets/player/intro.mp4')).uri;
-const videoAdUri = Image.resolveAssetSource(require('../assets/player/ad.mp4')).uri;
+const videoAdUri = Image.resolveAssetSource(require('../assets/player/video-ad.mp4')).uri;
 const sampleUri = Image.resolveAssetSource(require('../assets/player/sample.mp4')).uri;
 const loadingPoster = Image.resolveAssetSource(require('../assets/player/poster.png')).uri;
 const episodes = ['01. El encuentro', '02. Un largo viaje', '03. El regreso'].map((title, index) => ({ id: String(index), title, subtitle: 'Episodio de ejemplo', image: poster }));
