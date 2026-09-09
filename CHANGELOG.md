@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.1 — 2026-09-09
+
+Package: `@kivora/nextjs`.
+
+- Keep FileUpload transport failures inside the advanced dashboard with readable, localized alerts and retry/remove actions.
+- Stop rendering Tus response bodies, HTML and technical details in file cards and Uppy informer tooltips.
+- Avoid sending handled upload failures to the framework development error overlay.
+- Add regression coverage for error presentation and recovery.
+
 ## 0.2.0 — 2026-09-09
 
 Released packages: `@kivora/nextjs`, `@kivora/native`, and `@kivora/init`.
