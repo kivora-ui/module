@@ -7,11 +7,12 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
 import ts from 'typescript';
-import { detectFramework, packageManager, createPlan, applyPlan } from '../src/project.mjs';
+import { detectFramework, packageManager, createPlan, applyPlan, installCommands } from '../src/project.mjs';
 
 const cli = fileURLToPath(new URL('../src/cli.mjs', import.meta.url));
 const web = { react: '^19.2.0', 'react-dom': '^19.2.0', next: '^15.0.0' };
 const native = { react: '19.2.3', 'react-native': '0.85.3', '@react-native/babel-preset': '0.85.3', '@react-native/metro-config': '0.85.3' };
+const native087 = { react: '19.2.3', 'react-native': '0.87.1', '@react-native/babel-preset': '0.87.1', '@react-native/metro-config': '0.87.1', typescript: '6.0.3', 'react-native-safe-area-context': '^5.5.2' };
 function fixture(t, dependencies = web, files = { 'app/layout.tsx': "import './globals.css';\nexport default function Layout({children}: {children: React.ReactNode}) { return <html><body className='custom'>{children}</body></html>; }" }) {
   const root = mkdtempSync(join(tmpdir(), 'kivora-init-test-'));
   t.after(() => rmSync(root, { recursive: true, force: true }));
@@ -26,6 +27,78 @@ function evaluate(text, mocks = {}) {
   vm.runInNewContext(text, context);
   return context.module.exports;
 }
+
+test('RN 0.87 selects compatible worklets and installs every required root dependency', async t => {
+  const root = fixture(t, native087, { 'App.tsx': 'export default function App(){return <Existing/>}', 'package-lock.json': '{}' });
+  const plan = createPlan(root, 'native');
+  assert.equal(plan.manager.name, 'npm');
+  assert.ok(installCommands(plan).every(command => command.args.includes('--save-exact')));
+  assert.match(plan.files.get('kivora-nativewind.d.ts').after, /declare module '\*\.css'/);
+  for (const spec of ['@kivora/native@0.2.1', 'react-native-reanimated@4.6.0', 'react-native-worklets@0.12.2', 'react-native-video@6.19.2', 'react-native-fs@2.20.0', 'react-native-orientation-locker@1.7.0', '@kesha-antonov/react-native-background-downloader@4.6.2']) assert.ok(plan.runtime.includes(spec), spec);
+  assert.ok(!plan.runtime.some(spec => spec.startsWith('react-native-safe-area-context@')));
+  await applyPlan(plan, { install: false });
+  assert.equal(createPlan(root, 'native').files.size, 0);
+});
+
+test('RN 0.87 rejects older Reanimated and mismatched framework tooling before writing', t => {
+  for (const extra of [{ 'react-native-reanimated': '4.3.0' }, { 'react-native-worklets': '0.8.3' }, { '@react-native/metro-config': '0.85.3' }, { '@kivora/native': '0.1.1' }]) {
+    const root = fixture(t, { ...native087, ...extra }, { 'App.tsx': 'export default () => <Existing/>' });
+    assert.throws(() => createPlan(root, 'native'));
+    assert.ok(!existsSync(join(root, '.kivora')));
+  }
+});
+
+test('native retains existing aliased providers without adding duplicate wrappers', async t => {
+  const root = fixture(t, native087, { 'App.tsx': "import {SafeAreaProvider as SafeRoot} from 'react-native-safe-area-context'; import {GestureHandlerRootView} from 'react-native-gesture-handler'; export default function App(){return <GestureHandlerRootView><SafeRoot><Existing/></SafeRoot></GestureHandlerRootView>}" });
+  const plan = createPlan(root, 'native');
+  const wrapper = plan.files.get('./kivora-provider.tsx').after;
+  assert.ok(!wrapper.includes('SafeAreaProvider'));
+  assert.ok(!wrapper.includes('GestureHandlerRootView'));
+  assert.ok(wrapper.includes('KeyboardProvider'));
+  await applyPlan(plan, { install: false });
+  assert.equal(createPlan(root, 'native').files.size, 0);
+});
+
+test('RN 0.87 CLI dry-run leaves the npm consumer unchanged', t => {
+  const app = 'export default () => <Existing/>';
+  const root = fixture(t, native087, { 'App.tsx': app, 'package-lock.json': '{"lockfileVersion":3}' });
+  const manifest = read(root, 'package.json');
+  const result = spawnSync(process.execPath, [cli, '--cwd', root, '--dry-run'], { encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(read(root, 'package.json'), manifest);
+  assert.equal(read(root, 'App.tsx'), app);
+  assert.equal(read(root, 'package-lock.json'), '{"lockfileVersion":3}');
+  assert.ok(!existsSync(join(root, 'node_modules')));
+  assert.ok(!existsSync(join(root, '.kivora')));
+  assert.ok(!existsSync(join(root, 'kivora-provider.tsx')));
+});
+
+test('accepts an installed native release tarball and validates its actual version', t => {
+  const root = fixture(t, { ...native087, '@kivora/native': 'file:../kivora-native-0.2.1.tgz' }, { 'App.tsx': 'export default () => <Existing/>' });
+  put(root, 'node_modules/@kivora/native/package.json', JSON.stringify({ name: '@kivora/native', version: '0.2.1' }));
+  assert.ok(!createPlan(root, 'native').runtime.some(spec => spec.startsWith('@kivora/native@')));
+  put(root, 'node_modules/@kivora/native/package.json', JSON.stringify({ name: '@kivora/native', version: '0.1.1' }));
+  assert.throws(() => createPlan(root, 'native'), /0.1.1/);
+});
+
+test('rerunning native init preserves a customized mounted provider', async t => {
+  const root = fixture(t, native087, { 'App.tsx': 'export default () => <Existing/>' });
+  await applyPlan(createPlan(root, 'native'), { install: false });
+  const content = read(root, 'kivora-provider.tsx').replace('colorMode="system"', 'colorMode="dark"');
+  put(root, 'kivora-provider.tsx', content);
+  assert.equal(createPlan(root, 'native').files.size, 0);
+  assert.equal(read(root, 'kivora-provider.tsx'), content);
+});
+
+test('an unused component does not suppress the root safe-area provider', t => {
+  const root = fixture(t, native087, { 'App.tsx': "import {SafeAreaProvider} from 'react-native-safe-area-context'; function Unused(){return <SafeAreaProvider/>} export default function App(){return <Existing/>}" });
+  assert.match(createPlan(root, 'native').files.get('./kivora-provider.tsx').after, /<SafeAreaProvider>/);
+});
+
+test('providers covering only one branch require manual integration', t => {
+  const root = fixture(t, native087, { 'App.tsx': "import {SafeAreaProvider} from 'react-native-safe-area-context'; export default function App(){if(condition)return <SafeAreaProvider><Existing/></SafeAreaProvider>;return <Other/>}" });
+  assert.throws(() => createPlan(root, 'native'), /provider/i);
+});
 
 test('detects frameworks without choosing arbitrarily in mixed or unknown apps', () => {
   assert.equal(detectFramework({ dependencies: web }), 'nextjs');

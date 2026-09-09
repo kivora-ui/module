@@ -30,6 +30,8 @@ Capturas reales de los ejemplos, sin maquetas. La captura web móvil corresponde
 | `@kivora/native` | Componentes React Native con NativeWind, gestos y animaciones | [README de React Native](packages/native/README.md) |
 | `@kivora/theme` | Temas, tipos, breakpoints y utilidades compartidas | [README del tema](packages/theme/README.md) |
 
+**React Native Community CLI 0.87.1:** consulta la [integración con npm](docs/native-installation.md), las dependencias necesarias y el [informe de validación](docs/native-release-validation.md). Esta integración requiere Native e Init 0.2.1; Native 0.1.1 contiene dependencias `workspace:*` no instalables con npm.
+
 Los paquetes públicos se publican en npm con versiones independientes. Las instrucciones de consumo se encuentran en cada README; para probar el código actual utiliza el workspace y sus ejemplos.
 
 ## Qué comparten

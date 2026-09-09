@@ -12,7 +12,8 @@ de Storybook:
   estilados con Tailwind v4.
 - `@kivora/native` — mismos componentes y mismo provider, sobre
   `Pressable`/`View` + `class-variance-authority` + `react-native-reanimated`,
-  estilados con NativeWind v5 (preview) contra el mismo Tailwind v4.
+  estilados con NativeWind 4 y Tailwind 3.4.19. La receta Community CLI
+  0.87.1 usa Reanimated 4.6 y Worklets 0.12; ver [instalación](native-installation.md).
 - `storybook` — documenta visualmente `@kivora/nextjs`.
 
 ## Flujo del theme

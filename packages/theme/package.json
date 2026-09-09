@@ -14,12 +14,16 @@
     },
     "./tailwind.css": "./dist/tailwind.css"
   },
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts && node scripts/copy-css.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --passWithNoTests",
+    "prepublishOnly": "node ../../scripts/release.mjs guard"
   },
   "dependencies": {
     "clsx": "^2.1.1",

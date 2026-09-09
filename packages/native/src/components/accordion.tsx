@@ -17,8 +17,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-const AnimatedContent =
-  Animated.View as unknown as React.ComponentType<ViewProps>;
+const AnimatedContent = Animated.View;
 
 type AccordionType = "single" | "multiple";
 
