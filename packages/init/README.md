@@ -6,7 +6,7 @@ Install and configure Kivora in an existing application. Requires Node.js 20.19 
 npx @kivora/init@0.2.1
 ```
 
-Run the command in the application directory containing its `package.json`. Version 0.2.1 is a release candidate and these npm commands require publication first. The installer adds [@kivora/nextjs](https://www.npmjs.com/package/@kivora/nextjs) or Native 0.2.1, depending on the platform. For pre-publication tarball testing and platform validation limits, see the [native guide](../../docs/native-installation.md).
+Run the command in the application directory containing its `package.json`. These commands use version 0.2.1. The installer adds [@kivora/nextjs](https://www.npmjs.com/package/@kivora/nextjs) or Native 0.2.1, depending on the platform. For pre-publication tarball testing and platform validation limits, see the [native guide](../../docs/native-installation.md).
 
 ## How it works
 
@@ -47,6 +47,10 @@ The setup uses React Native Community CLI and accepts these ranges:
 | Worklets | RN 0.87: `>=0.12.2 <0.13`; RN 0.85: `>=0.8.3 <0.9` |
 | Tailwind CSS | `>=3.4.17 <4` |
 
+These ranges apply to version 0.2.1. RN 0.86.x, 0.87.0, versions below 0.85.3 and versions from 0.88 are not accepted. Patch versions within each range have not all been tested individually.
+
+Exactly RN 0.87.1 was verified through npm installation, type-check, lint, Android/iOS bundling, and Android compilation and execution. iOS compilation and execution remain pending. The RN 0.85.3–0.85.x recipe is retained without repeating native validation for this release. See the [compatibility matrix and recipe versions](../../docs/native-installation.md#versiones-compatibles-de-react-native).
+
 The Babel preset and Metro config must match the RN minor (0.87 or 0.85). The installer does not migrate Reanimated 3, NativeWind 5 or Expo projects. If an existing dependency declares a range extending beyond supported limits, installation stops before writing. New native dependencies are saved exactly to keep repeated execution compatible. Existing Safe Area Context `^5.5.2` is preserved. RN 0.87.1 requires React 19.2.3 and the framework's Node.js engine requirements also apply.
 
 - Installs `@kivora/native`, NativeWind, Reanimated, Worklets, Gesture Handler, Safe Area Context, SVG, Keyboard Controller, Notifee, Video, FS, Orientation Locker, Background Downloader and Tailwind 3.4.19 if missing.
@@ -55,7 +59,7 @@ The Babel preset and Metro config must match the RN minor (0.87 or 0.85). The in
 - Integrates `App` or `src/App` (TSX, JSX, or JS) with gesture, safe area, keyboard, and Kivora providers, plus semantic color variables and NativeWind types.
 - Adds the Android `POST_NOTIFICATIONS` permission if the manifest exists and does not already declare it.
 
-Afterward, install iOS pods using your project's workflow, restart Metro, and rebuild the application. Configure an existing Android icon for notifications. The CLI does not run native builds or modify Gradle, Podfile, or image resources. iOS has not been validated. See the [Native compatibility notes](https://www.npmjs.com/package/@kivora/native#compatibility).
+Afterward, install iOS pods using your project's workflow, restart Metro, and rebuild the application. Configure an existing Android icon for notifications. The CLI does not run native builds or modify Gradle, Podfile, or image resources. Only iOS bundling has been validated; iOS compilation and execution remain pending. See the [Native compatibility notes](https://www.npmjs.com/package/@kivora/native#compatibility).
 
 ## Preserving files and recovering changes
 

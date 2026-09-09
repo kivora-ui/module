@@ -1,6 +1,6 @@
 # Changelog
 
-## Pending — Native and Init 0.2.1
+## Native and Init 0.2.1 — 2026-09-09
 
 - Fix Native's npm manifest: replace unresolved internal workspace protocols with published 0.1.0 versions.
 - Build, inspect and hash release tarballs; reject unresolved protocols, missing exports/resources and accidental development files. Publish the inspected tarball rather than the source directory.
@@ -8,7 +8,7 @@
 - Install all dependencies reachable through Native's root entry. Background Downloader is required by Metro; Google Cast remains an injected optional SDK.
 - Remove obsolete animation type casts incompatible with Reanimated 4.6.
 - Preserve existing providers/configuration, save new recipe dependencies exactly, support TypeScript 6 CSS imports and keep dry-run read-only.
-- Document external npm installation and platform validation limits. Native/Init 0.2.1 have not been published by this change.
+- Document external npm installation and platform validation limits.
 
 ## 0.2.1 — 2026-09-09
 

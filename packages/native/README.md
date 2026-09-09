@@ -16,7 +16,7 @@ From your application directory:
 npx @kivora/init@0.2.1
 ```
 
-Native and Init 0.2.1 are release candidates: these npm commands require publication first. The installer supports Community CLI 0.87.1 with NativeWind 4, Reanimated 4.6 and Worklets 0.12, and retains the separate RN 0.85 recipe. Use `npx @kivora/init@0.2.1 --dry-run` to preview changes without modifying the application. See the [installation guide](../../docs/native-installation.md) and [validation results](../../docs/native-release-validation.md).
+This setup requires Native and Init 0.2.1. The installer supports Community CLI 0.87.1 with NativeWind 4, Reanimated 4.6 and Worklets 0.12, and retains the separate RN 0.85 recipe. Use `npx @kivora/init@0.2.1 --dry-run` to preview changes without modifying the application. See the [installation guide](../../docs/native-installation.md) and [validation results](../../docs/native-release-validation.md).
 
 ### Manual installation
 
@@ -30,6 +30,15 @@ npm install --save-dev --save-exact tailwindcss@3.4.19
 The package already depends on Gorhom Bottom Sheet, Reanimated Carousel, and `@kivora/theme`. If you import Theme directly, also add it to your application's dependencies. Native dependencies require rebuilding the application; reloading Metro is not enough.
 
 ## Compatibility
+
+Native and Init 0.2.1 accept the following Community CLI ranges with the New Architecture, without Expo:
+
+| React Native | Reanimated / Worklets recipe | Validation status |
+| --- | --- | --- |
+| `>=0.85.3 <0.86` | 4.3.0 / 0.8.3 | Previous recipe retained; native validation was not repeated for this release. |
+| `>=0.87.1 <0.88` | 4.6.0 / 0.12.2 | Exactly 0.87.1 tested: npm installation, type-check, lint, Android/iOS bundles, Android build and execution. iOS build and execution remain pending. |
+
+RN 0.86.x, 0.87.0, versions below 0.85.3 and versions from 0.88 are outside the supported ranges. Patch versions within each range have not all been tested individually. See the [compatibility matrix](../../docs/native-installation.md#versiones-compatibles-de-react-native).
 
 Use NativeWind 4.2.6 / Tailwind 3.4.19 with Reanimated 4.6.0 / Worklets 0.12.2 for RN 0.87.1. Reanimated 4.3 is incompatible with RN 0.87. The initializer rejects unsupported combinations instead of upgrading or downgrading an existing application. Peer ranges alone do not validate every possible pairing.
 

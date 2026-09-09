@@ -1,6 +1,6 @@
 # Validación Native / Init 0.2.1
 
-Fecha: 9 de septiembre de 2026. Rama: `fix/native-npm-rn-087`, desde `3715cf5` de main. No se ha publicado en npm ni hecho push.
+Fecha: 9 de septiembre de 2026. Rama: `fix/native-npm-rn-087`, desde `3715cf5` de main. Este informe recoge la validación previa a la publicación.
 
 ## Causa raíz
 
@@ -89,6 +89,6 @@ cd android
 
 En Windows: `gradlew.bat`. Ajusta la arquitectura al dispositivo. La prueba Android utilizó la APK debug y Metro en el puerto 8083. La captura de evidencia y los tarballs están en `builds/release/`; el segundo consumidor conserva `kivora-release-validation.json` con las resoluciones comprobadas. Los archivos de ejecución del tarball final se comparan con los instalados para distinguir cambios de README de cambios de código.
 
-## Publicación pendiente
+## Orden de publicación
 
-Orden: reutilizar Theme/Codes/Upload 0.1.0; publicar **Native 0.2.1**, después **Init 0.2.1**. Requiere confirmación del usuario. Tras publicar, verificar otra instalación desde el registro. Los [comandos exactos de integración](native-installation.md) y la [guía de publicación](publish-and-version.md) indican qué pasos requieren esa publicación previa.
+Orden: reutilizar Theme/Codes/Upload 0.1.0; publicar **Native 0.2.1**, después **Init 0.2.1**. Publicación autorizada por el usuario el 9 de septiembre de 2026. Tras publicar, verificar otra instalación desde el registro. Los [comandos exactos de integración](native-installation.md) y la [guía de publicación](publish-and-version.md) indican qué pasos requieren esa publicación previa.

@@ -1,6 +1,19 @@
 # React Native Community CLI 0.87.1
 
-Esta receta integra `@kivora/native@0.2.1` en una aplicación existente sin Expo. Native e Init 0.2.1 son candidatos pendientes de publicación. No utilizar Native 0.1.1: su manifiesto publicado contiene `workspace:*` y npm no puede instalarlo.
+Esta receta integra `@kivora/native@0.2.1` en una aplicación existente sin Expo. El inicializador correspondiente es `@kivora/init@0.2.1`. No utilizar Native 0.1.1: su manifiesto publicado contiene `workspace:*` y npm no puede instalarlo.
+
+## Versiones compatibles de React Native
+
+Estos rangos corresponden a Native e Init **0.2.1**, para Community CLI con New Architecture y sin Expo:
+
+| React Native admitido | Reanimated / Worklets de la receta | Validación realizada |
+| --- | --- | --- |
+| `>=0.85.3 <0.86` (0.85.3 y posteriores parches 0.85.x) | 4.3.0 / 0.8.3 | Receta anterior conservada; no se ha repetido su validación nativa en esta entrega. |
+| `>=0.87.1 <0.88` (0.87.1 y posteriores parches 0.87.x) | 4.6.0 / 0.12.2 | Probada exactamente con 0.87.1: instalación npm, tipos, lint, bundles Android/iOS y compilación y ejecución Android. Compilación y ejecución iOS pendientes. |
+
+React Native 0.86.x, 0.87.0, versiones anteriores a 0.85.3 y versiones desde 0.88 quedan fuera de los rangos admitidos. Esto no demuestra que sean imposibles de integrar: no están cubiertas por las recetas del instalador. Los parches incluidos en un rango no se han probado individualmente.
+
+Ambas recetas utilizan NativeWind 4.2.6 y Tailwind 3.4.19; el preset Babel y la configuración Metro deben corresponder a la misma línea de React Native. El instalador exige React `>=19.2.3 <20`. Los comandos siguientes corresponden exclusivamente a la receta **0.87.1**.
 
 ## Versiones de la receta
 
@@ -25,7 +38,7 @@ Reanimated 4.6 soporta RN 0.87 y requiere Worklets 0.12; Reanimated 4.3 no sopor
 
 La aceptación de un rango por npm no demuestra compatibilidad nativa. Consulta los resultados por fase en el [informe de validación](native-release-validation.md). RN 0.85 mantiene su receta anterior Reanimated 4.3 / Worklets 0.8; no se ha migrado el ejemplo del repositorio.
 
-## Integración asistida, después de publicar
+## Integración asistida
 
 Desde el directorio del consumidor:
 
@@ -38,7 +51,7 @@ El primer comando no modifica el proyecto ni instala dependencias en él; npx pu
 
 Init conserva opciones estáticas de Babel, Metro y Tailwind, reutiliza el CSS de una integración NativeWind existente y genera los tipos para imports CSS de TypeScript 6. Añade una sola envoltura Kivora y reutiliza providers reconocidos en App/index, incluso con imports renombrados. Conserva el provider generado si después lo personalizas. Los providers ocultos detrás de componentes propios o configuraciones dinámicas requieren revisión manual.
 
-## Instalación manual, después de publicar
+## Instalación manual
 
 Conserva `react-native-safe-area-context: ^5.5.2` si ya está declarado. Añádelo solamente si falta.
 
