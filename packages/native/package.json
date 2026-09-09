@@ -1,6 +1,6 @@
 {
   "name": "@kivora/native",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Kivora UI components for React Native.",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -19,7 +19,8 @@
     "dist",
     "src",
     "README.md",
-    "android",
+    "android/build.gradle",
+    "android/src",
     "ios",
     "KivoraNative.podspec",
     "react-native.config.cjs"
