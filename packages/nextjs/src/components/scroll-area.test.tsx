@@ -2,7 +2,7 @@
 
 import { render, screen } from "@testing-library/react";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { ScrollArea, ScrollBar, VirtualScrollArea } from "./scroll-area";
+import { ScrollArea, ScrollBar } from "./scroll-area";
 
 describe("ScrollArea", () => {
   const originalResizeObserver = globalThis.ResizeObserver;
@@ -53,7 +53,7 @@ describe("ScrollArea", () => {
 
   it("renders virtualized items with TanStack Virtual", () => {
     render(
-      <VirtualScrollArea
+      <ScrollArea virtualized
         className="h-64"
         estimateSize={() => 36}
         initialRect={{ height: 256, width: 320 }}
@@ -69,7 +69,7 @@ describe("ScrollArea", () => {
 
   it("supports horizontal virtualized items", () => {
     render(
-      <VirtualScrollArea
+      <ScrollArea virtualized
         className="h-20 w-64"
         estimateSize={() => 120}
         horizontal

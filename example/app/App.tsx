@@ -16,6 +16,7 @@ import { OrientationLocker, PORTRAIT } from 'react-native-orientation-locker';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import {
   KivoraProvider,
+  Icon,
   AudioPlayerProvider,
   KeyboardScrollView,
   Button,
@@ -973,7 +974,7 @@ function Pharmacy() {
                 accessibilityRole="tablist"
                 className="flex-row border-t border-border bg-card px-1 py-2"
               >
-                {navigation.map(({ name, icon: Icon }) => {
+                {navigation.map(({ name, icon }) => {
                   const selected =
                     screen === name ||
                     ((screen === 'Componentes' || screen === 'Player') && name === 'Ajustes');
@@ -987,7 +988,7 @@ function Pharmacy() {
                       onPress={() => navigate(name)}
                       className={`h-auto min-h-16 flex-1 flex-col gap-1 rounded-xl px-0 py-2 ${selected ? 'bg-secondary' : ''}`}
                     >
-                      <Icon size={22} color={selected ? ink : '#888888'} />
+                      <Icon icon={icon} size={22} color={selected ? ink : '#888888'} />
                       <Text
                         className={`text-xs ${selected ? 'font-bold text-foreground' : 'text-muted-foreground'}`}
                       >

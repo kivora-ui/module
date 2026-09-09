@@ -4,7 +4,7 @@ import * as React from "react";
 import { cn } from "@kivora/theme";
 import { ScrollArea, type ScrollAreaProps } from "./scroll-area";
 
-export interface MessageScrollerProps extends ScrollAreaProps {
+export interface MessageScrollerProps extends Extract<ScrollAreaProps, { virtualized?: false }> {
   follow?: boolean;
 }
 

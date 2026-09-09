@@ -73,7 +73,7 @@ export function Example() {
 #### `MessageScrollerProps`
 
 - **Definido en:** `packages/nextjs/src/components/message-scroller.tsx`
-- **Composición base:** `ScrollAreaProps`
+- **Composición base:** `Extract<ScrollAreaProps, { virtualized?: false }>`
 
 **Props propias**
 
@@ -82,7 +82,7 @@ export function Example() {
 | `follow` | `boolean | undefined` | sí | — |
 
 <details>
-<summary>Props heredadas o compuestas de `MessageScrollerProps` (283)</summary>
+<summary>Props heredadas o compuestas de `MessageScrollerProps` (284)</summary>
 
 | Prop | Tipo | Opcional | Descripción | Origen |
 | --- | --- | --- | --- | --- |
@@ -368,6 +368,7 @@ export function Example() {
 | `typeof` | `string | undefined` | sí | — | `node_modules/.pnpm/@types+react@19.2.18/node_modules/@types/react/index.d.ts` |
 | `unselectable` | `"off" | "on" | undefined` | sí | — | `node_modules/.pnpm/@types+react@19.2.18/node_modules/@types/react/index.d.ts` |
 | `viewportClassName` | `string | undefined` | sí | — | `packages/nextjs/src/components/scroll-area.tsx` |
+| `virtualized` | `false | undefined` | sí | — | `packages/nextjs/src/components/scroll-area.tsx` |
 | `vocab` | `string | undefined` | sí | — | `node_modules/.pnpm/@types+react@19.2.18/node_modules/@types/react/index.d.ts` |
 
 </details>

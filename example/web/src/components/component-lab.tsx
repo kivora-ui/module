@@ -133,14 +133,6 @@ function ThemeDemo() {
   );
 }
 
-function QRCodeDemo() {
-  const [value, setValue] = useState('https://example.com');
-  return <div className="grid gap-4">
-    <K.Input aria-label="Contenido del QR" value={value} onChange={event => setValue(event.target.value)} />
-    <K.QRCode value={value} size={200} />
-  </div>;
-}
-
 function BarcodeDemo() {
   const samples: Record<K.BarcodeFormat, string> = {
     code128: 'KIVORA-12345', code39: 'KIVORA-12345', ean13: '5901234123457',
@@ -166,7 +158,6 @@ type Example = { name: string; description: string; render: () => ReactNode };
 export const examples: Record<string, Example> = {
   player: { name: 'Player', description: 'Video, audio, DRM, ads and offline playback.', render: () => <Link href="/player" className="underline">Abrir Player OTT</Link> },
   'file-upload': { name: 'FileUpload', description: 'Selecciona y sube archivos. Pausa, reanuda o reintenta.', render: () => <FileUploadDemo /> },
-  'qr-code': { name: 'QRCode', description: 'Genera un QR local para un enlace o texto.', render: () => <QRCodeDemo /> },
   barcode: { name: 'Barcode', description: 'Code 128, EAN, UPC, Data Matrix, PDF417 y Aztec.', render: () => <BarcodeDemo /> },
   accordion: {
     name: "Accordion",
@@ -402,20 +393,6 @@ export const examples: Record<string, Example> = {
       </K.Code>
     ),
   },
-  collapsible: {
-    name: "Collapsible",
-    description: "Detalles opcionales",
-    render: () => (
-      <K.Collapsible>
-        <K.CollapsibleTrigger asChild>
-          <K.Button variant="outline">Ver lote del producto</K.Button>
-        </K.CollapsibleTrigger>
-        <K.CollapsibleContent className="pt-4">
-          Lote OL-2026 · 24 unidades recibidas.
-        </K.CollapsibleContent>
-      </K.Collapsible>
-    ),
-  },
   command: {
     name: "Command",
     description: "Buscar y ejecutar una acción",
@@ -521,25 +498,42 @@ export const examples: Record<string, Example> = {
       </K.Drawer>
     ),
   },
-  "dropdown-menu": {
-    name: "DropdownMenu",
+  menu: {
+    name: "Menu",
     description: "Menú de acciones y selección",
     render: () => (
-      <K.DropdownMenu>
-        <K.DropdownMenuTrigger asChild>
+      <div className="grid gap-4">
+      <K.Menu>
+        <K.MenuTrigger asChild>
           <K.Button variant="outline">Acciones del producto</K.Button>
-        </K.DropdownMenuTrigger>
-        <K.DropdownMenuContent>
-          <K.DropdownMenuLabel>Producto</K.DropdownMenuLabel>
-          <K.DropdownMenuItem onSelect={notify}>
+        </K.MenuTrigger>
+        <K.MenuContent>
+          <K.MenuLabel>Producto</K.MenuLabel>
+          <K.MenuItem onSelect={notify}>
             Duplicar ficha
-          </K.DropdownMenuItem>
-          <K.DropdownMenuSeparator />
-          <K.DropdownMenuCheckboxItem>
+          </K.MenuItem>
+          <K.MenuSeparator />
+          <K.MenuCheckboxItem>
             Mostrar en destacados
-          </K.DropdownMenuCheckboxItem>
-        </K.DropdownMenuContent>
-      </K.DropdownMenu>
+          </K.MenuCheckboxItem>
+        </K.MenuContent>
+      </K.Menu>
+      <K.Menu variant="bar">
+        <K.MenuDropdown>
+          <K.MenuTrigger>Archivo</K.MenuTrigger>
+          <K.MenuContent>
+            <K.MenuItem onSelect={notify}>Nuevo pedido</K.MenuItem>
+            <K.MenuItem onSelect={notify}>Exportar</K.MenuItem>
+          </K.MenuContent>
+        </K.MenuDropdown>
+        <K.MenuDropdown>
+          <K.MenuTrigger>Vista</K.MenuTrigger>
+          <K.MenuContent>
+            <K.MenuCheckboxItem>Vista compacta</K.MenuCheckboxItem>
+          </K.MenuContent>
+        </K.MenuDropdown>
+      </K.Menu>
+      </div>
     ),
   },
   empty: {
@@ -702,27 +696,7 @@ export const examples: Record<string, Example> = {
       </K.Marker>
     ),
   },
-  menubar: {
-    name: "Menubar",
-    description: "Navegación entre menús con teclado",
-    render: () => (
-      <K.Menubar>
-        <K.MenubarMenu>
-          <K.MenubarTrigger>Archivo</K.MenubarTrigger>
-          <K.MenubarContent>
-            <K.MenubarItem onSelect={notify}>Nuevo pedido</K.MenubarItem>
-            <K.MenubarItem onSelect={notify}>Exportar</K.MenubarItem>
-          </K.MenubarContent>
-        </K.MenubarMenu>
-        <K.MenubarMenu>
-          <K.MenubarTrigger>Vista</K.MenubarTrigger>
-          <K.MenubarContent>
-            <K.MenubarCheckboxItem>Vista compacta</K.MenubarCheckboxItem>
-          </K.MenubarContent>
-        </K.MenubarMenu>
-      </K.Menubar>
-    ),
-  },
+
   message: {
     name: "Message",
     description: "Mensajes del equipo",
@@ -889,7 +863,7 @@ export const examples: Record<string, Example> = {
             </p>
           ))}
         </K.ScrollArea>
-        <K.VirtualScrollArea
+        <K.ScrollArea virtualized
           className="h-24 rounded border border-border"
           items={Array.from({ length: 100 }, (_, i) => `Referencia ${i + 1}`)}
           estimateSize={() => 34}
@@ -909,13 +883,14 @@ export const examples: Record<string, Example> = {
           options={options}
           placeholder="Seleccionar categoría"
         />
-        <K.CreatableSelect
+        <K.Select
+          isCreatable
           instanceId="lab-creatable"
           aria-label="Crear etiqueta"
           options={options}
           placeholder="Crear etiqueta"
         />
-        <K.AsyncSelect
+        <K.Select
           instanceId="lab-async"
           aria-label="Buscar categoría"
           defaultOptions
@@ -981,6 +956,17 @@ export const examples: Record<string, Example> = {
     name: "Slider",
     description: "Ajuste de un valor numérico",
     render: SliderDemo,
+  },
+  icon: {
+    name: "Icon",
+    description: "Iconos Lucide con tamaño, color y accesibilidad",
+    render: () => (
+      <div className="flex items-center gap-4">
+        <K.Icon icon={Check} label="Completado" color="#16a34a" />
+        <K.Icon icon={Heart} label="Favorito" size={32} className="text-destructive" />
+        <K.Icon icon={Search} label="Buscar" strokeWidth={1.5} />
+      </div>
+    ),
   },
   spinner: {
     name: "Spinner",

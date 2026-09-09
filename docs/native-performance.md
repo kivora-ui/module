@@ -7,17 +7,17 @@ La revisión cubre las 56 familias públicas de `@kivora/native`, sus contextos 
 | Grupo | Resultado |
 | --- | --- |
 | Checkbox, Switch, RadioGroup, Toggle, ToggleGroup, Tabs | Cambios lógicos inmediatos; transiciones visuales de 120 ms mediante Reanimated. RadioGroup y Tabs omiten seleccionar de nuevo el valor activo. Tabs controlado no actualiza estado interno. |
-| Accordion, Collapsible, HoverCard | Altura animada de 200 ms; contenido cerrado sin interacción ni acceso para lectores de pantalla. Se mide la altura natural para soportar contenido variable. |
+| Accordion, HoverCard | Altura animada de 200 ms; contenido cerrado sin interacción ni acceso para lectores de pantalla. Se mide la altura natural para soportar contenido variable. |
 | Popover | Panel flotante anclado, con opacidad/escala de 160 ms y respeto de reducir movimiento. Mide al abrir, cambiar la ventana o aparecer el teclado, sin un bucle continuo de medición. Cierra al tocar fuera o pulsar Atrás. |
-| BottomSheet, Select móvil, Drawer, Sheet inferior, Menubar | Comparten Gorhom y montaje inmediato del modal. Transición de 180 ms. Los contextos de selección, menús y paneles se estabilizan cuando sus datos no cambian. |
+| BottomSheet, Select móvil, Drawer, Sheet inferior, Menu | Comparten Gorhom y montaje inmediato del modal. Transición de 180 ms. Los contextos de selección, menús y paneles se estabilizan cuando sus datos no cambian. |
 | Dialog, Sheet lateral, Carousel, MessageScroller | Se conserva el movimiento nativo existente y se respeta reducir movimiento. Carousel evita el avance automático con esa preferencia. |
 | Slider, Progress, AttachmentProgress | Slider omite movimientos que no cambian de paso; no se interpola el arrastre para evitar que el indicador persiga al dedo. Progress interpola 120 ms, sin retrasar su valor accesible. |
 | Input, Textarea, InputOTP, DatePicker, Calendar, Questionnaire | Estado de los ejemplos aislado por formulario. Calendar memoriza las etiquetas y los días por mes/idioma; seleccionar una fecha no reconstruye decenas de formateadores. |
 | Chart, Pagination, Tooltip, Toast, Button, ButtonGroup | Interacciones limitadas a su ejemplo. Button mantiene su respuesta de pulsación y respeta reducir movimiento. Tooltip usa un temporizador de cierre. Toast delega la entrega y la permanencia a las notificaciones locales del sistema. |
-| ScrollArea, VirtualScrollArea, Table, Message, Code, Carousel | Los contenedores pequeños mantienen su composición. VirtualScrollArea sigue usando FlatList. La galería usa FlashList 2 sin un ScrollView vertical exterior. |
+| ScrollArea, Table, Message, Code, Carousel | Los contenedores pequeños mantienen su composición. ScrollArea virtualized sigue usando FlatList. La galería usa FlashList 2 sin un ScrollView vertical exterior. |
 | Alert, Avatar, AspectRatio, Badge, Breadcrumb, Bubble, Card, Direction, Empty, Field, InputGroup, Item, Kbd, Label, Marker, Separator, Skeleton, Spinner, Typography | No se añaden animaciones continuas ni estados auxiliares a componentes de presentación. Spinner conserva el indicador nativo de actividad. |
 
-DropdownMenu, Resizable, Command, ContextMenu y NavigationMenu se retiran de las exportaciones, archivos y ejemplos nativos por decisión de producto. Siguen disponibles en web. La prueba de cobertura registra expresamente estas excepciones.
+Resizable, Command, ContextMenu y NavigationMenu se retiran de las exportaciones, archivos y ejemplos nativos por decisión de producto. Siguen disponibles en web. La prueba de cobertura registra expresamente estas excepciones.
 
 ## Galería y listas
 

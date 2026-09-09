@@ -1,14 +1,14 @@
 # Cobertura de componentes React Native
 
-La biblioteca incluye **56 familias nativas y 57 ejemplos**. Next.js tiene 60 familias: DropdownMenu, Resizable, Command, ContextMenu y NavigationMenu se han retirado deliberadamente de React Native; BottomSheet es una familia propia de la plataforma. Los helpers internos de animación no cuentan como familias.
+La biblioteca incluye **56 familias nativas y 57 ejemplos**. Next.js tiene 60 familias: Resizable, Command, ContextMenu y NavigationMenu se han retirado deliberadamente de React Native; BottomSheet es una familia propia de la plataforma. Los helpers internos de animación no cuentan como familias.
 
 La galería usa FlashList 2 y ejemplos con estado independiente. Acceso: Ajustes → Ver componentes. Los valores editables se conservan al buscar y reciclar filas.
 
 ## Familias añadidas
 
-`aspect-ratio`, `attachment`, `breadcrumb`, `bubble`, `button-group`, `calendar`, `carousel`, `chart`, `code`, `date-picker`, `direction`, `drawer`, `empty`, `field`, `input-group`, `input-otp`, `item`, `kbd`, `marker`, `menubar`, `message`, `message-scroller`, `pagination`, `questionnaire`, `scroll-area`, `sheet`, `spinner`, `toast`, `toggle`, `toggle-group`, `typography`.
+`aspect-ratio`, `attachment`, `breadcrumb`, `bubble`, `button-group`, `calendar`, `carousel`, `chart`, `code`, `date-picker`, `direction`, `drawer`, `empty`, `field`, `input-group`, `input-otp`, `item`, `kbd`, `marker`, `menu`, `message`, `message-scroller`, `pagination`, `questionnaire`, `scroll-area`, `sheet`, `spinner`, `toast`, `toggle`, `toggle-group`, `typography`.
 
-Son 31 familias nuevas. Drawer y Sheet inferior utilizan Gorhom; ScrollArea utiliza ScrollView, VirtualScrollArea utiliza FlatList y Spinner utiliza ActivityIndicator. FlashList se instala en la app de ejemplo; VirtualScrollArea conserva FlatList para compatibilidad con la API nativa.
+Son 31 familias nuevas. Drawer y Sheet inferior utilizan Gorhom; ScrollArea utiliza ScrollView, ScrollArea virtualized utiliza FlatList y Spinner utiliza ActivityIndicator. FlashList se instala en la app de ejemplo; ScrollArea virtualized conserva FlatList para compatibilidad con la API nativa.
 
 ## API y adaptación a React Native
 

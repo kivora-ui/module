@@ -47,7 +47,8 @@ import { Barcode } from "@kivora/native";
 import { Barcode } from "@kivora/nextjs";
 
 export function Example() {
-  return <Barcode format="code128" value="KIV-2026-0001" />;
+  return <><Barcode format="code128" value="KIVORA-2026" />
+    <Barcode format="qrcode" value="https://kivora.app" width={200} height={200} /></>;
 }
 ```
 
@@ -57,7 +58,8 @@ export function Example() {
 import { Barcode } from "@kivora/native";
 
 export function Example() {
-  return <Barcode format="code128" value="KIV-2026-0001" />;
+  return <><Barcode format="code128" value="KIVORA-2026" />
+    <Barcode format="qrcode" value="https://kivora.app" width={200} height={200} /></>;
 }
 ```
 

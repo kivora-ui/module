@@ -1,6 +1,7 @@
+import userEvent from "@testing-library/user-event";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
-import { AsyncSelect, CreatableSelect, Select } from "./select";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { Select } from "./select";
 
 const options = [
   { label: "Personal", value: "personal" },
@@ -8,6 +9,66 @@ const options = [
 ];
 
 describe("Select", () => {
+  beforeEach(() => {
+    window.innerWidth = 1280;
+    window.dispatchEvent(new Event("resize"));
+  });
+
+  it("clears a controlled value when it becomes null", () => {
+    const { rerender } = render(<Select options={options} value={options[0]} placeholder="Choose" />);
+    rerender(<Select options={options} value={null} placeholder="Choose" />);
+    expect(screen.getByText("Choose")).toBeInTheDocument();
+    expect(screen.queryByText("Personal")).not.toBeInTheDocument();
+  });
+
+  it("creates a new option using the shared API", () => {
+    const onChange = vi.fn();
+    render(<Select isCreatable options={options} onChange={onChange} />);
+    fireEvent.change(screen.getByRole("combobox"), { target: { value: "New tag" } });
+    fireEvent.click(screen.getByText('Create "New tag"'));
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({ label: "New tag", value: "New tag" }),
+      expect.objectContaining({ action: "create-option" })
+    );
+  });
+
+  it("combines asynchronous search and creation", async () => {
+    const onCreateOption = vi.fn();
+    const loadOptions = vi.fn(async () => options);
+    render(<Select isCreatable loadOptions={loadOptions} onCreateOption={onCreateOption} />);
+    fireEvent.change(screen.getByRole("combobox"), { target: { value: "New tag" } });
+    await waitFor(() => expect(screen.getByText("Personal")).toBeInTheDocument());
+    fireEvent.click(await screen.findByText('Create "New tag"'));
+    expect(loadOptions).toHaveBeenCalledWith("New tag", expect.any(Function));
+    expect(onCreateOption).toHaveBeenCalledWith("New tag");
+  });
+
+  it("creates options inside the mobile sheet", async () => {
+    window.innerWidth = 375;
+    const onChange = vi.fn();
+    render(<Select isCreatable options={options} onChange={onChange} mobileSheetTitle="Tags" />);
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("combobox"));
+    await user.type(await screen.findByRole("textbox", { name: "Search Tags" }), "New tag");
+    fireEvent.click(screen.getByRole("button", { name: 'Create "New tag"' }));
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({ value: "New tag" }), expect.objectContaining({ action: "create-option" })
+    );
+  });
+
+  it("loads callback options when searching in the mobile sheet", async () => {
+    window.innerWidth = 375;
+    render(<Select mobileSheetTitle="Tags" loadOptions={(query, callback) => {
+      callback(options.filter(option => option.label.includes(query)));
+    }} />);
+    fireEvent.mouseDown(screen.getByRole("combobox"));
+    fireEvent.change(await screen.findByRole("textbox", { name: "Search Tags" }), {
+      target: { value: "Team" }
+    });
+    expect(await screen.findByRole("button", { name: "Team" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Personal" })).not.toBeInTheDocument();
+  });
+
   it("shows a selected value", () => {
     render(<Select aria-label="Workspace" options={options} value={options[1]} />);
 
@@ -48,7 +109,8 @@ describe("Select", () => {
     window.dispatchEvent(new Event("resize"));
 
     render(
-      <CreatableSelect
+      <Select
+        isCreatable
         aria-label="Tag"
         mobileSheetTitle="Choose tag"
         options={options}
@@ -69,7 +131,7 @@ describe("Select", () => {
     window.dispatchEvent(new Event("resize"));
 
     render(
-      <AsyncSelect
+      <Select
         aria-label="Repository"
         defaultOptions
         loadOptions={() => Promise.resolve(options)}

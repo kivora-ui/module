@@ -96,27 +96,18 @@ export function createPlan(root, framework, managerOverride) {
   if (framework === 'nextjs') {
     requireRange('next', '>=13', true);
     requireRange('react-dom', '>=18', true);
-    requireRange('tailwindcss', '>=4.1 <5');
-    requireRange('@tailwindcss/postcss', '>=4.1 <5');
+    requireRange('@kivora/nextjs', '>=0.2.0');
     dependency('@kivora/nextjs', 'latest');
-    dependency('tailwindcss', '^4.1', true);
-    dependency('@tailwindcss/postcss', '^4.1', true);
     const candidates = ['app/layout', 'src/app/layout', 'pages/_app', 'src/pages/_app'].flatMap(base => extensions.map(ext => `${base}.${ext}`));
     // Both routers can coexist; each root gets its own integration.
     const entries = candidates.filter(file => existsSync(join(root, file)));
     if (!entries.length || new Set(entries.map(f => f.replace(/\.[^.]+$/, ''))).size !== entries.length) throw new Error('No se encontró un layout de App Router o pages/_app único por router.');
     config('next.config', 'next.config.mjs', 'export default {};\n', text => setConfig(text, ['transpilePackages'], arrayWith(["'@kivora/nextjs'", "'@kivora/theme'"])));
-    if (pkg.postcss || ['.postcssrc', '.postcssrc.json', '.postcssrc.js', '.postcssrc.yml'].some(f => existsSync(join(root, f)))) throw new Error('PostCSS usa una configuración alternativa; unifícala en postcss.config antes de continuar.');
-    config('postcss.config', 'postcss.config.mjs', 'export default {};\n', text => setConfig(text, ['plugins', '@tailwindcss/postcss'], node => {
-      if (node && node.getText() === 'false') throw new Error('El plugin Tailwind está desactivado.');
-      return node?.getText() ?? '{}';
-    }));
     for (const entry of entries) {
       const directory = dirname(entry);
       const typed = entry.endsWith('.tsx');
       change(`${directory}/kivora-provider.${typed ? 'tsx' : 'jsx'}`, provider(webProvider, typed), true);
-      const sourcePath = relative(join(root, directory), join(root, 'node_modules/@kivora/nextjs/dist')).replaceAll('\\', '/');
-      change(`${directory}/kivora.css`, `@import "@kivora/nextjs/styles.css";\n@source "${sourcePath}";\n`, true);
+      change(`${directory}/kivora.css`, '@import "@kivora/nextjs/styles.css";\n', true);
       let content = wrapEntry(read(safe(entry)), entry, entry.includes('/layout.') ? 'app' : 'component', './kivora-provider');
       const ast = parse(content, entry);
       if (!ast.statements.some(s => ts.isImportDeclaration(s) && s.moduleSpecifier.text === './kivora.css')) {

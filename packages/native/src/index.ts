@@ -26,12 +26,6 @@ export { Button } from "./components/button";
 export type { ButtonProps } from "./components/button";
 export { Checkbox } from "./components/checkbox";
 export type { CheckboxProps } from "./components/checkbox";
-export { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./components/collapsible";
-export type {
-  CollapsibleContentProps,
-  CollapsibleProps,
-  CollapsibleTriggerProps
-} from "./components/collapsible";
 export {
   Dialog,
   DialogClose,
@@ -171,7 +165,6 @@ export * from "./components/kbd";
 
 export * from "./components/marker";
 
-export * from "./components/menubar";
 
 export * from "./components/message";
 
@@ -198,8 +191,6 @@ export * from "./components/toggle-group";
 export * from "./components/typography";
 export { Barcode } from './components/barcode';
 export type { BarcodeProps } from './components/barcode';
-export { QRCode } from './components/qr-code';
-export type { QRCodeProps } from './components/qr-code';
 export { generateCode, barcodeFormats } from '@kivora/codes';
 export type { CodeOptions, GeneratedCode, BarcodeFormat, QRErrorCorrectionLevel } from '@kivora/codes';
 
@@ -222,3 +213,8 @@ export { OfflineDownloadManager, OfflineUnsupportedError, useOfflineDownloads } 
 export type { OfflineFileSystem } from './components/player/offline';
 export { createOfflineDownloadManager } from './components/player/offline-native';
 export type { OfflineDownloadState, OfflineDownloadEntry, OfflineDrmProvider } from './components/player/types';
+
+export { Icon } from "./components/icon";
+export type { IconProps } from "./components/icon";
+
+export * from "./components/menu";

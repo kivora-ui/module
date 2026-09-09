@@ -2,6 +2,7 @@ import { useExampleState } from './example-state';
 import React from 'react';
 import { Text, View } from 'react-native';
 import * as K from '@kivora/native';
+import Check from 'lucide-react-native/icons/check';
 
 const t = 'text-base text-foreground';
 const trigger = 'min-h-12 justify-center rounded-lg border border-border px-3';
@@ -396,25 +397,25 @@ const ExampleMarker = React.memo(function ExampleMarker() {
   );
 });
 
-const ExampleMenubar = React.memo(function ExampleMenubar() {
+const ExampleMenu = React.memo(function ExampleMenu() {
   const [menu, setMenu] = useExampleState(
-    'ExampleMenubar:menu',
+    'ExampleMenu:menu',
     'Sin acción seleccionada',
   );
   return (
-    <K.Menubar>
-      <K.MenubarMenu>
-        <K.MenubarTrigger className={trigger}>
+    <K.Menu variant="bar">
+      <K.MenuDropdown>
+        <K.MenuTrigger className={trigger}>
           <Text className={t}>Ventas</Text>
-        </K.MenubarTrigger>
-        <K.MenubarContent>
-          <K.MenubarItem onSelect={() => setMenu('Informe preparado')}>
+        </K.MenuTrigger>
+        <K.MenuContent>
+          <K.MenuItem onSelect={() => setMenu('Informe preparado')}>
             Preparar informe
-          </K.MenubarItem>
-        </K.MenubarContent>
-      </K.MenubarMenu>
+          </K.MenuItem>
+        </K.MenuContent>
+      </K.MenuDropdown>
       <Text className={t}>{menu}</Text>
-    </K.Menubar>
+    </K.Menu>
   );
 });
 
@@ -498,6 +499,7 @@ const ExampleQuestionnaire = React.memo(function ExampleQuestionnaire() {
 
 const ExampleScrollArea = React.memo(function ExampleScrollArea() {
   return (
+    <View className="gap-4">
     <K.ScrollArea style={{ height: 160 }} nestedScrollEnabled>
       {products.concat(products, products).map((name, i) => (
         <Text key={i} className="py-3 text-foreground">
@@ -505,6 +507,12 @@ const ExampleScrollArea = React.memo(function ExampleScrollArea() {
         </Text>
       ))}
     </K.ScrollArea>
+    <K.ScrollArea virtualized style={{ height: 160 }} nestedScrollEnabled
+      data={Array.from({ length: 1000 }, (_, i) => `Producto ${i + 1}`)}
+      keyExtractor={(item) => item}
+      renderItem={({ item }) => <Text className={t} style={{ height: 40 }}>{item}</Text>}
+    />
+    </View>
   );
 });
 
@@ -678,6 +686,7 @@ export const extendedComponentExamples = [
     description: 'Fila de producto con título y descripción.',
     content: <ExampleItem />,
   },
+  { name: 'Icon', description: 'Iconos Lucide accesibles.', content: <K.Icon icon={Check} label="Completado" /> },
   {
     name: 'Kbd',
     description: 'Etiqueta para un atajo de teclado físico.',
@@ -689,9 +698,9 @@ export const extendedComponentExamples = [
     content: <ExampleMarker />,
   },
   {
-    name: 'Menubar',
+    name: 'Menu',
     description: 'Menús de acciones adaptados a pulsación.',
-    content: <ExampleMenubar />,
+    content: <ExampleMenu />,
   },
   {
     name: 'Message',

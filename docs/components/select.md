@@ -16,7 +16,7 @@ Selector de opciones con trigger, lista, grupos y variantes según plataforma.
 ### @kivora/nextjs
 
 ```tsx
-import { AsyncSelect, CreatableSelect, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectScrollDownButton, SelectScrollUpButton, SelectSeparator, SelectTrigger, SelectValue } from "@kivora/nextjs";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectScrollDownButton, SelectScrollUpButton, SelectSeparator, SelectTrigger, SelectValue } from "@kivora/nextjs";
 ```
 
 ### @kivora/native
@@ -29,8 +29,8 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectScro
 
 ### Web
 
-- **Componentes y helpers visuales:** `AsyncSelect`, `CreatableSelect`, `Select`, `SelectContent`, `SelectGroup`, `SelectItem`, `SelectLabel`, `SelectScrollDownButton`, `SelectScrollUpButton`, `SelectSeparator`, `SelectTrigger`, `SelectValue`
-- **Tipos de props:** `AsyncSelectProps`, `CreatableSelectProps`, `SelectProps`
+- **Componentes y helpers visuales:** `Select`, `SelectContent`, `SelectGroup`, `SelectItem`, `SelectLabel`, `SelectScrollDownButton`, `SelectScrollUpButton`, `SelectSeparator`, `SelectTrigger`, `SelectValue`
+- **Tipos de props:** `SelectProps`
 - **Tipos relacionados:** `SelectGroupOption`, `SelectOption`
 
 ### Native
@@ -52,7 +52,15 @@ const options = [
 ];
 
 export function Example() {
-  return <Select options={options} placeholder="Selecciona prioridad" />;
+  return (
+    <>
+      <Select options={options} placeholder="Selecciona prioridad" />
+      <Select isCreatable isMulti options={options} placeholder="Selecciona o crea" />
+      <Select defaultOptions cacheOptions loadOptions={async (query) =>
+        options.filter((option) => option.label.toLowerCase().includes(query.toLowerCase()))
+      } />
+    </>
+  );
 }
 ```
 
@@ -85,20 +93,23 @@ export function Example() {
 
 ### Web
 
-#### `AsyncSelectProps`
+#### `SelectProps`
 
 - **Definido en:** `packages/nextjs/src/components/select.tsx`
-- **Composición base:** `Omit<AsyncProps<Option, IsMulti, Group>, "unstyled"> & BaseSelectProps<Option, IsMulti, Group>`
+- **Composición base:** `Omit<AsyncCreatableProps<Option, IsMulti, Group>, "unstyled"> & BaseSelectProps<Option, IsMulti, Group> & { /** Allow creating options. Can be combined with loadOptions. */ isCreatable?: boolean; }`
 
 **Props propias**
 
-_Sin props documentadas en este nivel._
+| Prop | Tipo | Opcional | Descripción |
+| --- | --- | --- | --- |
+| `isCreatable` | `boolean | undefined` | sí | Allow creating options. Can be combined with loadOptions. |
 
 <details>
-<summary>Props heredadas o compuestas de `AsyncSelectProps` (81)</summary>
+<summary>Props heredadas o compuestas de `SelectProps` (87)</summary>
 
 | Prop | Tipo | Opcional | Descripción | Origen |
 | --- | --- | --- | --- | --- |
+| `allowCreateWhileLoading` | `boolean | undefined` | sí | Allow options to be created while the `isLoading` prop is true. Useful to prevent the "create new ..." option being displayed while async results are still being loaded. | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/useCreatable.d.ts` |
 | `aria-errormessage` | `string | undefined` | sí | HTML ID of an element containing an error message related to the input* | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
 | `aria-invalid` | `boolean | "true" | "false" | "grammar" | "spelling" | undefined` | sí | Indicate if the value entered in the field is invalid * | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
 | `aria-label` | `string | undefined` | sí | Aria label (for assistive tech) | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
@@ -117,107 +128,10 @@ _Sin props documentadas en este nivel._
 | `closeMenuOnSelect` | `boolean | undefined` | sí | Close the select menu when the user selects an option | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
 | `components` | `Partial<SelectComponents<Option, IsMulti, Group>> | undefined` | sí | This complex object includes all the compositional components that are used in `react-select`. If you wish to overwrite a component, pass in an object with the appropriate namespace. If you only wish to restyle a component, we recommend using the `styles` prop instead. For a list of the components that can be passed in, and the shape that will be passed to them, see [the components docs](/components) | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
 | `controlShouldRenderValue` | `boolean | undefined` | sí | Whether the value of the select, e.g. SingleValue, should be displayed in the control. | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `defaultInputValue` | `string | undefined` | sí | — | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/useStateManager.d.ts` |
-| `defaultMenuIsOpen` | `boolean | undefined` | sí | — | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/useStateManager.d.ts` |
-| `defaultOptions` | `boolean | OptionsOrGroups<Option, Group> | undefined` | sí | The default set of options to show before the user starts searching. When set to `true`, the results for loadOptions('') will be autoloaded. | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/useAsync.d.ts` |
-| `defaultValue` | `PropsValue<Option> | undefined` | sí | — | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/useStateManager.d.ts` |
-| `delimiter` | `string | undefined` | sí | Delimiter used to join multiple values into a single HTML Input value | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `escapeClearsValue` | `boolean | undefined` | sí | Clear all values when the user presses escape AND the menu is closed | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `filterOption` | `((option: FilterOptionOption<Option>, inputValue: string) => boolean) | null | undefined` | sí | Custom method to filter whether an option should be displayed in the menu | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `form` | `string | undefined` | sí | Sets the form attribute on the input | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `formatGroupLabel` | `((group: Group) => ReactNode) | undefined` | sí | Formats group labels in the menu as React components An example can be found in the [Replacing builtins](/advanced#replacing-builtins) documentation. | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `formatOptionLabel` | `((data: Option, formatOptionLabelMeta: FormatOptionLabelMeta<Option>) => ReactNode) | undefined` | sí | Formats option labels in the menu and control as React components | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `getOptionLabel` | `GetOptionLabel<Option> | undefined` | sí | Resolves option data to a string to be displayed as the label by components Note: Failure to resolve to a string type can interfere with filtering and screen reader support. | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `getOptionValue` | `GetOptionValue<Option> | undefined` | sí | Resolves option data to a string to compare options and specify value attributes | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `hideSelectedOptions` | `boolean | undefined` | sí | Hide the selected option from the menu | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `id` | `string | undefined` | sí | The id to set on the SelectContainer component. | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `inputId` | `string | undefined` | sí | The id of the search input | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `inputValue` | `string | undefined` | sí | The value of the search input | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `instanceId` | `string | number | undefined` | sí | Define an id prefix for the select components e.g. {your-id}-value | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `isClearable` | `boolean | undefined` | sí | Is the select value clearable | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `isDisabled` | `boolean | undefined` | sí | Is the select disabled | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `isLoading` | `boolean | undefined` | sí | Is the select in a state of loading (async) Will cause the select to be displayed in the loading state, even if the Async select is not currently waiting for loadOptions to resolve | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `isMulti` | `IsMulti | undefined` | sí | Support multiple selected options | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `isOptionDisabled` | `((option: Option, selectValue: Options<Option>) => boolean) | undefined` | sí | Override the built-in logic to detect whether an option is disabled An example can be found in the [Replacing builtins](/advanced#replacing-builtins) documentation. | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `isOptionSelected` | `((option: Option, selectValue: Options<Option>) => boolean) | undefined` | sí | Override the built-in logic to detect whether an option is selected | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `isRtl` | `boolean | undefined` | sí | Is the select direction right-to-left | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `isSearchable` | `boolean | undefined` | sí | Whether to enable search functionality | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `loadingMessage` | `((obj: { inputValue: string; }) => ReactNode) | undefined` | sí | Async: Text to display when loading options | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `loadOptions` | `((inputValue: string, callback: (options: OptionsOrGroups<Option, Group>) => void) => void | Promise<OptionsOrGroups<Option, Group>>) | undefined` | sí | Function that returns a promise, which is the set of options to be used once the promise resolves. | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/useAsync.d.ts` |
-| `maxMenuHeight` | `number | undefined` | sí | Maximum height of the menu before scrolling | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `menuClassName` | `string | undefined` | sí | — | `packages/nextjs/src/components/select.tsx` |
-| `menuIsOpen` | `boolean | undefined` | sí | Whether the menu is open | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `menuPlacement` | `MenuPlacement | undefined` | sí | Default placement of the menu in relation to the control. 'auto' will flip when there isn't enough space below the control. | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `menuPortalTarget` | `HTMLElement | null | undefined` | sí | Whether the menu should use a portal, and where it should attach An example can be found in the [Portaling](/advanced#portaling) documentation | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `menuPosition` | `MenuPosition | undefined` | sí | The CSS position value of the menu, when "fixed" extra layout management is required | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `menuShouldBlockScroll` | `boolean | undefined` | sí | Whether to block scroll events when the menu is open | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `menuShouldScrollIntoView` | `boolean | undefined` | sí | Whether the menu should be scrolled into view when it opens | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `minMenuHeight` | `number | undefined` | sí | Minimum height of the menu before flipping | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `mobileSheetOptions` | `OptionsOrGroups<Option, Group> | undefined` | sí | — | `packages/nextjs/src/components/select.tsx` |
-| `mobileSheetTitle` | `string | undefined` | sí | — | `packages/nextjs/src/components/select.tsx` |
-| `name` | `string | undefined` | sí | Name of the HTML Input (optional - without this, no input will be rendered) | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `noOptionsMessage` | `((obj: { inputValue: string; }) => ReactNode) | undefined` | sí | Text to display when there are no options | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `onBlur` | `React.FocusEventHandler<HTMLInputElement> | undefined` | sí | Handle blur events on the control | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `onChange` | `((newValue: OnChangeValue<Option, IsMulti>, actionMeta: ActionMeta<Option>) => void) | undefined` | sí | Handle change events on the select | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `onFocus` | `React.FocusEventHandler<HTMLInputElement> | undefined` | sí | Handle focus events on the control | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `onInputChange` | `((newValue: string, actionMeta: InputActionMeta) => void) | undefined` | sí | Handle change events on the input | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `onKeyDown` | `React.KeyboardEventHandler<HTMLDivElement> | undefined` | sí | Handle key down events on the select | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `onMenuClose` | `(() => void) | undefined` | sí | Handle the menu closing | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `onMenuOpen` | `(() => void) | undefined` | sí | Handle the menu opening | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `onMenuScrollToBottom` | `((event: WheelEvent | TouchEvent) => void) | undefined` | sí | Fired when the user scrolls to the bottom of the menu | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `onMenuScrollToTop` | `((event: WheelEvent | TouchEvent) => void) | undefined` | sí | Fired when the user scrolls to the top of the menu | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `openMenuOnClick` | `boolean | undefined` | sí | Allows control of whether the menu is opened when the Select is clicked | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `openMenuOnFocus` | `boolean | undefined` | sí | Allows control of whether the menu is opened when the Select is focused | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `optionClassName` | `string | undefined` | sí | — | `packages/nextjs/src/components/select.tsx` |
-| `options` | `OptionsOrGroups<Option, Group> | undefined` | sí | Array of options that populate the select menu | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `pageSize` | `number | undefined` | sí | Number of options to jump in menu when page{up\|down} keys are used | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `placeholder` | `string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<AwaitedReactNode> | null | undefined` | sí | Placeholder for the select value | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `required` | `boolean | undefined` | sí | Marks the value-holding input as required for form validation | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `screenReaderStatus` | `((obj: { count: number; }) => string) | undefined` | sí | Status to relay to screen readers | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `styles` | `StylesConfig<Option, IsMulti, Group> | undefined` | sí | Style modifier methods A basic example can be found at the bottom of the [Replacing builtins](/advanced#replacing-builtins) documentation. | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `tabIndex` | `number | undefined` | sí | Sets the tabIndex attribute on the input | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `tabSelectsValue` | `boolean | undefined` | sí | Select the currently focused option when the user presses tab | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `theme` | `ThemeConfig | undefined` | sí | Theme modifier method | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `triggerClassName` | `string | undefined` | sí | — | `packages/nextjs/src/components/select.tsx` |
-| `value` | `PropsValue<Option> | undefined` | sí | The value of the select; reflected by the selected option | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-
-</details>
-
-#### `CreatableSelectProps`
-
-- **Definido en:** `packages/nextjs/src/components/select.tsx`
-- **Composición base:** `Omit<CreatableProps<Option, IsMulti, Group>, "unstyled"> & BaseSelectProps<Option, IsMulti, Group>`
-
-**Props propias**
-
-_Sin props documentadas en este nivel._
-
-<details>
-<summary>Props heredadas o compuestas de `CreatableSelectProps` (84)</summary>
-
-| Prop | Tipo | Opcional | Descripción | Origen |
-| --- | --- | --- | --- | --- |
-| `allowCreateWhileLoading` | `boolean | undefined` | sí | Allow options to be created while the `isLoading` prop is true. Useful to prevent the "create new ..." option being displayed while async results are still being loaded. | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/useCreatable.d.ts` |
-| `aria-errormessage` | `string | undefined` | sí | HTML ID of an element containing an error message related to the input* | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `aria-invalid` | `boolean | "true" | "false" | "grammar" | "spelling" | undefined` | sí | Indicate if the value entered in the field is invalid * | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `aria-label` | `string | undefined` | sí | Aria label (for assistive tech) | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `aria-labelledby` | `string | undefined` | sí | HTML ID of an element that should be used as the label (for assistive tech) | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `aria-live` | `"off" | "assertive" | "polite" | undefined` | sí | Used to set the priority with which screen reader should treat updates to live regions. The possible settings are: off, polite (default) or assertive | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `ariaLiveMessages` | `AriaLiveMessages<Option, IsMulti, Group> | undefined` | sí | Customise the messages used by the aria-live component | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `autoFocus` | `boolean | undefined` | sí | Focus the control when it is mounted | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `backspaceRemovesValue` | `boolean | undefined` | sí | Remove the currently focused option when the user presses backspace when Select isClearable or isMulti | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `blurInputOnSelect` | `boolean | undefined` | sí | Remove focus from the input when the user selects an option (handy for dismissing the keyboard on touch devices) | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `captureMenuScroll` | `boolean | undefined` | sí | When the user reaches the top/bottom of the menu, prevent scroll on the scroll-parent | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `className` | `string | undefined` | sí | Sets a className attribute on the outer component | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `classNamePrefix` | `string | null | undefined` | sí | If provided, all inner components will be given a prefixed className attribute. This is useful when styling via CSS classes instead of the Styles API approach. | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `classNames` | `ClassNamesConfig<Option, IsMulti, Group> | undefined` | sí | Provide classNames based on state for each inner component | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `closeMenuOnScroll` | `boolean | ((event: Event) => boolean) | undefined` | sí | If `true`, close the select menu when the user scrolls the document/body. If a function, takes a standard javascript `ScrollEvent` you return a boolean: `true` => The menu closes `false` => The menu stays open This is useful when you have a scrollable modal and want to portal the menu out, but want to avoid graphical issues. | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `closeMenuOnSelect` | `boolean | undefined` | sí | Close the select menu when the user selects an option | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `components` | `Partial<SelectComponents<Option, IsMulti, Group>> | undefined` | sí | This complex object includes all the compositional components that are used in `react-select`. If you wish to overwrite a component, pass in an object with the appropriate namespace. If you only wish to restyle a component, we recommend using the `styles` prop instead. For a list of the components that can be passed in, and the shape that will be passed to them, see [the components docs](/components) | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `controlShouldRenderValue` | `boolean | undefined` | sí | Whether the value of the select, e.g. SingleValue, should be displayed in the control. | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
 | `createOptionPosition` | `"first" | "last" | undefined` | sí | Sets the position of the createOption element in your options list. Defaults to 'last' | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/useCreatable.d.ts` |
 | `defaultInputValue` | `string | undefined` | sí | — | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/useStateManager.d.ts` |
 | `defaultMenuIsOpen` | `boolean | undefined` | sí | — | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/useStateManager.d.ts` |
+| `defaultOptions` | `boolean | OptionsOrGroups<Option, Group> | undefined` | sí | The default set of options to show before the user starts searching. When set to `true`, the results for loadOptions('') will be autoloaded. | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/useAsync.d.ts` |
 | `defaultValue` | `PropsValue<Option> | undefined` | sí | — | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/useStateManager.d.ts` |
 | `delimiter` | `string | undefined` | sí | Delimiter used to join multiple values into a single HTML Input value | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
 | `escapeClearsValue` | `boolean | undefined` | sí | Clear all values when the user presses escape AND the menu is closed | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
@@ -236,7 +150,7 @@ _Sin props documentadas en este nivel._
 | `instanceId` | `string | number | undefined` | sí | Define an id prefix for the select components e.g. {your-id}-value | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
 | `isClearable` | `boolean | undefined` | sí | Is the select value clearable | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
 | `isDisabled` | `boolean | undefined` | sí | Is the select disabled | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `isLoading` | `boolean | undefined` | sí | Is the select in a state of loading (async) | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
+| `isLoading` | `boolean | undefined` | sí | Is the select in a state of loading (async) Will cause the select to be displayed in the loading state, even if the Async select is not currently waiting for loadOptions to resolve | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
 | `isMulti` | `IsMulti | undefined` | sí | Support multiple selected options | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
 | `isOptionDisabled` | `((option: Option, selectValue: Options<Option>) => boolean) | undefined` | sí | Override the built-in logic to detect whether an option is disabled An example can be found in the [Replacing builtins](/advanced#replacing-builtins) documentation. | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
 | `isOptionSelected` | `((option: Option, selectValue: Options<Option>) => boolean) | undefined` | sí | Override the built-in logic to detect whether an option is selected | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
@@ -244,6 +158,7 @@ _Sin props documentadas en este nivel._
 | `isSearchable` | `boolean | undefined` | sí | Whether to enable search functionality | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
 | `isValidNewOption` | `((inputValue: string, value: Options<Option>, options: OptionsOrGroups<Option, Group>, accessors: Accessors<Option>) => boolean) | undefined` | sí | Determines whether the "create new ..." option should be displayed based on the current input value, select value and options array. | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/useCreatable.d.ts` |
 | `loadingMessage` | `((obj: { inputValue: string; }) => ReactNode) | undefined` | sí | Async: Text to display when loading options | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
+| `loadOptions` | `((inputValue: string, callback: (options: OptionsOrGroups<Option, Group>) => void) => void | Promise<OptionsOrGroups<Option, Group>>) | undefined` | sí | Function that returns a promise, which is the set of options to be used once the promise resolves. | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/useAsync.d.ts` |
 | `maxMenuHeight` | `number | undefined` | sí | Maximum height of the menu before scrolling | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
 | `menuClassName` | `string | undefined` | sí | — | `packages/nextjs/src/components/select.tsx` |
 | `menuIsOpen` | `boolean | undefined` | sí | Whether the menu is open | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
@@ -260,101 +175,6 @@ _Sin props documentadas en este nivel._
 | `onBlur` | `React.FocusEventHandler<HTMLInputElement> | undefined` | sí | Handle blur events on the control | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
 | `onChange` | `((newValue: OnChangeValue<Option, IsMulti>, actionMeta: ActionMeta<Option>) => void) | undefined` | sí | Handle change events on the select | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
 | `onCreateOption` | `((inputValue: string) => void) | undefined` | sí | If provided, this will be called with the input value when a new option is created, and `onChange` will **not** be called. Use this when you need more control over what happens when new options are created. | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/useCreatable.d.ts` |
-| `onFocus` | `React.FocusEventHandler<HTMLInputElement> | undefined` | sí | Handle focus events on the control | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `onInputChange` | `((newValue: string, actionMeta: InputActionMeta) => void) | undefined` | sí | Handle change events on the input | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `onKeyDown` | `React.KeyboardEventHandler<HTMLDivElement> | undefined` | sí | Handle key down events on the select | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `onMenuClose` | `(() => void) | undefined` | sí | Handle the menu closing | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `onMenuOpen` | `(() => void) | undefined` | sí | Handle the menu opening | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `onMenuScrollToBottom` | `((event: WheelEvent | TouchEvent) => void) | undefined` | sí | Fired when the user scrolls to the bottom of the menu | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `onMenuScrollToTop` | `((event: WheelEvent | TouchEvent) => void) | undefined` | sí | Fired when the user scrolls to the top of the menu | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `openMenuOnClick` | `boolean | undefined` | sí | Allows control of whether the menu is opened when the Select is clicked | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `openMenuOnFocus` | `boolean | undefined` | sí | Allows control of whether the menu is opened when the Select is focused | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `optionClassName` | `string | undefined` | sí | — | `packages/nextjs/src/components/select.tsx` |
-| `options` | `OptionsOrGroups<Option, Group> | undefined` | sí | Array of options that populate the select menu | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `pageSize` | `number | undefined` | sí | Number of options to jump in menu when page{up\|down} keys are used | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `placeholder` | `string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<AwaitedReactNode> | null | undefined` | sí | Placeholder for the select value | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `required` | `boolean | undefined` | sí | Marks the value-holding input as required for form validation | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `screenReaderStatus` | `((obj: { count: number; }) => string) | undefined` | sí | Status to relay to screen readers | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `styles` | `StylesConfig<Option, IsMulti, Group> | undefined` | sí | Style modifier methods A basic example can be found at the bottom of the [Replacing builtins](/advanced#replacing-builtins) documentation. | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `tabIndex` | `number | undefined` | sí | Sets the tabIndex attribute on the input | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `tabSelectsValue` | `boolean | undefined` | sí | Select the currently focused option when the user presses tab | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `theme` | `ThemeConfig | undefined` | sí | Theme modifier method | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `triggerClassName` | `string | undefined` | sí | — | `packages/nextjs/src/components/select.tsx` |
-| `value` | `PropsValue<Option> | undefined` | sí | The value of the select; reflected by the selected option | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-
-</details>
-
-#### `SelectProps`
-
-- **Definido en:** `packages/nextjs/src/components/select.tsx`
-- **Composición base:** `Omit<ReactSelectProps<Option, IsMulti, Group>, "unstyled"> & BaseSelectProps<Option, IsMulti, Group>`
-
-**Props propias**
-
-_Sin props documentadas en este nivel._
-
-<details>
-<summary>Props heredadas o compuestas de `SelectProps` (78)</summary>
-
-| Prop | Tipo | Opcional | Descripción | Origen |
-| --- | --- | --- | --- | --- |
-| `aria-errormessage` | `string | undefined` | sí | HTML ID of an element containing an error message related to the input* | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `aria-invalid` | `boolean | "true" | "false" | "grammar" | "spelling" | undefined` | sí | Indicate if the value entered in the field is invalid * | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `aria-label` | `string | undefined` | sí | Aria label (for assistive tech) | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `aria-labelledby` | `string | undefined` | sí | HTML ID of an element that should be used as the label (for assistive tech) | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `aria-live` | `"off" | "assertive" | "polite" | undefined` | sí | Used to set the priority with which screen reader should treat updates to live regions. The possible settings are: off, polite (default) or assertive | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `ariaLiveMessages` | `AriaLiveMessages<Option, IsMulti, Group> | undefined` | sí | Customise the messages used by the aria-live component | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `autoFocus` | `boolean | undefined` | sí | Focus the control when it is mounted | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `backspaceRemovesValue` | `boolean | undefined` | sí | Remove the currently focused option when the user presses backspace when Select isClearable or isMulti | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `blurInputOnSelect` | `boolean | undefined` | sí | Remove focus from the input when the user selects an option (handy for dismissing the keyboard on touch devices) | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `captureMenuScroll` | `boolean | undefined` | sí | When the user reaches the top/bottom of the menu, prevent scroll on the scroll-parent | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `className` | `string | undefined` | sí | Sets a className attribute on the outer component | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `classNamePrefix` | `string | null | undefined` | sí | If provided, all inner components will be given a prefixed className attribute. This is useful when styling via CSS classes instead of the Styles API approach. | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `classNames` | `ClassNamesConfig<Option, IsMulti, Group> | undefined` | sí | Provide classNames based on state for each inner component | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `closeMenuOnScroll` | `boolean | ((event: Event) => boolean) | undefined` | sí | If `true`, close the select menu when the user scrolls the document/body. If a function, takes a standard javascript `ScrollEvent` you return a boolean: `true` => The menu closes `false` => The menu stays open This is useful when you have a scrollable modal and want to portal the menu out, but want to avoid graphical issues. | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `closeMenuOnSelect` | `boolean | undefined` | sí | Close the select menu when the user selects an option | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `components` | `Partial<SelectComponents<Option, IsMulti, Group>> | undefined` | sí | This complex object includes all the compositional components that are used in `react-select`. If you wish to overwrite a component, pass in an object with the appropriate namespace. If you only wish to restyle a component, we recommend using the `styles` prop instead. For a list of the components that can be passed in, and the shape that will be passed to them, see [the components docs](/components) | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `controlShouldRenderValue` | `boolean | undefined` | sí | Whether the value of the select, e.g. SingleValue, should be displayed in the control. | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `defaultInputValue` | `string | undefined` | sí | — | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/useStateManager.d.ts` |
-| `defaultMenuIsOpen` | `boolean | undefined` | sí | — | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/useStateManager.d.ts` |
-| `defaultValue` | `PropsValue<Option> | undefined` | sí | — | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/useStateManager.d.ts` |
-| `delimiter` | `string | undefined` | sí | Delimiter used to join multiple values into a single HTML Input value | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `escapeClearsValue` | `boolean | undefined` | sí | Clear all values when the user presses escape AND the menu is closed | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `filterOption` | `((option: FilterOptionOption<Option>, inputValue: string) => boolean) | null | undefined` | sí | Custom method to filter whether an option should be displayed in the menu | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `form` | `string | undefined` | sí | Sets the form attribute on the input | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `formatGroupLabel` | `((group: Group) => ReactNode) | undefined` | sí | Formats group labels in the menu as React components An example can be found in the [Replacing builtins](/advanced#replacing-builtins) documentation. | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `formatOptionLabel` | `((data: Option, formatOptionLabelMeta: FormatOptionLabelMeta<Option>) => ReactNode) | undefined` | sí | Formats option labels in the menu and control as React components | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `getOptionLabel` | `GetOptionLabel<Option> | undefined` | sí | Resolves option data to a string to be displayed as the label by components Note: Failure to resolve to a string type can interfere with filtering and screen reader support. | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `getOptionValue` | `GetOptionValue<Option> | undefined` | sí | Resolves option data to a string to compare options and specify value attributes | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `hideSelectedOptions` | `boolean | undefined` | sí | Hide the selected option from the menu | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `id` | `string | undefined` | sí | The id to set on the SelectContainer component. | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `inputId` | `string | undefined` | sí | The id of the search input | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `inputValue` | `string | undefined` | sí | The value of the search input | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `instanceId` | `string | number | undefined` | sí | Define an id prefix for the select components e.g. {your-id}-value | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `isClearable` | `boolean | undefined` | sí | Is the select value clearable | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `isDisabled` | `boolean | undefined` | sí | Is the select disabled | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `isLoading` | `boolean | undefined` | sí | Is the select in a state of loading (async) | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `isMulti` | `IsMulti | undefined` | sí | Support multiple selected options | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `isOptionDisabled` | `((option: Option, selectValue: Options<Option>) => boolean) | undefined` | sí | Override the built-in logic to detect whether an option is disabled An example can be found in the [Replacing builtins](/advanced#replacing-builtins) documentation. | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `isOptionSelected` | `((option: Option, selectValue: Options<Option>) => boolean) | undefined` | sí | Override the built-in logic to detect whether an option is selected | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `isRtl` | `boolean | undefined` | sí | Is the select direction right-to-left | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `isSearchable` | `boolean | undefined` | sí | Whether to enable search functionality | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `loadingMessage` | `((obj: { inputValue: string; }) => ReactNode) | undefined` | sí | Async: Text to display when loading options | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `maxMenuHeight` | `number | undefined` | sí | Maximum height of the menu before scrolling | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `menuClassName` | `string | undefined` | sí | — | `packages/nextjs/src/components/select.tsx` |
-| `menuIsOpen` | `boolean | undefined` | sí | Whether the menu is open | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `menuPlacement` | `MenuPlacement | undefined` | sí | Default placement of the menu in relation to the control. 'auto' will flip when there isn't enough space below the control. | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `menuPortalTarget` | `HTMLElement | null | undefined` | sí | Whether the menu should use a portal, and where it should attach An example can be found in the [Portaling](/advanced#portaling) documentation | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `menuPosition` | `MenuPosition | undefined` | sí | The CSS position value of the menu, when "fixed" extra layout management is required | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `menuShouldBlockScroll` | `boolean | undefined` | sí | Whether to block scroll events when the menu is open | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `menuShouldScrollIntoView` | `boolean | undefined` | sí | Whether the menu should be scrolled into view when it opens | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `minMenuHeight` | `number | undefined` | sí | Minimum height of the menu before flipping | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `mobileSheetOptions` | `OptionsOrGroups<Option, Group> | undefined` | sí | — | `packages/nextjs/src/components/select.tsx` |
-| `mobileSheetTitle` | `string | undefined` | sí | — | `packages/nextjs/src/components/select.tsx` |
-| `name` | `string | undefined` | sí | Name of the HTML Input (optional - without this, no input will be rendered) | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `noOptionsMessage` | `((obj: { inputValue: string; }) => ReactNode) | undefined` | sí | Text to display when there are no options | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `onBlur` | `React.FocusEventHandler<HTMLInputElement> | undefined` | sí | Handle blur events on the control | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
-| `onChange` | `((newValue: OnChangeValue<Option, IsMulti>, actionMeta: ActionMeta<Option>) => void) | undefined` | sí | Handle change events on the select | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
 | `onFocus` | `React.FocusEventHandler<HTMLInputElement> | undefined` | sí | Handle focus events on the control | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
 | `onInputChange` | `((newValue: string, actionMeta: InputActionMeta) => void) | undefined` | sí | Handle change events on the input | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |
 | `onKeyDown` | `React.KeyboardEventHandler<HTMLDivElement> | undefined` | sí | Handle key down events on the select | `node_modules/.pnpm/react-select@5.10.2_@types+react@_a7dwjvfanvsxt6sgnpn2ftqjmu/node_modules/react-select/dist/declarations/src/Select.d.ts` |

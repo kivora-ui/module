@@ -1,6 +1,6 @@
 import type * as React from "react";
 import type { Meta, StoryObj } from "@storybook/react";
-import { AsyncSelect, CreatableSelect, Label, Select } from "@kivora/nextjs";
+import { Label, Select } from "@kivora/nextjs";
 import type { SelectOption } from "@kivora/nextjs";
 
 const workspaceOptions: SelectOption[] = [
@@ -130,7 +130,8 @@ export const Creatable: Story = {
   render: () => (
     <div className="grid w-80 gap-2">
       <Label htmlFor="tag">Tag</Label>
-      <CreatableSelect
+      <Select
+        isCreatable
         inputId="tag"
         isClearable
         mobileSheetTitle="Choose tag"
@@ -149,7 +150,7 @@ export const AsyncLoading: Story = {
   render: () => (
     <div className="grid w-80 gap-2">
       <Label htmlFor="repository">Repository</Label>
-      <AsyncSelect
+      <Select
         inputId="repository"
         cacheOptions
         defaultOptions

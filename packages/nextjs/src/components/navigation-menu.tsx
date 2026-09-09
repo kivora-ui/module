@@ -61,7 +61,7 @@ export const NavigationMenuContent = React.forwardRef<
 >(({ className, children, ...props }, ref) => (
   <NavigationMenuPrimitive.Content ref={ref} asChild {...props}>
     <motion.div
-      className={cn("left-0 top-0 w-full md:absolute md:w-auto", className)}
+      className={cn("left-0 top-0 w-max max-w-[calc(100vw-2rem)] md:absolute", className)}
       initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 4 }}
@@ -79,11 +79,11 @@ export const NavigationMenuViewport = React.forwardRef<
   React.ElementRef<typeof NavigationMenuPrimitive.Viewport>,
   React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Viewport>
 >(({ className, ...props }, ref) => (
-  <div className="absolute left-0 top-full flex justify-center">
+  <div className="absolute inset-x-0 top-full flex justify-center">
     <NavigationMenuPrimitive.Viewport
       ref={ref}
       className={cn(
-        "origin-top-center relative mt-1.5 h-[var(--radix-navigation-menu-viewport-height)] w-full overflow-hidden rounded-md border border-border/70 bg-popover text-popover-foreground shadow-lg transition-[width,height] duration-200 md:w-[var(--radix-navigation-menu-viewport-width)]",
+        "origin-top-center relative mt-1.5 shrink-0 h-[var(--radix-navigation-menu-viewport-height)] w-[var(--radix-navigation-menu-viewport-width)] max-w-[calc(100vw-2rem)] overflow-hidden rounded-md border border-border/70 bg-popover text-popover-foreground shadow-lg transition-[width,height] duration-200",
         className
       )}
       {...props}

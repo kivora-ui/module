@@ -46,7 +46,7 @@ El catálogo inicial replica el de la web. **Los datos son locales e independien
 
 ## Componentes y configuración
 
-La galería incluye 57 ejemplos para 56 familias nativas. DropdownMenu, Resizable, Command, ContextMenu y NavigationMenu se excluyen de la versión nativa y BottomSheet es propio de esta plataforma. La galería usa FlashList 2, con estado aislado por ejemplo y valores conservados al buscar o reciclar filas. Consulta la [cobertura y las diferencias de API](../../docs/native-component-coverage.md) y la [revisión de rendimiento](../../docs/native-performance.md). Los filtros de Mostrador e Inventario se abren en un panel inferior en móvil.
+La galería incluye ejemplos de las familias nativas, incluidos Menu y ScrollArea virtualized. Resizable, Command, ContextMenu y NavigationMenu se excluyen de la versión nativa y BottomSheet es propio de esta plataforma. La galería usa FlashList 2, con estado aislado por ejemplo y valores conservados al buscar o reciclar filas. Consulta la [cobertura y las diferencias de API](../../docs/native-component-coverage.md) y la [revisión de rendimiento](../../docs/native-performance.md). Los filtros de Mostrador e Inventario se abren en un panel inferior en móvil.
 
 El carrusel permite `slidesToShow: 1.25` y otros decimales. La cabecera del calendario abre las páginas de meses y años. Code resalta la sintaxis con temas claro/oscuro. Toast usa notificaciones locales de Notifee: la primera prueba solicita el permiso del sistema y los avisos aparecen en la bandeja de Android.
 

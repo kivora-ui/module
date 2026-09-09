@@ -41,18 +41,17 @@ const primaryExportMap = {
   chart: 'ChartContainer',
   checkbox: 'Checkbox',
   code: 'Code',
-  collapsible: 'Collapsible',
   command: 'Command',
   'context-menu': 'ContextMenu',
   'date-picker': 'DatePicker',
   dialog: 'Dialog',
   direction: 'DirectionProvider',
   drawer: 'Drawer',
-  'dropdown-menu': 'DropdownMenu',
   empty: 'Empty',
   field: 'Field',
   'file-upload': 'FileUpload',
   'hover-card': 'HoverCard',
+  icon: 'Icon',
   input: 'Input',
   'input-group': 'InputGroup',
   'input-otp': 'InputOTP',
@@ -61,7 +60,7 @@ const primaryExportMap = {
   'keyboard-scroll-view': 'KeyboardScrollView',
   label: 'Label',
   marker: 'Marker',
-  menubar: 'Menubar',
+  menu: 'Menu',
   message: 'Message',
   'message-scroller': 'MessageScroller',
   'navigation-menu': 'NavigationMenu',
@@ -69,7 +68,6 @@ const primaryExportMap = {
   player: 'Player',
   popover: 'Popover',
   progress: 'Progress',
-  'qr-code': 'QRCode',
   questionnaire: 'Questionnaire',
   'radio-group': 'RadioGroup',
   resizable: 'ResizablePanelGroup',
@@ -110,14 +108,12 @@ const summaryMap = {
   chart: 'Ayudantes para componer gráficas con tooltip y leyenda consistentes.',
   checkbox: 'Casilla de verificación controlada o no controlada para estados booleanos.',
   code: 'Bloque de código formateado con soporte de tema y scroll.',
-  collapsible: 'Contenedor expandible para mostrar u ocultar contenido sin cambiar de pantalla.',
   command: 'Paleta de comandos web para búsqueda rápida, acciones y navegación.',
   'context-menu': 'Menú contextual web disparado por clic derecho o gesto equivalente.',
   'date-picker': 'Selector de fecha o rango con presets y composición sobre calendario.',
   dialog: 'Modal de confirmación o formulario que bloquea la interacción exterior.',
   direction: 'Provider de dirección LTR/RTL para adaptar componentes sensibles a lectura.',
   drawer: 'Panel deslizante web desde un borde para navegación o acciones secundarias.',
-  'dropdown-menu': 'Menú desplegable web anclado a un trigger con items, checks y submenús.',
   empty: 'Plantilla de estado vacío con icono, título, descripción y pie opcional.',
   field: 'Primitivas de campo de formulario con label, descripción, error y agrupación.',
   'file-upload': 'Flujo de subida de archivos con controlador, estado, fuentes y previsualización.',
@@ -130,7 +126,6 @@ const summaryMap = {
   'keyboard-scroll-view': 'Scroll nativo que se adapta al teclado para formularios largos.',
   label: 'Label accesible para asociar texto descriptivo a controles de formulario.',
   marker: 'Píldora o marca visual para destacar contenido corto o iconografía pequeña.',
-  menubar: 'Barra de menús y submenús para acciones agrupadas en desktop o tablet.',
   message: 'Estructura de mensaje con avatar, cabecera, contenido y grupos conversacionales.',
   'message-scroller': 'Contenedor de scroll para conversaciones con anclaje al final y seguimiento.',
   'navigation-menu': 'Menú de navegación web para secciones complejas y contenido expandido.',
@@ -138,7 +133,6 @@ const summaryMap = {
   player: 'Conjunto de reproductor multimedia, controlador y ayudas de offline/cast según plataforma.',
   popover: 'Capa flotante anclada a un trigger para acciones ligeras o contenido contextual.',
   progress: 'Barra de progreso lineal para cargas, procesos y porcentajes.',
-  'qr-code': 'Renderiza códigos QR SVG desde el motor compartido de `@kivora/codes`.',
   questionnaire: 'Cuestionario guiado por pasos o preguntas con navegación entre respuestas.',
   'radio-group': 'Grupo de opciones mutuamente excluyentes con radios accesibles.',
   resizable: 'Paneles redimensionables web para layouts divididos.',
@@ -148,6 +142,8 @@ const summaryMap = {
   sheet: 'Panel superpuesto desde un borde para formularios, detalles o navegación secundaria.',
   skeleton: 'Placeholder de carga para reservar espacio mientras llegan datos.',
   slider: 'Control deslizante para seleccionar uno o varios valores numéricos.',
+  menu: 'Menú de acciones desplegable o barra de menús con variant="bar". Los elementos de una barra se agrupan con MenuDropdown.',
+  icon: 'Icono Lucide con tamaño, color, grosor de trazo y etiqueta accesible. Importa el icono de Lucide y pásalo mediante icon; omite label si es decorativo.',
   spinner: 'Indicador de carga breve para operaciones en curso.',
   switch: 'Interruptor binario para activar o desactivar una preferencia.',
   table: 'Primitivas de tabla para cabeceras, filas, celdas y captions.',
@@ -303,18 +299,6 @@ export function Example() {
       </AvatarFallback>
     </Avatar>
   );
-}`
-  },
-  barcode: {
-    nextjs: `import { Barcode } from "@kivora/nextjs";
-
-export function Example() {
-  return <Barcode format="code128" value="KIV-2026-0001" />;
-}`,
-    native: `import { Barcode } from "@kivora/native";
-
-export function Example() {
-  return <Barcode format="code128" value="KIV-2026-0001" />;
 }`
   },
   'bottom-sheet': {
@@ -808,18 +792,6 @@ export function Example() {
   );
 }`
   },
-  'qr-code': {
-    nextjs: `import { QRCode } from "@kivora/nextjs";
-
-export function Example() {
-  return <QRCode value="https://kivora.app/demo" />;
-}`,
-    native: `import { QRCode } from "@kivora/native";
-
-export function Example() {
-  return <QRCode value="https://kivora.app/demo" />;
-}`
-  },
   'radio-group': {
     nextjs: `import { RadioGroup, RadioGroupItem } from "@kivora/nextjs";
 
@@ -842,6 +814,67 @@ export function Example() {
   );
 }`
   },
+  barcode: {
+    nextjs: `import { Barcode } from "@kivora/nextjs";
+
+export function Example() {
+  return <><Barcode format="code128" value="KIVORA-2026" />
+    <Barcode format="qrcode" value="https://kivora.app" width={200} height={200} /></>;
+}`,
+    native: `import { Barcode } from "@kivora/native";
+
+export function Example() {
+  return <><Barcode format="code128" value="KIVORA-2026" />
+    <Barcode format="qrcode" value="https://kivora.app" width={200} height={200} /></>;
+}`
+  },
+  menu: {
+    nextjs: `import { Button, Menu, MenuTrigger, MenuContent, MenuItem } from "@kivora/nextjs";
+
+export function Example() {
+  return <Menu><MenuTrigger asChild><Button>Acciones</Button></MenuTrigger>
+    <MenuContent><MenuItem onSelect={() => console.log("Editar")}>Editar</MenuItem></MenuContent>
+  </Menu>;
+}`,
+    native: `import { Menu, MenuTrigger, MenuContent, MenuItem } from "@kivora/native";
+import { Text } from "react-native";
+
+export function Example() {
+  return <Menu><MenuTrigger><Text>Acciones</Text></MenuTrigger>
+    <MenuContent><MenuItem onSelect={() => console.log("Editar")}>Editar</MenuItem></MenuContent>
+  </Menu>;
+}`
+  },
+  'scroll-area': {
+    nextjs: `import { ScrollArea } from "@kivora/nextjs";
+
+export function Example() {
+  return <ScrollArea virtualized className="h-64" items={Array.from({ length: 1000 }, (_, i) => i)}
+    estimateSize={() => 40} renderItem={(item) => <div>{item}</div>} />;
+}`,
+    native: `import { ScrollArea } from "@kivora/native";
+import { Text } from "react-native";
+
+export function Example() {
+  return <ScrollArea virtualized style={{ height: 240 }} data={Array.from({ length: 1000 }, (_, i) => i)}
+    keyExtractor={(item) => String(item)} renderItem={({ item }) => <Text>{item}</Text>} />;
+}`
+  },
+  icon: {
+    nextjs: `import { Icon } from "@kivora/nextjs";
+import { Check } from "lucide-react";
+
+export function Example() {
+  return <Icon icon={Check} size={24} color="#16a34a" strokeWidth={2} label="Completado" />;
+}`,
+    native: `import { Icon } from "@kivora/native";
+import Check from "lucide-react-native/icons/check";
+
+// Renderiza dentro de KivoraProvider para adaptar el color al modo claro u oscuro.
+export function Example() {
+  return <Icon icon={Check} size={24} color="#16a34a" strokeWidth={2} label="Completado" />;
+}`
+  },
   select: {
     nextjs: `import { Select } from "@kivora/nextjs";
 
@@ -851,7 +884,15 @@ const options = [
 ];
 
 export function Example() {
-  return <Select options={options} placeholder="Selecciona prioridad" />;
+  return (
+    <>
+      <Select options={options} placeholder="Selecciona prioridad" />
+      <Select isCreatable isMulti options={options} placeholder="Selecciona o crea" />
+      <Select defaultOptions cacheOptions loadOptions={async (query) =>
+        options.filter((option) => option.label.toLowerCase().includes(query.toLowerCase()))
+      } />
+    </>
+  );
 }`,
     native: `import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@kivora/native";
 import { Text } from "react-native";
@@ -1234,7 +1275,7 @@ function buildDefaultExample(docId, packageName, platform, exportNames) {
     if (['badge', 'button', 'label', 'toggle'].includes(docId)) {
       return `${importLine}\n\nexport function Example() {\n  return <${primaryExport}>Ejemplo</${primaryExport}>;\n}`;
     }
-    if (['switch', 'checkbox', 'input', 'progress', 'slider', 'spinner', 'skeleton', 'separator', 'barcode', 'qr-code'].includes(docId)) {
+    if (['switch', 'checkbox', 'input', 'progress', 'slider', 'spinner', 'skeleton', 'separator', 'barcode'].includes(docId)) {
       const body = docId === 'progress' ? `<${primaryExport} value={64} />` : docId === 'slider' ? `<${primaryExport} defaultValue={[50]} />` : docId === 'switch' ? `<${primaryExport} checked />` : docId === 'checkbox' ? `<${primaryExport} checked />` : docId === 'separator' ? `<${primaryExport} />` : `<${primaryExport} />`;
       return `${importLine}\n\nexport function Example() {\n  return ${body};\n}`;
     }
@@ -1244,7 +1285,7 @@ function buildDefaultExample(docId, packageName, platform, exportNames) {
   if (['input', 'textarea'].includes(docId)) {
     return `${importLine}\n\nexport function Example() {\n  return <${primaryExport} placeholder="Ejemplo básico" />;\n}`;
   }
-  if (['switch', 'checkbox', 'progress', 'slider', 'spinner', 'skeleton', 'separator', 'barcode', 'qr-code'].includes(docId)) {
+  if (['switch', 'checkbox', 'progress', 'slider', 'spinner', 'skeleton', 'separator', 'barcode'].includes(docId)) {
     const body = docId === 'progress' ? `<${primaryExport} value={64} />` : docId === 'slider' ? `<${primaryExport} defaultValue={[50]} />` : docId === 'switch' ? `<${primaryExport} checked />` : docId === 'checkbox' ? `<${primaryExport} checked aria-label="Ejemplo" />` : docId === 'separator' ? `<${primaryExport} />` : `<${primaryExport} />`;
     return `${importLine}\n\nexport function Example() {\n  return ${body};\n}`;
   }

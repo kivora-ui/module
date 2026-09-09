@@ -77,27 +77,27 @@ vi.mock("motion/react", async () => {
 });
 
 import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuTrigger
-} from "./dropdown-menu";
+  Menu,
+  MenuCheckboxItem,
+  MenuContent,
+  MenuItem,
+  MenuLabel,
+  MenuRadioGroup,
+  MenuRadioItem,
+  MenuSeparator,
+  MenuShortcut,
+  MenuTrigger
+} from "./menu";
 
-describe("DropdownMenu", () => {
+describe("Menu", () => {
   it("renders content when controlled open", () => {
     render(
-      <DropdownMenu open>
-        <DropdownMenuTrigger>Open menu</DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <DropdownMenuItem>Account</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <Menu open>
+        <MenuTrigger>Open menu</MenuTrigger>
+        <MenuContent>
+          <MenuItem>Account</MenuItem>
+        </MenuContent>
+      </Menu>
     );
 
     expect(screen.getByText("Account")).toBeInTheDocument();
@@ -105,12 +105,12 @@ describe("DropdownMenu", () => {
 
   it("supports default open content", () => {
     render(
-      <DropdownMenu defaultOpen>
-        <DropdownMenuTrigger>Open menu</DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <DropdownMenuLabel>Workspace</DropdownMenuLabel>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <Menu defaultOpen>
+        <MenuTrigger>Open menu</MenuTrigger>
+        <MenuContent>
+          <MenuLabel>Workspace</MenuLabel>
+        </MenuContent>
+      </Menu>
     );
 
     expect(screen.getByText("Workspace")).toBeInTheDocument();
@@ -120,12 +120,12 @@ describe("DropdownMenu", () => {
     const onSelect = vi.fn();
 
     render(
-      <DropdownMenu defaultOpen>
-        <DropdownMenuTrigger>Open menu</DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <DropdownMenuItem onSelect={onSelect}>Invite member</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <Menu defaultOpen>
+        <MenuTrigger>Open menu</MenuTrigger>
+        <MenuContent>
+          <MenuItem onSelect={onSelect}>Invite member</MenuItem>
+        </MenuContent>
+      </Menu>
     );
 
     fireEvent.click(screen.getByText("Invite member"));
@@ -135,20 +135,20 @@ describe("DropdownMenu", () => {
 
   it("renders checkbox, radio, separator and shortcut affordances", () => {
     render(
-      <DropdownMenu defaultOpen>
-        <DropdownMenuTrigger>Open menu</DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <DropdownMenuCheckboxItem checked>Show toolbar</DropdownMenuCheckboxItem>
-          <DropdownMenuSeparator data-testid="separator" />
-          <DropdownMenuRadioGroup value="comfortable">
-            <DropdownMenuRadioItem value="comfortable">Comfortable</DropdownMenuRadioItem>
-          </DropdownMenuRadioGroup>
-          <DropdownMenuItem>
+      <Menu defaultOpen>
+        <MenuTrigger>Open menu</MenuTrigger>
+        <MenuContent>
+          <MenuCheckboxItem checked>Show toolbar</MenuCheckboxItem>
+          <MenuSeparator data-testid="separator" />
+          <MenuRadioGroup value="comfortable">
+            <MenuRadioItem value="comfortable">Comfortable</MenuRadioItem>
+          </MenuRadioGroup>
+          <MenuItem>
             Command palette
-            <DropdownMenuShortcut>Ctrl K</DropdownMenuShortcut>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+            <MenuShortcut>Ctrl K</MenuShortcut>
+          </MenuItem>
+        </MenuContent>
+      </Menu>
     );
 
     expect(screen.getByText("Show toolbar")).toBeInTheDocument();
@@ -159,10 +159,10 @@ describe("DropdownMenu", () => {
 
   it("applies custom classes to content", () => {
     render(
-      <DropdownMenu defaultOpen>
-        <DropdownMenuTrigger>Open menu</DropdownMenuTrigger>
-        <DropdownMenuContent className="w-64">Content</DropdownMenuContent>
-      </DropdownMenu>
+      <Menu defaultOpen>
+        <MenuTrigger>Open menu</MenuTrigger>
+        <MenuContent className="w-64">Content</MenuContent>
+      </Menu>
     );
 
     expect(screen.getByText("Content")).toHaveClass("w-64");

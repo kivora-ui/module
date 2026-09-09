@@ -5,14 +5,14 @@ import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area";
 import { useVirtualizer, type VirtualizerOptions } from "@tanstack/react-virtual";
 import { cn } from "@kivora/theme";
 
-export interface ScrollAreaProps
+interface BaseScrollAreaProps
   extends React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.Root> {
   viewportClassName?: string;
 }
 
-export const ScrollArea = React.forwardRef<
+const StandardScrollArea = React.forwardRef<
   React.ElementRef<typeof ScrollAreaPrimitive.Root>,
-  ScrollAreaProps
+  BaseScrollAreaProps
 >(({ className, children, viewportClassName, ...props }, ref) => (
   <ScrollAreaPrimitive.Root
     ref={ref}
@@ -27,7 +27,7 @@ export const ScrollArea = React.forwardRef<
     <ScrollAreaPrimitive.Corner />
   </ScrollAreaPrimitive.Root>
 ));
-ScrollArea.displayName = ScrollAreaPrimitive.Root.displayName;
+StandardScrollArea.displayName = ScrollAreaPrimitive.Root.displayName;
 
 export interface ScrollBarProps
   extends React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.ScrollAreaScrollbar> {}
@@ -52,8 +52,8 @@ export const ScrollBar = React.forwardRef<
 ));
 ScrollBar.displayName = ScrollAreaPrimitive.ScrollAreaScrollbar.displayName;
 
-export interface VirtualScrollAreaProps<TItem>
-  extends Omit<ScrollAreaProps, "children"> {
+interface VirtualizedProps<TItem>
+  extends Omit<BaseScrollAreaProps, "children"> {
   estimateSize: VirtualizerOptions<HTMLDivElement, Element>["estimateSize"];
   getItemKey?: VirtualizerOptions<HTMLDivElement, Element>["getItemKey"];
   horizontal?: boolean;
@@ -65,7 +65,7 @@ export interface VirtualScrollAreaProps<TItem>
   renderItem: (item: TItem, index: number) => React.ReactNode;
 }
 
-export function VirtualScrollArea<TItem>({
+function VirtualizedInner<TItem>({
   className,
   estimateSize,
   getItemKey,
@@ -78,7 +78,7 @@ export function VirtualScrollArea<TItem>({
   renderItem,
   viewportClassName,
   ...props
-}: VirtualScrollAreaProps<TItem>) {
+}: VirtualizedProps<TItem>, ref: React.ForwardedRef<HTMLDivElement>) {
   const [viewportElement, setViewportElement] = React.useState<HTMLDivElement | null>(null);
   const observeElementRect = React.useMemo<
     VirtualizerOptions<HTMLDivElement, Element>["observeElementRect"] | undefined
@@ -105,6 +105,7 @@ export function VirtualScrollArea<TItem>({
 
   return (
     <ScrollAreaPrimitive.Root
+      ref={ref}
       className={cn("relative overflow-hidden", className)}
       {...props}
     >
@@ -166,3 +167,22 @@ export function VirtualScrollArea<TItem>({
     </ScrollAreaPrimitive.Root>
   );
 }
+
+export type ScrollAreaProps<TItem = unknown> =
+  | (BaseScrollAreaProps & { virtualized?: false })
+  | (VirtualizedProps<TItem> & { virtualized: true });
+
+const VirtualizedArea = React.forwardRef(VirtualizedInner) as <TItem>(
+  props: VirtualizedProps<TItem> & React.RefAttributes<HTMLDivElement>
+) => React.ReactElement;
+
+export const ScrollArea = React.forwardRef(function ScrollAreaInner<TItem>(
+  props: ScrollAreaProps<TItem>, ref: React.ForwardedRef<HTMLDivElement>
+) {
+  if (props.virtualized) {
+    const { virtualized, ...rest } = props;
+    return <VirtualizedArea {...rest} ref={ref} />;
+  }
+  const { virtualized, ...rest } = props;
+  return <StandardScrollArea {...rest} ref={ref} />;
+}) as <TItem = unknown>(props: ScrollAreaProps<TItem> & React.RefAttributes<HTMLDivElement>) => React.ReactElement;

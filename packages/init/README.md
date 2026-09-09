@@ -25,14 +25,14 @@ npx @kivora/init --framework native --skip-install --yes
 
 ## Next.js
 
-The setup requires Next.js 13+, React/React DOM 18+, and Tailwind versions from 4.1 up to, but excluding, 5. It recognizes `app/layout`, `src/app/layout`, `pages/_app`, and `src/pages/_app` entry points in TSX, JSX, or JS. It can integrate both routers when they coexist.
+The setup requires Next.js 13+ and React/React DOM 18+. Tailwind and PostCSS are not required. It recognizes `app/layout`, `src/app/layout`, `pages/_app`, and `src/pages/_app` entry points in TSX, JSX, or JS. It can integrate both routers when they coexist.
 
-- Installs `@kivora/nextjs`, `tailwindcss`, and `@tailwindcss/postcss` if missing.
-- Adds Kivora to `transpilePackages` and configures the PostCSS plugin while preserving other static options.
-- Generates `kivora-provider.tsx`/`.jsx` with a `use client` boundary, and `kivora.css` with the appropriate `@source` path.
+- Installs only `@kivora/nextjs` if missing.
+- Adds Kivora to `transpilePackages` while preserving other static options. Leaves existing Tailwind and PostCSS configuration unchanged.
+- Generates `kivora-provider.tsx`/`.jsx` with a `use client` boundary, and `kivora.css` importing the compiled stylesheet.
 - Mounts the provider inside `<body>` for App Router or around the component's output for Pages Router. Imports CSS from the entry point before its existing styles.
 
-It does not migrate Tailwind 3. Configurations containing functions, spreads, or dynamic options are rejected with a message identifying the file to review. Kivora's classes and variables are global: check your application's appearance after integrating the styles.
+It does not install or migrate Tailwind. Configurations containing functions, spreads, or dynamic options are rejected with a message identifying the file to review. Kivora's classes and variables are global: check your application's appearance after integrating the styles.
 
 ## React Native
 

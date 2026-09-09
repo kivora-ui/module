@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { ScrollArea, Separator, VirtualScrollArea } from "@kivora/nextjs";
+import { ScrollArea, Separator } from "@kivora/nextjs";
 
 const tags = Array.from({ length: 36 }, (_, index) => `v1.${index + 1}.0`);
 const columns = ["Product", "Owner", "Status", "Updated", "Plan", "Usage", "Region"];
@@ -78,7 +78,7 @@ export const ContentPanel: Story = {
 
 export const VirtualizedList: Story = {
   render: () => (
-    <VirtualScrollArea
+    <ScrollArea virtualized
       className="h-80 w-[34rem] max-w-full rounded-md border border-border/70 bg-card"
       estimateSize={() => 52}
       getItemKey={(index) => events[index]!.id}
@@ -100,7 +100,7 @@ export const VirtualizedList: Story = {
 
 export const VirtualizedHorizontal: Story = {
   render: () => (
-    <VirtualScrollArea
+    <ScrollArea virtualized
       className="h-36 w-[34rem] max-w-full rounded-md border border-border/70 bg-background"
       estimateSize={() => 156}
       horizontal

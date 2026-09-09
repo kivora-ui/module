@@ -313,20 +313,6 @@ const ExampleAvatar = React.memo(function ExampleAvatar() {
   );
 });
 
-const ExampleCollapsible = React.memo(function ExampleCollapsible() {
-  return (
-    <K.Collapsible>
-      <K.CollapsibleTrigger>
-        <Text className={text}>Ver instrucciones</Text>
-      </K.CollapsibleTrigger>
-      <K.CollapsibleContent>
-        <Text className={text}>
-          Comprueba las unidades antes de confirmar la recepción.
-        </Text>
-      </K.CollapsibleContent>
-    </K.Collapsible>
-  );
-});
 
 const ExampleDialog = React.memo(function ExampleDialog() {
   return (
@@ -512,14 +498,6 @@ function FileUploadExample() {
   }} />;
 }
 
-function QRCodeExample() {
-  const [value, setValue] = useExampleState('QRCode:value', 'https://example.com');
-  return <View className="gap-4">
-    <K.Input accessibilityLabel="Contenido del QR" value={value} onChangeText={setValue} />
-    <K.QRCode value={value} size={200} accessibilityLabel="Código QR generado" />
-  </View>;
-}
-
 function BarcodeExample() {
   const [value, setValue] = useExampleState('Barcode:value', 'KIVORA-12345');
   const [format, setFormat] = useExampleState<K.BarcodeFormat>('Barcode:format', 'code128');
@@ -542,7 +520,6 @@ function BarcodeExample() {
 
 const examples = [
   { name: 'FileUpload', description: 'Selecciona archivos para subirlos automáticamente. Consulta el progreso y cancela la subida desde las notificaciones.', content: <FileUploadExample /> },
-  { name: 'QRCode', description: 'Genera un QR local para un enlace o texto.', content: <QRCodeExample /> },
   { name: 'Barcode', description: 'Code 128, EAN, UPC, Data Matrix, PDF417 y Aztec.', content: <BarcodeExample /> },
   {
     name: 'BottomSheet',
@@ -614,11 +591,6 @@ const examples = [
     name: 'Avatar',
     description: 'Identificación del empleado.',
     content: <ExampleAvatar />,
-  },
-  {
-    name: 'Collapsible',
-    description: 'Mostrar y ocultar detalles.',
-    content: <ExampleCollapsible />,
   },
   {
     name: 'Dialog',

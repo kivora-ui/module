@@ -2,7 +2,9 @@
 
 import * as React from "react";
 import ReactSelect, {
+  useStateManager,
   components,
+  createFilter,
   type ClassNamesConfig,
   type GroupBase,
   type ActionMeta,
@@ -14,8 +16,9 @@ import ReactSelect, {
   type SelectInstance,
   type StylesConfig
 } from "react-select";
-import AsyncReactSelect, { type AsyncProps } from "react-select/async";
-import CreatableReactSelect, { type CreatableProps } from "react-select/creatable";
+import { useAsync } from "react-select/async";
+import { useCreatable } from "react-select/creatable";
+import type { AsyncCreatableProps } from "react-select/async-creatable";
 import { Check, ChevronDown, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@kivora/theme";
@@ -57,50 +60,15 @@ type SelectCallable = (<
   displayName?: string;
 };
 
-type CreatableSelectCallable = (<
-  Option extends SelectOption = SelectOption,
-  IsMulti extends boolean = false,
-  Group extends GroupBase<Option> = GroupBase<Option>
->(
-  props: CreatableSelectProps<Option, IsMulti, Group> & {
-    ref?: React.ForwardedRef<SelectInstance<Option, IsMulti, Group>>;
-  }
-) => React.ReactElement) & {
-  displayName?: string;
-};
-
-type AsyncSelectCallable = (<
-  Option extends SelectOption = SelectOption,
-  IsMulti extends boolean = false,
-  Group extends GroupBase<Option> = GroupBase<Option>
->(
-  props: AsyncSelectProps<Option, IsMulti, Group> & {
-    ref?: React.ForwardedRef<SelectInstance<Option, IsMulti, Group>>;
-  }
-) => React.ReactElement) & {
-  displayName?: string;
-};
-
 export type SelectProps<
   Option extends SelectOption = SelectOption,
   IsMulti extends boolean = false,
   Group extends GroupBase<Option> = GroupBase<Option>
-> = Omit<ReactSelectProps<Option, IsMulti, Group>, "unstyled"> &
-  BaseSelectProps<Option, IsMulti, Group>;
-
-export type CreatableSelectProps<
-  Option extends SelectOption = SelectOption,
-  IsMulti extends boolean = false,
-  Group extends GroupBase<Option> = GroupBase<Option>
-> = Omit<CreatableProps<Option, IsMulti, Group>, "unstyled"> &
-  BaseSelectProps<Option, IsMulti, Group>;
-
-export type AsyncSelectProps<
-  Option extends SelectOption = SelectOption,
-  IsMulti extends boolean = false,
-  Group extends GroupBase<Option> = GroupBase<Option>
-> = Omit<AsyncProps<Option, IsMulti, Group>, "unstyled"> &
-  BaseSelectProps<Option, IsMulti, Group>;
+> = Omit<AsyncCreatableProps<Option, IsMulti, Group>, "unstyled"> &
+  BaseSelectProps<Option, IsMulti, Group> & {
+    /** Allow creating options. Can be combined with loadOptions. */
+    isCreatable?: boolean;
+  };
 
 function SelectOptionItem<
   Option extends SelectOption,
@@ -291,13 +259,6 @@ function isOptionSelected<Option extends SelectOption, IsMulti extends boolean>(
   return (value as Option).value === option.value;
 }
 
-function getSelectedValue<Option extends SelectOption, IsMulti extends boolean>(
-  value: PropsValue<Option> | undefined,
-  defaultValue: PropsValue<Option> | undefined
-) {
-  return value ?? defaultValue;
-}
-
 function useBodyScrollLock(locked: boolean) {
   React.useEffect(() => {
     if (!locked || typeof document === "undefined") {
@@ -325,8 +286,12 @@ function MobileSelectSheet<
   options,
   title,
   value,
-  loading = false
+  loading = false,
+  inputValue,
+  onInputChange
 }: {
+  inputValue: string;
+  onInputChange?: (value: string) => void;
   isMulti?: IsMulti;
   loading?: boolean;
   onChange?: (newValue: OnChangeValue<Option, IsMulti>, actionMeta: ActionMeta<Option>) => void;
@@ -386,6 +351,9 @@ function MobileSelectSheet<
             role="dialog"
             ref={viewport.ref}
             style={{ ...viewport.style, ...(viewport.bounds ? { bottom: viewport.bounds.bottom } : {}) }}
+            onKeyDown={(event) => {
+              if (event.key === "Escape") onOpenChange(false);
+            }}
             aria-modal="true"
             aria-label={title}
             className="fixed inset-x-0 bottom-0 z-50 max-h-[calc(var(--kivora-viewport-height,100dvh)*0.82)] overflow-hidden rounded-t-2xl border border-border/70 bg-popover text-popover-foreground shadow-2xl"
@@ -406,6 +374,14 @@ function MobileSelectSheet<
                 <span className="sr-only">Close</span>
               </button>
             </div>
+            {onInputChange ? (
+              <input
+                aria-label={`Search ${title}`}
+                className="mx-4 mb-3 w-[calc(100%-2rem)] rounded-md border border-input bg-background px-3 py-2 text-sm"
+                value={inputValue}
+                onChange={(event) => onInputChange(event.target.value)}
+              />
+            ) : null}
             <div className="max-h-[calc(var(--kivora-viewport-height,100dvh)*0.82-4.5rem)] overflow-auto px-3 pb-[calc(env(safe-area-inset-bottom)+1rem)]">
               {loading ? (
                 <div className="px-3 py-8 text-center text-sm text-muted-foreground">Loading options...</div>
@@ -457,246 +433,57 @@ function SelectInner<
   Group extends GroupBase<Option> = GroupBase<Option>
 >(
   {
-    defaultValue,
-    menuIsOpen,
+    isCreatable = false,
     mobileSheetOptions,
     mobileSheetTitle = "Options",
-    onChange,
-    onMenuClose,
-    onMenuOpen,
-    value,
     ...props
   }: SelectProps<Option, IsMulti, Group>,
   ref: React.ForwardedRef<SelectInstance<Option, IsMulti, Group>>
 ) {
-  const breakpoint = useBreakpoint();
-  const isMobile = breakpoint === "mobile";
-  const [sheetOpen, setSheetOpen] = React.useState(false);
-  const [internalValue, setInternalValue] = React.useState<PropsValue<Option> | undefined>(
-    getSelectedValue(value, defaultValue)
+  const isMobile = useBreakpoint() === "mobile";
+  const isAsync = typeof props.loadOptions === "function";
+  // Share the same state and option pipeline between the desktop menu and sheet.
+  const asyncProps = useAsync({
+    ...props,
+    defaultOptions: isAsync ? (props.defaultOptions ?? isMobile) : false
+  });
+  const state = useStateManager(isAsync ? asyncProps : props);
+  const creatableProps = useCreatable(state);
+  const selectProps = isCreatable ? creatableProps : state;
+  const filterOption = selectProps.filterOption === undefined ? createFilter<Option>() : selectProps.filterOption;
+  const sheetOptions = getFlatOptions(mobileSheetOptions ?? selectProps.options).filter((option) =>
+    !filterOption || filterOption({
+      data: option,
+      label: props.getOptionLabel?.(option) ?? option.label,
+      value: props.getOptionValue?.(option) ?? option.value
+    }, selectProps.inputValue)
   );
-  const selectedValue = value ?? internalValue;
-
-  function handleChange(newValue: OnChangeValue<Option, IsMulti>, actionMeta: ActionMeta<Option>) {
-    if (value === undefined) {
-      setInternalValue(newValue);
-    }
-    onChange?.(newValue, actionMeta);
-  }
-
-  function handleMobileOpen() {
-    onMenuOpen?.();
-    setSheetOpen(true);
-  }
-
-  function handleSheetOpenChange(nextOpen: boolean) {
-    setSheetOpen(nextOpen);
-    if (!nextOpen) {
-      onMenuClose?.();
-    }
-  }
 
   return (
     <>
       <ReactSelect<Option, IsMulti, Group>
         ref={ref}
-        {...withSelectDefaults({
-          ...props,
-          defaultValue,
-          menuIsOpen: isMobile ? false : menuIsOpen,
-          onChange: handleChange,
-          onMenuClose,
-          onMenuOpen: isMobile ? handleMobileOpen : onMenuOpen,
-          value: selectedValue
-        })}
+        {...withSelectDefaults(selectProps)}
+        menuIsOpen={isMobile ? false : selectProps.menuIsOpen}
+        onMenuClose={isMobile ? () => {} : selectProps.onMenuClose}
       />
       {isMobile ? (
         <MobileSelectSheet<Option, IsMulti, Group>
           isMulti={props.isMulti}
-          onChange={handleChange}
-          onOpenChange={handleSheetOpenChange}
-          open={sheetOpen}
-          options={mobileSheetOptions ?? props.options}
+          loading={selectProps.isLoading}
+          onChange={selectProps.onChange}
+          onOpenChange={(open) => open ? selectProps.onMenuOpen() : selectProps.onMenuClose()}
+          open={selectProps.menuIsOpen ?? false}
+          options={sheetOptions}
           title={mobileSheetTitle}
-          value={selectedValue}
-        />
-      ) : null}
-    </>
-  );
-}
-
-function CreatableSelectInner<
-  Option extends SelectOption = SelectOption,
-  IsMulti extends boolean = false,
-  Group extends GroupBase<Option> = GroupBase<Option>
->(
-  {
-    defaultValue,
-    menuIsOpen,
-    mobileSheetOptions,
-    mobileSheetTitle = "Options",
-    onChange,
-    onMenuClose,
-    onMenuOpen,
-    value,
-    ...props
-  }: CreatableSelectProps<Option, IsMulti, Group>,
-  ref: React.ForwardedRef<SelectInstance<Option, IsMulti, Group>>
-) {
-  const breakpoint = useBreakpoint();
-  const isMobile = breakpoint === "mobile";
-  const [sheetOpen, setSheetOpen] = React.useState(false);
-  const [internalValue, setInternalValue] = React.useState<PropsValue<Option> | undefined>(
-    getSelectedValue(value, defaultValue)
-  );
-  const selectedValue = value ?? internalValue;
-
-  function handleChange(newValue: OnChangeValue<Option, IsMulti>, actionMeta: ActionMeta<Option>) {
-    if (value === undefined) {
-      setInternalValue(newValue);
-    }
-    onChange?.(newValue, actionMeta);
-  }
-
-  function handleMobileOpen() {
-    onMenuOpen?.();
-    setSheetOpen(true);
-  }
-
-  function handleSheetOpenChange(nextOpen: boolean) {
-    setSheetOpen(nextOpen);
-    if (!nextOpen) {
-      onMenuClose?.();
-    }
-  }
-
-  return (
-    <>
-      <CreatableReactSelect<Option, IsMulti, Group>
-        ref={ref}
-        {...withSelectDefaults({
-          ...props,
-          defaultValue,
-          menuIsOpen: isMobile ? false : menuIsOpen,
-          onChange: handleChange,
-          onMenuClose,
-          onMenuOpen: isMobile ? handleMobileOpen : onMenuOpen,
-          value: selectedValue
-        })}
-      />
-      {isMobile ? (
-        <MobileSelectSheet<Option, IsMulti, Group>
-          isMulti={props.isMulti}
-          onChange={handleChange}
-          onOpenChange={handleSheetOpenChange}
-          open={sheetOpen}
-          options={mobileSheetOptions ?? props.options}
-          title={mobileSheetTitle}
-          value={selectedValue}
-        />
-      ) : null}
-    </>
-  );
-}
-
-function AsyncSelectInner<
-  Option extends SelectOption = SelectOption,
-  IsMulti extends boolean = false,
-  Group extends GroupBase<Option> = GroupBase<Option>
->(
-  {
-    defaultOptions,
-    defaultValue,
-    loadOptions,
-    menuIsOpen,
-    mobileSheetOptions,
-    mobileSheetTitle = "Options",
-    onChange,
-    onMenuClose,
-    onMenuOpen,
-    value,
-    ...props
-  }: AsyncSelectProps<Option, IsMulti, Group>,
-  ref: React.ForwardedRef<SelectInstance<Option, IsMulti, Group>>
-) {
-  const breakpoint = useBreakpoint();
-  const isMobile = breakpoint === "mobile";
-  const [sheetOpen, setSheetOpen] = React.useState(false);
-  const [loadingOptions, setLoadingOptions] = React.useState(false);
-  const [loadedOptions, setLoadedOptions] = React.useState<ReactSelectProps<Option, IsMulti, Group>["options"]>(
-    Array.isArray(defaultOptions) ? defaultOptions : []
-  );
-  const [internalValue, setInternalValue] = React.useState<PropsValue<Option> | undefined>(
-    getSelectedValue(value, defaultValue)
-  );
-  const selectedValue = value ?? internalValue;
-
-  function handleChange(newValue: OnChangeValue<Option, IsMulti>, actionMeta: ActionMeta<Option>) {
-    if (value === undefined) {
-      setInternalValue(newValue);
-    }
-    onChange?.(newValue, actionMeta);
-  }
-
-  function loadMobileOptions() {
-    if (mobileSheetOptions || Array.isArray(defaultOptions) || !loadOptions) {
-      return;
-    }
-
-    setLoadingOptions(true);
-    const maybePromise = loadOptions("", (nextOptions) => {
-      setLoadedOptions(nextOptions);
-      setLoadingOptions(false);
-    });
-
-    if (maybePromise) {
-      maybePromise
-        .then((nextOptions) => {
-          setLoadedOptions(nextOptions);
-        })
-        .finally(() => setLoadingOptions(false));
-    }
-  }
-
-  function handleMobileOpen() {
-    onMenuOpen?.();
-    loadMobileOptions();
-    setSheetOpen(true);
-  }
-
-  function handleSheetOpenChange(nextOpen: boolean) {
-    setSheetOpen(nextOpen);
-    if (!nextOpen) {
-      onMenuClose?.();
-    }
-  }
-
-  return (
-    <>
-      <AsyncReactSelect<Option, IsMulti, Group>
-        ref={ref}
-        {...withSelectDefaults({
-          ...props,
-          defaultValue,
-          menuIsOpen: isMobile ? false : menuIsOpen,
-          onChange: handleChange,
-          onMenuClose,
-          onMenuOpen: isMobile ? handleMobileOpen : onMenuOpen,
-          value: selectedValue
-        })}
-        defaultOptions={defaultOptions}
-        loadOptions={loadOptions}
-      />
-      {isMobile ? (
-        <MobileSelectSheet<Option, IsMulti, Group>
-          isMulti={props.isMulti}
-          loading={loadingOptions}
-          onChange={handleChange}
-          onOpenChange={handleSheetOpenChange}
-          open={sheetOpen}
-          options={mobileSheetOptions ?? loadedOptions}
-          title={mobileSheetTitle}
-          value={selectedValue}
+          value={selectProps.value}
+          inputValue={selectProps.inputValue}
+          onInputChange={props.isSearchable === false ? undefined : (inputValue) =>
+            selectProps.onInputChange(inputValue, {
+              action: "input-change",
+              prevInputValue: selectProps.inputValue
+            })
+          }
         />
       ) : null}
     </>
@@ -705,12 +492,6 @@ function AsyncSelectInner<
 
 export const Select = React.forwardRef(SelectInner) as SelectCallable;
 Select.displayName = "Select";
-
-export const CreatableSelect = React.forwardRef(CreatableSelectInner) as CreatableSelectCallable;
-CreatableSelect.displayName = "CreatableSelect";
-
-export const AsyncSelect = React.forwardRef(AsyncSelectInner) as AsyncSelectCallable;
-AsyncSelect.displayName = "AsyncSelect";
 
 export const SelectTrigger = "div";
 export const SelectValue = "span";

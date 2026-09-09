@@ -1,4 +1,4 @@
-@import "@kivora/nextjs/styles.css";
+@import "@kivora/nextjs/tailwind.css";
 @source "../../../../packages/nextjs/dist";
 @source "../";
 

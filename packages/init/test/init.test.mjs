@@ -50,10 +50,13 @@ test('web preserves app content, config plugins, user CSS order and is idempoten
   assert.equal(createPlan(root, 'nextjs').files.size, 0);
 });
 
-test('src/app gets a relative Tailwind source path', t => {
+test('src/app uses compiled CSS without Tailwind configuration', t => {
   const root = fixture(t, web, { 'src/app/layout.jsx': 'export default function Layout({children}) { return <html><body>{children}</body></html> }' });
   const plan = createPlan(root, 'nextjs');
-  assert.match(plan.files.get('src/app/kivora.css').after, /\.\.\/\.\.\/node_modules/);
+  assert.equal(plan.files.get('src/app/kivora.css').after, '@import "@kivora/nextjs/styles.css";\n');
+  assert.deepEqual(plan.dev, []);
+  assert.deepEqual(plan.runtime, ['@kivora/nextjs@latest']);
+  assert.ok(!plan.files.has('postcss.config.mjs'));
   assert.ok(plan.files.has('src/app/kivora-provider.jsx'));
 });
 
@@ -69,16 +72,27 @@ test('Pages Router wraps the default component only and keeps use client first',
 });
 
 test('preserves dependency versions and only installs missing dependencies', t => {
-  const root = fixture(t, { ...web, '@kivora/nextjs': '^0.1.0', tailwindcss: '^4.1.0' });
+  const root = fixture(t, { ...web, '@kivora/nextjs': '^0.2.0', tailwindcss: '^4.1.0' });
   const plan = createPlan(root, 'nextjs');
   assert.deepEqual(plan.runtime, []);
-  assert.deepEqual(plan.dev, ['@tailwindcss/postcss@^4.1']);
+  assert.deepEqual(plan.dev, []);
 });
 
-test('incompatible Tailwind aborts before changing any files', t => {
+test('rejects installed versions without precompiled styles', t => {
+  const root = fixture(t, { ...web, '@kivora/nextjs': '^0.1.0' });
+  const before = read(root, 'app/layout.tsx');
+  assert.throws(() => createPlan(root, 'nextjs'), /@kivora\/nextjs.*>=0\.2\.0/);
+  assert.equal(read(root, 'app/layout.tsx'), before);
+});
+
+test('existing Tailwind and alternative PostCSS configuration are left untouched', t => {
   const root = fixture(t, { ...web, tailwindcss: '^3.4.0' });
   const before = read(root, 'app/layout.tsx');
-  assert.throws(() => createPlan(root, 'nextjs'), /tailwindcss/);
+  put(root, '.postcssrc.json', '{}');
+  const plan = createPlan(root, 'nextjs');
+  assert.deepEqual(plan.dev, []);
+  assert.ok(!plan.files.has('.postcssrc.json'));
+  assert.ok(!plan.files.has('postcss.config.mjs'));
   assert.equal(read(root, 'app/layout.tsx'), before);
   assert.equal(existsSync(join(root, 'next.config.mjs')), false);
 });
@@ -89,7 +103,6 @@ for (const [label, file, content] of [
   ['provider collision', 'app/kivora-provider.tsx', 'user content'],
   ['existing provider', 'app/layout.tsx', "import {KivoraProvider} from '@kivora/nextjs'; export default function L(){return <body><KivoraProvider/></body>}"],
   ['unsupported entry', 'app/layout.tsx', 'export default function L(){ return <main/> }'],
-  ['alternate PostCSS', '.postcssrc.json', '{}'],
 ]) test(`${label} aborts with original files intact`, t => {
   const root = fixture(t);
   put(root, file, content);
@@ -188,7 +201,7 @@ test('uses the correct manager arguments with paths containing spaces', async t 
   assert.equal(calls[0].command, 'pnpm');
   assert.deepEqual(calls[0].args, ['add', '@kivora/nextjs@latest']);
   assert.equal(calls[0].cwd, root);
-  assert.equal(calls[1].args[1], '-D');
+  assert.equal(calls.length, 1);
 });
 
 test('failed installation restores existing content, manifest and lockfile, removes new files', async t => {

@@ -70,6 +70,7 @@ vi.mock("motion/react", async () => {
   const React = await import("react");
 
   return {
+    AnimatePresence: ({ children }: { children: React.ReactNode }) => React.createElement(React.Fragment, null, children),
     motion: {
       div: React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
         ({ children, ...props }, ref) => React.createElement("div", { ref, ...props }, children)
@@ -79,29 +80,29 @@ vi.mock("motion/react", async () => {
 });
 
 import {
-  Menubar,
-  MenubarCheckboxItem,
-  MenubarContent,
-  MenubarItem,
-  MenubarMenu,
-  MenubarRadioGroup,
-  MenubarRadioItem,
-  MenubarSeparator,
-  MenubarShortcut,
-  MenubarTrigger
-} from "./menubar";
+  Menu,
+  MenuCheckboxItem,
+  MenuContent,
+  MenuItem,
+  MenuDropdown,
+  MenuRadioGroup,
+  MenuRadioItem,
+  MenuSeparator,
+  MenuShortcut,
+  MenuTrigger
+} from "./menu";
 
-describe("Menubar", () => {
+describe("Menu", () => {
   it("renders open menu content", () => {
     render(
-      <Menubar defaultValue="file">
-        <MenubarMenu value="file">
-          <MenubarTrigger>File</MenubarTrigger>
-          <MenubarContent forceMount>
-            <MenubarItem>New project</MenubarItem>
-          </MenubarContent>
-        </MenubarMenu>
-      </Menubar>
+      <Menu variant="bar" defaultValue="file">
+        <MenuDropdown value="file">
+          <MenuTrigger>File</MenuTrigger>
+          <MenuContent forceMount>
+            <MenuItem>New project</MenuItem>
+          </MenuContent>
+        </MenuDropdown>
+      </Menu>
     );
 
     expect(screen.getByRole("menuitem", { name: "File" })).toBeInTheDocument();
@@ -110,18 +111,18 @@ describe("Menubar", () => {
 
   it("renders checkbox and radio indicators", () => {
     render(
-      <Menubar defaultValue="view">
-        <MenubarMenu value="view">
-          <MenubarTrigger>View</MenubarTrigger>
-          <MenubarContent forceMount>
-            <MenubarCheckboxItem checked>Sidebar</MenubarCheckboxItem>
-            <MenubarRadioGroup value="comfortable">
-              <MenubarRadioItem value="compact">Compact</MenubarRadioItem>
-              <MenubarRadioItem value="comfortable">Comfortable</MenubarRadioItem>
-            </MenubarRadioGroup>
-          </MenubarContent>
-        </MenubarMenu>
-      </Menubar>
+      <Menu variant="bar" defaultValue="view">
+        <MenuDropdown value="view">
+          <MenuTrigger>View</MenuTrigger>
+          <MenuContent forceMount>
+            <MenuCheckboxItem checked>Sidebar</MenuCheckboxItem>
+            <MenuRadioGroup value="comfortable">
+              <MenuRadioItem value="compact">Compact</MenuRadioItem>
+              <MenuRadioItem value="comfortable">Comfortable</MenuRadioItem>
+            </MenuRadioGroup>
+          </MenuContent>
+        </MenuDropdown>
+      </Menu>
     );
 
     expect(screen.getByRole("menuitemcheckbox", { name: "Sidebar" })).toHaveAttribute("aria-checked", "true");
@@ -130,20 +131,20 @@ describe("Menubar", () => {
 
   it("supports separators and shortcuts", () => {
     render(
-      <Menubar defaultValue="edit">
-        <MenubarMenu value="edit">
-          <MenubarTrigger>Edit</MenubarTrigger>
-          <MenubarContent forceMount>
-            <MenubarItem>
-              Undo <MenubarShortcut>Ctrl Z</MenubarShortcut>
-            </MenubarItem>
-            <MenubarSeparator data-testid="separator" />
-          </MenubarContent>
-        </MenubarMenu>
-      </Menubar>
+      <Menu variant="bar" defaultValue="edit">
+        <MenuDropdown value="edit">
+          <MenuTrigger>Edit</MenuTrigger>
+          <MenuContent forceMount>
+            <MenuItem>
+              Undo <MenuShortcut>Ctrl Z</MenuShortcut>
+            </MenuItem>
+            <MenuSeparator data-testid="separator" />
+          </MenuContent>
+        </MenuDropdown>
+      </Menu>
     );
 
     expect(screen.getByText("Ctrl Z")).toHaveClass("text-muted-foreground");
-    expect(screen.getByTestId("separator")).toHaveClass("bg-border/70");
+    expect(screen.getByTestId("separator")).toHaveClass("bg-border");
   });
 });

@@ -39,7 +39,7 @@ Los paquetes públicos se publican en npm con versiones independientes. Las inst
 - Composición e interacción: Accordion, Tabs, Dialog, Carousel, Table y más.
 - Colores semánticos, temas claro/oscuro, tipos de tema y breakpoints compartidos.
 
-El catálogo actual tiene **60 familias web y 56 nativas**. DropdownMenu, Resizable, Command, ContextMenu y NavigationMenu son exclusivos de web; BottomSheet es específico de React Native. La galería nativa contiene 57 ejemplos, incluyendo varias tablas.
+El catálogo comparte familias entre web y native. Menu reúne los menús desplegables y las barras de menús; ScrollArea permite virtualización y Barcode incluye QR. Resizable, Command, ContextMenu y NavigationMenu son exclusivos de web; BottomSheet es específico de React Native.
 
 La compatibilidad significa una experiencia visual coherente y patrones de composición similares. Las props y las implementaciones se adaptan a cada plataforma: no todos los componentes tienen una API idéntica.
 

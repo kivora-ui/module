@@ -24,33 +24,37 @@ In a Next.js project with React and React DOM 18 or later:
 
 ```sh
 npm install @kivora/nextjs
-npm install -D tailwindcss@^4.1 @tailwindcss/postcss@^4.1
 ```
 
-`@kivora/theme` is installed as a dependency. If you import it directly, also add it to your application's dependencies.
+`styles.css` ships compiled CSS, so Tailwind and PostCSS are not required in your application. `@kivora/theme` is installed as a dependency. If you import it directly, also add it to your application's dependencies.
 
 ## App Router setup
 
 These examples assume an `app/` directory at the project root.
 
-Merge these options into your existing files, preserving any plugins, styles, and providers already in use. This setup uses Tailwind 4.1; applications using Tailwind 3 need to migrate their configuration before using these styles.
+Import the compiled stylesheet once from your root layout (or from `pages/_app` for Pages Router):
 
-**`postcss.config.mjs`**
-
-```js
-export default {
-  plugins: { '@tailwindcss/postcss': {} },
-};
+```tsx
+import '@kivora/nextjs/styles.css';
 ```
 
-**`app/globals.css`**
+Alternatively, import it in `app/globals.css`:
 
 ```css
 @import "@kivora/nextjs/styles.css";
-@source "../node_modules/@kivora/nextjs/dist";
 ```
 
-The package stylesheet includes Tailwind, Kivora tokens, and carousel styles. `@source` enables generation of the classes used by the library. The path is relative to this file: for `src/app/globals.css`, use `../../node_modules/@kivora/nextjs/dist`.
+The stylesheet includes the library's utility classes, theme tokens, base reset, and component styles. Fonts and images used by these styles are embedded. No `@source` or PostCSS configuration is needed.
+
+### Projects that already use Tailwind
+
+To generate your application's own utility classes, keep your existing Tailwind 4.1+ setup and use this entry **instead of** `styles.css`:
+
+```css
+@import "@kivora/nextjs/tailwind.css";
+```
+
+This optional source entry includes Tailwind, Kivora tokens and library class detection. Your own Tailwind setup compiles it. The compiled `styles.css` entry does not generate arbitrary classes passed through `className`; use regular CSS or inline styles for custom styling without Tailwind.
 
 **`next.config.ts`**
 
@@ -106,7 +110,7 @@ import { Button } from '@kivora/nextjs';
 export default function Page() {
   const [saved, setSaved] = useState(false);
   return (
-    <main className="min-h-screen bg-background p-6 text-foreground">
+    <main style={{ padding: 24 }}>
       <Button onClick={() => setSaved(true)}>
         {saved ? 'Changes saved' : 'Save changes'}
       </Button>
@@ -119,7 +123,7 @@ The layout can remain a Server Component. Components that manage state or events
 
 ## Pages Router setup
 
-Use the same PostCSS and `transpilePackages` configuration. Save the CSS above in `styles/globals.css` and mount the provider in `pages/_app.tsx`:
+Use the same `transpilePackages` configuration. No PostCSS setup is required. Save the CSS above in `styles/globals.css` and mount the provider in `pages/_app.tsx`:
 
 ```tsx
 import type { AppProps } from 'next/app';
@@ -135,7 +139,7 @@ export default function App({ Component, pageProps }: AppProps) {
 }
 ```
 
-The global CSS import belongs in `_app.tsx`. If you use `src/styles/globals.css`, update `@source` to `../../node_modules/@kivora/nextjs/dist`.
+The global CSS import belongs in `_app.tsx`. No source-path configuration is needed.
 
 ## QR codes and barcodes
 

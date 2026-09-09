@@ -22,18 +22,17 @@
 | [Chart](./chart.md) | Web / Native | Ayudantes para componer gráficas con tooltip y leyenda consistentes. |
 | [Checkbox](./checkbox.md) | Web / Native | Casilla de verificación controlada o no controlada para estados booleanos. |
 | [Code](./code.md) | Web / Native | Bloque de código formateado con soporte de tema y scroll. |
-| [Collapsible](./collapsible.md) | Web / Native | Contenedor expandible para mostrar u ocultar contenido sin cambiar de pantalla. |
 | [Command](./command.md) | Web / — | Paleta de comandos web para búsqueda rápida, acciones y navegación. |
 | [Context Menu](./context-menu.md) | Web / — | Menú contextual web disparado por clic derecho o gesto equivalente. |
 | [Date Picker](./date-picker.md) | Web / Native | Selector de fecha o rango con presets y composición sobre calendario. |
 | [Dialog](./dialog.md) | Web / Native | Modal de confirmación o formulario que bloquea la interacción exterior. |
 | [Direction](./direction.md) | Web / Native | Provider de dirección LTR/RTL para adaptar componentes sensibles a lectura. |
 | [Drawer](./drawer.md) | Web / Native | Panel deslizante web desde un borde para navegación o acciones secundarias. |
-| [Dropdown Menu](./dropdown-menu.md) | Web / — | Menú desplegable web anclado a un trigger con items, checks y submenús. |
 | [Empty](./empty.md) | Web / Native | Plantilla de estado vacío con icono, título, descripción y pie opcional. |
 | [Field](./field.md) | Web / Native | Primitivas de campo de formulario con label, descripción, error y agrupación. |
 | [File Upload](./file-upload.md) | Web / Native | Flujo de subida de archivos con controlador, estado, fuentes y previsualización. |
 | [Hover Card](./hover-card.md) | Web / — | Tarjeta informativa web que se abre al pasar o enfocar un trigger. |
+| [Icon](./icon.md) | Web / Native | Icono Lucide con tamaño, color, grosor de trazo y etiqueta accesible. Importa el icono de Lucide y pásalo mediante icon; omite label si es decorativo. |
 | [Input](./input.md) | Web / Native | Campo de entrada de texto de una línea con estilos del sistema. |
 | [Input Group](./input-group.md) | Web / Native | Agrupa un input con addons o botones antes y después del campo. |
 | [Input Otp](./input-otp.md) | Web / Native | Entrada segmentada para códigos OTP o verificaciones por dígitos. |
@@ -42,7 +41,7 @@
 | [Keyboard Scroll View](./keyboard-scroll-view.md) | — / Native | Scroll nativo que se adapta al teclado para formularios largos. |
 | [Label](./label.md) | Web / Native | Label accesible para asociar texto descriptivo a controles de formulario. |
 | [Marker](./marker.md) | Web / Native | Píldora o marca visual para destacar contenido corto o iconografía pequeña. |
-| [Menubar](./menubar.md) | Web / Native | Barra de menús y submenús para acciones agrupadas en desktop o tablet. |
+| [Menu](./menu.md) | Web / Native | Menú de acciones desplegable o barra de menús con variant="bar". Los elementos de una barra se agrupan con MenuDropdown. |
 | [Message](./message.md) | Web / Native | Estructura de mensaje con avatar, cabecera, contenido y grupos conversacionales. |
 | [Message Scroller](./message-scroller.md) | Web / Native | Contenedor de scroll para conversaciones con anclaje al final y seguimiento. |
 | [Navigation Menu](./navigation-menu.md) | Web / — | Menú de navegación web para secciones complejas y contenido expandido. |
@@ -50,7 +49,6 @@
 | [Player](./player.md) | Web / Native | Conjunto de reproductor multimedia, controlador y ayudas de offline/cast según plataforma. |
 | [Popover](./popover.md) | Web / Native | Capa flotante anclada a un trigger para acciones ligeras o contenido contextual. |
 | [Progress](./progress.md) | Web / Native | Barra de progreso lineal para cargas, procesos y porcentajes. |
-| [Qr Code](./qr-code.md) | Web / Native | Renderiza códigos QR SVG desde el motor compartido de `@kivora/codes`. |
 | [Questionnaire](./questionnaire.md) | Web / Native | Cuestionario guiado por pasos o preguntas con navegación entre respuestas. |
 | [Radio Group](./radio-group.md) | Web / Native | Grupo de opciones mutuamente excluyentes con radios accesibles. |
 | [Resizable](./resizable.md) | Web / — | Paneles redimensionables web para layouts divididos. |

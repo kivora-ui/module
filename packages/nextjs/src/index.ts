@@ -73,8 +73,6 @@ export type {
 } from "./components/carousel";
 export { Checkbox } from "./components/checkbox";
 export type { CheckboxProps } from "./components/checkbox";
-export { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./components/collapsible";
-export type { CollapsibleContentProps, CollapsibleProps } from "./components/collapsible";
 export { Code } from "./components/code";
 export type { CodeProps, CodeTheme } from "./components/code";
 export {
@@ -146,34 +144,6 @@ export {
   DialogTrigger
 } from "./components/dialog";
 export type { DialogAnimation, DialogContentProps, DialogProps } from "./components/dialog";
-export {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuPortal,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger
-} from "./components/dropdown-menu";
-export type {
-  DropdownMenuCheckboxItemProps,
-  DropdownMenuContentProps,
-  DropdownMenuItemProps,
-  DropdownMenuLabelProps,
-  DropdownMenuProps,
-  DropdownMenuRadioItemProps,
-  DropdownMenuSeparatorProps,
-  DropdownMenuSubContentProps,
-  DropdownMenuSubTriggerProps
-} from "./components/dropdown-menu";
 export {
   Drawer,
   DrawerClose,
@@ -258,36 +228,6 @@ export type { LabelProps } from "./components/label";
 export { Marker, MarkerContent, MarkerIcon, markerVariants } from "./components/marker";
 export type { MarkerContentProps, MarkerIconProps, MarkerProps } from "./components/marker";
 export {
-  Menubar,
-  MenubarCheckboxItem,
-  MenubarContent,
-  MenubarGroup,
-  MenubarItem,
-  MenubarLabel,
-  MenubarMenu,
-  MenubarPortal,
-  MenubarRadioGroup,
-  MenubarRadioItem,
-  MenubarSeparator,
-  MenubarShortcut,
-  MenubarSub,
-  MenubarSubContent,
-  MenubarSubTrigger,
-  MenubarTrigger
-} from "./components/menubar";
-export type {
-  MenubarCheckboxItemProps,
-  MenubarContentProps,
-  MenubarItemProps,
-  MenubarLabelProps,
-  MenubarProps,
-  MenubarRadioItemProps,
-  MenubarSeparatorProps,
-  MenubarSubContentProps,
-  MenubarSubTriggerProps,
-  MenubarTriggerProps
-} from "./components/menubar";
-export {
   Message,
   MessageAvatar,
   MessageContent,
@@ -349,8 +289,8 @@ export type {
 } from "./components/questionnaire";
 export { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "./components/resizable";
 export type { ResizableHandleProps, ResizablePanelGroupProps } from "./components/resizable";
-export { ScrollArea, ScrollBar, VirtualScrollArea } from "./components/scroll-area";
-export type { ScrollAreaProps, ScrollBarProps, VirtualScrollAreaProps } from "./components/scroll-area";
+export { ScrollArea, ScrollBar } from "./components/scroll-area";
+export type { ScrollAreaProps, ScrollBarProps } from "./components/scroll-area";
 export { Separator } from "./components/separator";
 export type { SeparatorProps } from "./components/separator";
 export {
@@ -373,8 +313,6 @@ export type { SkeletonProps } from "./components/skeleton";
 export { Spinner } from "./components/spinner";
 export type { SpinnerProps } from "./components/spinner";
 export {
-  AsyncSelect,
-  CreatableSelect,
   Select,
   SelectContent,
   SelectGroup,
@@ -387,8 +325,6 @@ export {
   SelectValue
 } from "./components/select";
 export type {
-  AsyncSelectProps,
-  CreatableSelectProps,
   SelectGroupOption,
   SelectOption,
   SelectProps
@@ -445,8 +381,6 @@ export {
 export { lightTheme, darkTheme, breakpoints } from "@kivora/theme";
 export { Barcode } from './components/barcode';
 export type { BarcodeProps } from './components/barcode';
-export { QRCode } from './components/qr-code';
-export type { QRCodeProps } from './components/qr-code';
 export { generateCode, barcodeFormats } from '@kivora/codes';
 export type { CodeOptions, GeneratedCode, BarcodeFormat, QRErrorCorrectionLevel } from '@kivora/codes';
 
@@ -468,3 +402,8 @@ export type { PlayerMessages } from './components/player/locale';
 export { AudioPlayerProvider, useAudioPlayer } from './components/player/audio-player';
 export type { AudioPlayerContextValue } from './components/player/audio-player';
 export type { PlayerControlsVariant, PlayerProgram, PlayerQueueItem, PlayerThumbnail } from './components/player/types';
+
+export { Icon } from "./components/icon";
+export type { IconProps } from "./components/icon";
+
+export * from "./components/menu";
