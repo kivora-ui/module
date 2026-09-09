@@ -61,30 +61,13 @@ Para casos que necesiten cambiar un token por JS (no solo por CSS):
 </KivoraProvider>
 ```
 
-## Configurar NativeWind v5 (preview) en la app consumidora
+## Configurar NativeWind 4 en Community CLI
 
-NativeWind v5 es la única versión que soporta Tailwind v4 y está en
-**preview** (dist-tag `preview` en npm) — no es una dependencia estable de
-producción todavía. `metro.config.js`:
+La receta actual usa NativeWind 4.2.6 y Tailwind 3.4.19. Para RN 0.87.1,
+Reanimated 4.6.0 y Worklets 0.12.2. No importar el partial Tailwind 4 del
+paquete Theme en este pipeline. Configurar los colores con variables RGB
+y aplicar vars() a la vista ra?z, junto a KivoraProvider.
 
-```js
-const { getDefaultConfig } = require("expo/metro-config");
-const { withNativewind } = require("nativewind/metro");
-
-module.exports = withNativewind(getDefaultConfig(__dirname), {
-  input: "./global.css"
-});
-```
-
-`global.css`:
-
-```css
-@import "tailwindcss/theme.css" layer(theme);
-@import "tailwindcss/preflight.css" layer(base);
-@import "tailwindcss/utilities.css";
-@import "nativewind/theme";
-@import "@kivora/theme/tailwind.css";
-```
-
-No hace falta configurar Babel: `withNativewind` ya aplica el plugin
-necesario.
+Consulta [instalaci?n nativa](native-installation.md) para Babel, Metro,
+tipos CSS y providers, y el [README Native](../packages/native/README.md)
+para la lista completa de colores sem?nticos.

@@ -19,7 +19,8 @@
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "prepublishOnly": "node ../../scripts/release.mjs guard"
   },
   "dependencies": {
     "tus-js-client": "^4.3.1"

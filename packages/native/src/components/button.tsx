@@ -2,8 +2,6 @@ import * as React from "react";
 import {
   Pressable,
   type PressableProps,
-  type StyleProp,
-  type ViewStyle,
 } from "react-native";
 import Animated, {
   ReduceMotion,
@@ -15,17 +13,9 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@kivora/theme";
 import type { ButtonSize, ButtonVariant } from "@kivora/theme";
 
-// react-native-reanimated's generated prop types for `style` trigger TS2589
-// ("Type instantiation is excessively deep and possibly infinite") on this
-// exact typescript/react-native/reanimated version combination — cast to a
-// plain, non-recursive component type so TS never has to resolve them.
 const AnimatedPressable = Animated.createAnimatedComponent(
   Pressable,
-) as unknown as React.ComponentType<
-  PressableProps & { style?: StyleProp<ViewStyle> } & React.RefAttributes<
-      React.ComponentRef<typeof Pressable>
-    >
->;
+);
 
 const variantClasses: Record<ButtonVariant, string> = {
   default: "bg-primary",
@@ -59,9 +49,7 @@ export interface ButtonProps
   accessibilityLabel?: string;
 }
 
-// Explicit return type: once AnimatedPressable is cast above, TS can no
-// longer portably infer Button's type without referencing a non-exported
-// react-native internal type (TS2742) - name it explicitly instead.
+// Name the public type so declarations do not reference React Native internals.
 export const Button: React.ForwardRefExoticComponent<
   ButtonProps & React.RefAttributes<React.ComponentRef<typeof Pressable>>
 > = React.forwardRef<React.ComponentRef<typeof Pressable>, ButtonProps>(

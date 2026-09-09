@@ -13,31 +13,29 @@ Building a website too? Use **[@kivora/nextjs](https://www.npmjs.com/package/@ki
 From your application directory:
 
 ```sh
-npx @kivora/init
+npx @kivora/init@0.2.1
 ```
 
-The [@kivora/init](https://www.npmjs.com/package/@kivora/init) setup supports React Native Community CLI 0.85.3-0.85.x with NativeWind 4. Use `npx @kivora/init --dry-run` to review its changes. Other combinations require a compatibility review and manual configuration.
+Native and Init 0.2.1 are release candidates: these npm commands require publication first. The installer supports Community CLI 0.87.1 with NativeWind 4, Reanimated 4.6 and Worklets 0.12, and retains the separate RN 0.85 recipe. Use `npx @kivora/init@0.2.1 --dry-run` to preview changes without modifying the application. See the [installation guide](../../docs/native-installation.md) and [validation results](../../docs/native-release-validation.md).
 
 ### Manual installation
 
-This setup uses React Native 0.85.3, React 19.2.3, NativeWind 4.2.6, and Reanimated 4.3.0 with the New Architecture. Add any missing dependencies to your application; review existing versions before changing them.
+This setup targets React Native 0.87.1, React 19.2.3 and TypeScript 6.0.3 with the New Architecture. Keep the application's framework versions and review existing dependencies before installing. Preserve an existing `react-native-safe-area-context: ^5.5.2`; install it separately only if missing.
 
 ```sh
-npm install @kivora/native nativewind@4.2.6
-npm install react-native-gesture-handler@^2.30.0 react-native-safe-area-context@^5 react-native-svg@^15
-npm install react-native-reanimated@4.3.0 react-native-worklets@0.8.3
-npm install react-native-keyboard-controller@^1.22.0
-npm install @notifee/react-native@^9.1.8
-npm install -D tailwindcss@3.4.19
+npm install --save-exact @kivora/native@0.2.1 nativewind@4.2.6 react-native-gesture-handler@2.32.0 react-native-svg@15.15.5 react-native-reanimated@4.6.0 react-native-worklets@0.12.2 react-native-keyboard-controller@1.22.4 @notifee/react-native@9.1.8 react-native-video@6.19.2 react-native-fs@2.20.0 react-native-orientation-locker@1.7.0 @kesha-antonov/react-native-background-downloader@4.6.2
+npm install --save-dev --save-exact tailwindcss@3.4.19
 ```
 
 The package already depends on Gorhom Bottom Sheet, Reanimated Carousel, and `@kivora/theme`. If you import Theme directly, also add it to your application's dependencies. Native dependencies require rebuilding the application; reloading Metro is not enough.
 
 ## Compatibility
 
-The package's peer ranges allow React 18+, React Native 0.74+, NativeWind 4.2.6 or 5 preview, and Reanimated 3.16+. This does not mean every combination is compatible. The setup below uses NativeWind 4 and Reanimated 4; do not mix it with NativeWind 5 or Reanimated 3 configuration.
+Use NativeWind 4.2.6 / Tailwind 3.4.19 with Reanimated 4.6.0 / Worklets 0.12.2 for RN 0.87.1. Reanimated 4.3 is incompatible with RN 0.87. The initializer rejects unsupported combinations instead of upgrading or downgrading an existing application. Peer ranges alone do not validate every possible pairing.
 
-The reference integration has been validated on Android and on the iOS simulator without Expo. The package ships native code for Android plus an iOS bridge for player sleep-timer integration with `react-native-video`. The reference environment applies a patch to `react-native-css-interop@0.2.6` to fix Expo detection. That patch is not automatically distributed with this package; whether external installations need it remains to be verified.
+The package ships Android code and iOS bridges. See the [phase-by-phase report](../../docs/native-release-validation.md) for installation, bundling, compilation and execution results; historical tests of the RN 0.85 example do not validate RN 0.87. The external Community CLI installation does not apply the monorepo's CSS Interop patch.
+
+The root entry exports the full catalog, so Metro also resolves notification, video and download modules when importing Button/Input. All dependencies in the installation command are required for that entry. Background Downloader is therefore no longer marked optional. Google Cast remains optional because the application injects its SDK; camera/document pickers are also application-provided adapters. Native setup for optional functionality is described in the [Android/iOS guide](../../docs/native-installation.md#android).
 
 ## NativeWind 4 setup
 
@@ -71,6 +69,7 @@ const config = mergeConfig(getDefaultConfig(__dirname), {});
 module.exports = withNativeWind(config, {
   input: './global.css',
   inlineRem: 16,
+  disableTypeScriptGeneration: true,
 });
 ```
 
@@ -120,6 +119,7 @@ Include Kivora's source code in `content`: the package ships it so Metro and Nat
 
 ```ts
 /// <reference types="nativewind/types" />
+declare module '*.css';
 ```
 
 ### 4. Provider and working example

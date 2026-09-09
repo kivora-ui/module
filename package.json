@@ -10,10 +10,10 @@
     "build:web": "pnpm --filter @kivora/example-web build",
     "test:web": "pnpm build:web && pnpm --filter @kivora/example-web test:e2e",
     "build": "pnpm -r build",
-    "publish:native": "pnpm --filter @kivora/native... typecheck && pnpm --filter @kivora/native... build && pnpm --filter @kivora/native publish --access public --publish-branch main",
-    "publish:nextjs": "pnpm --filter @kivora/nextjs... typecheck && pnpm --filter @kivora/nextjs... build && pnpm --filter @kivora/nextjs publish --access public --publish-branch main",
-    "publish:theme": "pnpm --filter @kivora/theme typecheck && pnpm --filter @kivora/theme build && pnpm --filter @kivora/theme publish --access public --publish-branch main",
-    "publish:init": "pnpm --filter @kivora/init typecheck && pnpm --filter @kivora/init test && pnpm --filter @kivora/init build && pnpm --filter @kivora/init publish --access public --publish-branch main",
+    "publish:native": "node scripts/release.mjs publish native",
+    "publish:nextjs": "node scripts/release.mjs publish nextjs",
+    "publish:theme": "node scripts/release.mjs publish theme",
+    "publish:init": "node scripts/release.mjs publish init",
     "storybook": "pnpm --filter @kivora/storybook storybook",
     "build:storybook": "pnpm --filter @kivora/storybook build",
     "typecheck": "pnpm -r typecheck",
@@ -24,10 +24,12 @@
     "android:app": "pnpm --filter @kivora/example-app android",
     "build:app": "pnpm --filter @kivora/native... build && pnpm --filter @kivora/example-app build",
     "test:app": "pnpm --filter @kivora/example-app test",
-    "publish:codes": "pnpm --filter @kivora/codes typecheck && pnpm --filter @kivora/codes test && pnpm --filter @kivora/codes build && pnpm --filter @kivora/codes publish --access public --publish-branch main",
+    "publish:codes": "node scripts/release.mjs publish codes",
     "dev:uploads": "node scripts/upload-server.mjs",
-    "publish:upload": "pnpm --filter @kivora/upload typecheck && pnpm --filter @kivora/upload test && pnpm --filter @kivora/upload build && pnpm --filter @kivora/upload publish --access public --publish-branch main",
-    "docs:components": "node scripts/generate-component-docs.mjs"
+    "publish:upload": "node scripts/release.mjs publish upload",
+    "docs:components": "node scripts/generate-component-docs.mjs",
+    "release:prepare": "pnpm --filter \"./packages/**\" build && node --test scripts/release.test.mjs && node scripts/release.mjs pack",
+    "test:packaging": "node --test scripts/release.test.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1",
@@ -37,7 +39,9 @@
     "@types/react": "^19.2.18",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3",
-    "vitest": "^2.1.9"
+    "vitest": "^2.1.9",
+    "cross-spawn": "^7.0.6",
+    "semver": "^7.7.2"
   },
   "pnpm": {
     "patchedDependencies": {

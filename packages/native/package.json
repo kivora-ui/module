@@ -1,6 +1,6 @@
 {
   "name": "@kivora/native",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Kivora UI components for React Native.",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -23,19 +23,23 @@
     "android/src",
     "ios",
     "KivoraNative.podspec",
-    "react-native.config.cjs"
+    "react-native.config.cjs",
+    "!src/**/*.test.ts",
+    "!src/**/*.test.tsx",
+    "!android/src/test"
   ],
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --passWithNoTests",
+    "prepublishOnly": "node ../../scripts/release.mjs guard"
   },
   "dependencies": {
     "@gorhom/bottom-sheet": "^5.2.14",
-    "@kivora/codes": "workspace:*",
-    "@kivora/theme": "workspace:*",
-    "@kivora/upload": "workspace:*",
+    "@kivora/codes": "0.1.0",
+    "@kivora/theme": "0.1.0",
+    "@kivora/upload": "0.1.0",
     "class-variance-authority": "^0.7.1",
     "lucide-react-native": "^1.40.0",
     "prismjs": "^1.30.0",
@@ -44,47 +48,46 @@
   "peerDependencies": {
     "@kesha-antonov/react-native-background-downloader": "^4.6.2",
     "@notifee/react-native": "^9.1.8",
-    "nativewind": "^4.2.6 || ^5.0.0-0",
-    "react": ">=18",
-    "react-native": ">=0.74",
-    "react-native-css": ">=1.0.0",
-    "react-native-gesture-handler": "^2.30.0",
-    "react-native-keyboard-controller": "^1.22.0",
+    "nativewind": "^4.2.6",
+    "react": ">=19.2.3 <20",
+    "react-native": ">=0.85.3 <0.86 || >=0.87.1 <0.88",
+    "react-native-gesture-handler": ">=2.32 <3",
+    "react-native-keyboard-controller": ">=1.22.4 <2",
     "react-native-fs": "^2.20.0",
     "react-native-orientation-locker": "1.7.0",
-    "react-native-reanimated": ">=3.16",
+    "react-native-reanimated": ">=4.3 <4.4 || >=4.6 <4.7",
     "react-native-safe-area-context": ">=5",
     "react-native-svg": ">=15",
     "react-native-video": "6.19.2",
-    "react-native-google-cast": "4.9.1"
+    "react-native-google-cast": "4.9.1",
+    "react-native-worklets": ">=0.8.3 <0.9 || >=0.12.2 <0.13"
   },
   "devDependencies": {
     "@kesha-antonov/react-native-background-downloader": "^4.6.2",
     "@notifee/react-native": "^9.1.8",
     "@types/prismjs": "^1.26.6",
     "@types/react": "^19.2.18",
-    "nativewind": "preview",
-    "react-native-css": "latest",
+    "nativewind": "4.2.6",
     "react-native-fs": "^2.20.0",
-    "react-native-keyboard-controller": "^1.22.0",
+    "react-native-keyboard-controller": "1.22.4",
     "react-native-orientation-locker": "1.7.0",
-    "react-native-reanimated": "^3.16.0",
+    "react-native-reanimated": "4.6.0",
     "react-native-video": "6.19.2",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3",
     "vitest": "^2.1.9",
-    "react-native-google-cast": "4.9.1"
+    "react-native-google-cast": "4.9.1",
+    "react-native-worklets": "0.12.2",
+    "react-native": "0.87.1",
+    "react": "19.2.3",
+    "react-native-gesture-handler": "2.32.0",
+    "tailwindcss": "3.4.19",
+    "@react-native/metro-config": "0.87.1"
   },
   "publishConfig": {
     "access": "public"
   },
   "peerDependenciesMeta": {
-    "react-native-css": {
-      "optional": true
-    },
-    "@kesha-antonov/react-native-background-downloader": {
-      "optional": true
-    },
     "react-native-google-cast": {
       "optional": true
     }

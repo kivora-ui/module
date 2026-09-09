@@ -16,7 +16,7 @@ Configura una aplicación existente sin sustituir sus versiones ni configuracion
   --help, -h                   Mostrar esta ayuda
 
 Next.js: App Router y Pages Router, Tailwind 4.1.
-Native: Community CLI, React Native 0.85.3+, dentro de 0.85; NativeWind 4 y Reanimated 4.3.
+Native: Community CLI, React Native 0.85.3 (Reanimated 4.3) o 0.87.1 (Reanimated 4.6); NativeWind 4.
 Las configuraciones dinámicas o incompatibles se rechazan antes de escribir.
 `;
 

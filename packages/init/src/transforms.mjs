@@ -98,6 +98,79 @@ export function babelConfig(text) {
   });
 }
 
+function componentFor(source, expression = source.statements.find(ts.isExportAssignment)?.expression) {
+  if (!expression) return source.statements.find(s => ts.isFunctionDeclaration(s) && s.modifiers?.some(m => m.kind === ts.SyntaxKind.DefaultKeyword));
+  if (!ts.isIdentifier(expression)) return expression;
+  return source.statements.find(s => ts.isFunctionDeclaration(s) && s.name?.text === expression.text)
+    ?? source.statements.filter(ts.isVariableStatement).flatMap(s => [...s.declarationList.declarations]).find(d => d.name.getText(source) === expression.text)?.initializer;
+}
+
+export function existingNativeProviders(texts) {
+  const providers = new Map([
+    ['react-native-safe-area-context', 'SafeAreaProvider'],
+    ['react-native-gesture-handler', 'GestureHandlerRootView'],
+    ['react-native-keyboard-controller', 'KeyboardProvider'],
+  ]);
+  const found = new Set();
+  for (const text of texts) {
+    const source = parse(text);
+    const names = new Map();
+    for (const statement of source.statements) {
+      if (!ts.isImportDeclaration(statement)) continue;
+      const provider = providers.get(statement.moduleSpecifier.text);
+      const bindings = statement.importClause?.namedBindings;
+      if (provider && bindings && ts.isNamedImports(bindings)) {
+        for (const binding of bindings.elements) if ((binding.propertyName ?? binding.name).text === provider) names.set(binding.name.text, provider);
+      }
+      if (provider && bindings && ts.isNamespaceImport(bindings)) names.set(`${bindings.name.text}.${provider}`, provider);
+    }
+    let component = componentFor(source);
+    if (!component) {
+      function registration(node) {
+        if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression) && node.expression.name.text === 'registerComponent') {
+          const factory = node.arguments[1];
+          if (factory && ts.isArrowFunction(factory)) component = componentFor(source, factory.body);
+        }
+        ts.forEachChild(node, registration);
+      }
+      registration(source);
+    }
+    if (!component || !ts.isFunctionLike(component) || !component.body) continue;
+    const renders = [];
+    function returns(node) {
+      if (ts.isFunctionLike(node)) return;
+      if (ts.isReturnStatement(node) && node.expression) renders.push(node.expression);
+      else ts.forEachChild(node, returns);
+    }
+    if (ts.isBlock(component.body)) returns(component.body);
+    else renders.push(component.body);
+    const used = new Set();
+    function collect(node) {
+      if ((ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) && names.has(node.tagName.getText(source))) used.add(names.get(node.tagName.getText(source)));
+      ts.forEachChild(node, collect);
+    }
+    function wrappers(expression) {
+      let node = unwrap(expression);
+      const result = new Set();
+      while (node) {
+        if (ts.isJsxExpression(node)) { node = unwrap(node.expression); continue; }
+        if (!ts.isJsxElement(node) && !ts.isJsxFragment(node)) break;
+        if (ts.isJsxElement(node) && names.has(node.openingElement.tagName.getText(source))) result.add(names.get(node.openingElement.tagName.getText(source)));
+        const children = node.children.filter(child => !ts.isJsxText(child) || child.text.trim());
+        node = children.length === 1 ? children[0] : undefined;
+      }
+      return result;
+    }
+    for (const render of renders) collect(render);
+    const covered = renders.map(wrappers);
+    for (const provider of used) {
+      if (!covered.every(set => set.has(provider))) throw new Error(`El provider ${provider} no envuelve todas las ramas de la aplicación; revisa la integración manualmente.`);
+      found.add(provider);
+    }
+  }
+  return found;
+}
+
 // Restrict edits to the default component, never nested render callbacks.
 export function wrapEntry(text, file, mode, importPath) {
   const source = parse(text, file);
@@ -117,14 +190,7 @@ export function wrapEntry(text, file, mode, importPath) {
     if (bodies.length !== 1) throw new Error(`${file}: no se encontró un único <body>.`);
     edits.push([bodies[0].openingElement.end, bodies[0].openingElement.end, '<KivoraRoot>'], [bodies[0].closingElement.getStart(source), bodies[0].closingElement.getStart(source), '</KivoraRoot>']);
   } else {
-    let component = source.statements.find(s => ts.isFunctionDeclaration(s) && s.modifiers?.some(m => m.kind === ts.SyntaxKind.DefaultKeyword));
-    if (!component) {
-      const exp = source.statements.find(ts.isExportAssignment)?.expression;
-      if (exp && ts.isIdentifier(exp)) {
-        component = source.statements.find(s => ts.isFunctionDeclaration(s) && s.name?.text === exp.text);
-        component ??= source.statements.filter(ts.isVariableStatement).flatMap(s => [...s.declarationList.declarations]).find(d => d.name.getText(source) === exp.text)?.initializer;
-      } else component = exp;
-    }
+    const component = componentFor(source);
     if (!component || !(ts.isFunctionDeclaration(component) || ts.isArrowFunction(component) || ts.isFunctionExpression(component))) throw new Error(`${file}: componente por defecto no soportado.`);
     function add(expr) { edits.push([expr.getStart(source), expr.end, `<KivoraRoot>{${expr.getText(source)}}</KivoraRoot>`]); }
     if (!component.body) throw new Error(`${file}: componente sin cuerpo.`);
