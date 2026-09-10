@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.0 — 2026-09-10
+
+Packages: `@kivora/nextjs` and `@kivora/native`.
+
+- Add `Animation`, `AnimatedText`, `AnimatedPath` and `AnimatedLoader` for web and React Native.
+- Support staggered words and characters, fade/up/down/scale entrances, SVG stroke drawing and looping dots/bars loaders.
+- Add duration, delay, replay and disabled controls; respect system reduced-motion preferences and preserve accessible text.
+- Delegate web opacity and complete transforms to Web Animations API through Motion; use Reanimated for native animations.
+- Add gallery examples, eleven dedicated text stories, replay controls and configurable Storybook previews.
+- Align Storybook's React runtime and React DOM to fix preview rendering.
+- Add a reproducible web animation benchmark and document local measurements, SVG differences and device validation limits. Local browser cadence is approximately 60 fps; native device performance is not certified.
+
 ## Native and Init 0.2.1 — 2026-09-09
 
 - Fix Native's npm manifest: replace unresolved internal workspace protocols with published 0.1.0 versions.
