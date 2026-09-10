@@ -80,7 +80,11 @@ function publish(name) {
   for (const [dependency, version] of Object.entries(current.dependencies)) {
     if (dependency.startsWith('@kivora/')) run('npm', ['view', `${dependency}@${version}`, 'version', '--registry=https://registry.npmjs.org']);
   }
-  console.log(run('npm', ['publish', archive, '--access', 'public', '--registry=https://registry.npmjs.org']));
+  // npm needs a real terminal to display and complete browser-based 2FA.
+  // Keep inspection output captured above, but inherit stdin/stdout for publishing.
+  const result = spawn.sync('npm', ['publish', archive, '--access', 'public', '--auth-type=web', '--registry=https://registry.npmjs.org'], { cwd: root, stdio: 'inherit' });
+  if (result.error) throw result.error;
+  if (result.status !== 0) throw new Error(`npm publish failed with exit code ${result.status}`);
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
