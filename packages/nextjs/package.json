@@ -24,7 +24,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
-    "test:styles": "node scripts/build-styles.mjs && node scripts/verify-styles.mjs"
+    "test:styles": "node scripts/build-styles.mjs && node scripts/verify-styles.mjs",
+    "prepublishOnly": "node ../../scripts/release.mjs guard"
   },
   "dependencies": {
     "@daypicker/react": "^10.0.1",

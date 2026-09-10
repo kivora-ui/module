@@ -21,7 +21,8 @@
     "build": "tsup && node scripts/copy-license.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "prepublishOnly": "node ../../scripts/release.mjs guard"
   },
   "dependencies": {
     "@bwip-js/generic": "^4.11.4"

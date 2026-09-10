@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto';
 import spawn from 'cross-spawn';
 import semver from 'semver';
 import ts from 'typescript';
-import { arrayWith, babelConfig, parse, setConfig, wrapEntry } from './transforms.mjs';
+import { arrayWith, babelConfig, parse, setConfig, wrapEntry, existingNativeProviders } from './transforms.mjs';
 import { colors, nativeProvider, provider, webProvider } from './templates.mjs';
 
 const lockfiles = { 'pnpm-lock.yaml': 'pnpm', 'package-lock.json': 'npm', 'npm-shrinkwrap.json': 'npm', 'yarn.lock': 'yarn', 'bun.lock': 'bun', 'bun.lockb': 'bun' };
@@ -48,7 +48,14 @@ export function createPlan(root, framework, managerOverride) {
   const dev = [];
   const notes = [];
   function requireRange(name, range, required = false) {
-    const current = all[name];
+    let current = all[name];
+    if (name === '@kivora/native' && /^file:.*\.tgz$/.test(current ?? '')) {
+      const installed = join(root, 'node_modules', name, 'package.json');
+      if (existsSync(installed)) {
+        const manifest = json(installed);
+        if (manifest.name === name) current = manifest.version;
+      }
+    }
     if (!current) {
       if (required) throw new Error(`Falta ${name}: init configura una aplicación existente; no crea ni migra el framework.`);
       return;
@@ -118,27 +125,35 @@ export function createPlan(root, framework, managerOverride) {
     }
   } else if (framework === 'native') {
     if (all.expo) throw new Error('Expo requiere una receta propia (SDK y development build). Esta versión de init soporta React Native Community CLI; consulta @kivora/native/README.md.');
-    requireRange('react-native', '>=0.85.3 <0.86', true);
-    requireRange('react', '>=19.2 <20', true);
+    requireRange('react-native', '>=0.85.3 <0.86 || >=0.87.1 <0.88', true);
+    requireRange('react', '>=19.2.3 <20', true);
+    const rn087 = semver.subset(all['react-native'], '>=0.87.1 <0.88');
     const versions = {
       nativewind: ['4.2.6', '>=4.2.6 <5'],
-      'react-native-reanimated': ['4.3.0', '>=4.3.0 <4.4'],
-      'react-native-worklets': ['0.8.3', '>=0.8.3 <0.9'],
-      'react-native-gesture-handler': ['^2.30.0', '>=2.30 <3'],
+      'react-native-reanimated': rn087 ? ['4.6.0', '>=4.6.0 <4.7'] : ['4.3.0', '>=4.3.0 <4.4'],
+      'react-native-worklets': rn087 ? ['0.12.2', '>=0.12.2 <0.13'] : ['0.8.3', '>=0.8.3 <0.9'],
+      'react-native-gesture-handler': ['2.32.0', '>=2.32 <3'],
       'react-native-safe-area-context': ['^5.5.2', '>=5.5.2 <6'],
-      'react-native-svg': ['^15.15.1', '>=15.15.1 <16'],
-      'react-native-keyboard-controller': ['^1.22.0', '>=1.22 <2'],
-      '@notifee/react-native': ['^9.1.8', '>=9.1.8 <10'],
+      'react-native-svg': ['15.15.5', '>=15.15.1 <16'],
+      'react-native-keyboard-controller': ['1.22.4', '>=1.22.4 <2'],
+      '@notifee/react-native': ['9.1.8', '>=9.1.8 <10'],
+      'react-native-video': ['6.19.2', '6.19.2'],
+      'react-native-fs': ['2.20.0', '^2.20.0'],
+      'react-native-orientation-locker': ['1.7.0', '1.7.0'],
+      '@kesha-antonov/react-native-background-downloader': ['4.6.2', '^4.6.2'],
     };
     for (const [name, [version, range]] of Object.entries(versions)) { requireRange(name, range); dependency(name, version); }
     requireRange('tailwindcss', '>=3.4.17 <4');
-    requireRange('@react-native/babel-preset', '>=0.85 <0.86', true);
-    requireRange('@react-native/metro-config', '>=0.85 <0.86', true);
-    dependency('@kivora/native', 'latest');
+    requireRange('@react-native/babel-preset', rn087 ? '>=0.87.1 <0.88' : '>=0.85.3 <0.86', true);
+    requireRange('@react-native/metro-config', rn087 ? '>=0.87.1 <0.88' : '>=0.85.3 <0.86', true);
+    requireRange('@kivora/native', '>=0.2.1 <0.3');
+    dependency('@kivora/native', '0.2.1');
     dependency('tailwindcss', '3.4.19', true);
     const entry = findEntry(['App', 'src/App'].flatMap(base => extensions.map(ext => `${base}.${ext}`)));
     const directory = dirname(entry);
     const typed = entry.endsWith('.tsx');
+    const originalEntry = read(safe(entry));
+    const wrappedEntry = wrapEntry(originalEntry, entry, 'component', './kivora-provider');
     let css = `${directory === '.' ? '' : directory + '/'}kivora.css`;
     let nativeWindDetected = false;
     // Reuse an existing NativeWind input instead of creating a second CSS pipeline.
@@ -163,12 +178,22 @@ export function createPlan(root, framework, managerOverride) {
     }
     let cssImport = relative(join(root, directory), join(root, css)).replaceAll('\\', '/');
     if (!cssImport.startsWith('.')) cssImport = './' + cssImport;
-    change(`${directory}/kivora-provider.${typed ? 'tsx' : 'jsx'}`, provider(nativeProvider.replace('./kivora.css', cssImport), typed), true);
+    let template = nativeProvider.replace('./kivora.css', cssImport);
+    const entryFiles = [entry, 'index.js', 'index.ts', 'index.tsx'].filter(file => existsSync(join(root, file)));
+    const existingProviders = existingNativeProviders(entryFiles.map(file => read(safe(file))));
+    for (const name of existingProviders) {
+      template = template.replace(new RegExp(`^import \\{ ${name} \\} from [^\\n]+\\n`, 'm'), '')
+        .replace(new RegExp(`<${name}(?:\\s[^>]*)?>`), '')
+        .replace(`</${name}>`, '');
+    }
+    const typeReference = typed ? `/// <reference path="${directory === '.' ? './' : '../'.repeat(directory.split(/[\\/]/).length)}kivora-nativewind.d.ts" />\n` : '';
+    const providerFile = `${directory}/kivora-provider.${typed ? 'tsx' : 'jsx'}`;
+    if (wrappedEntry !== originalEntry || !existsSync(safe(providerFile))) change(providerFile, typeReference + provider(template, typed), true);
     const currentCss = existsSync(safe(css)) ? read(safe(css)) : '';
     const missingDirectives = ['base', 'components', 'utilities'].filter(name => !new RegExp(`@tailwind\\s+${name}\\s*;`).test(currentCss));
     const directives = missingDirectives.map(name => `@tailwind ${name};\n`).join('');
     change(css, directives + currentCss);
-    if (typed) change('kivora-nativewind.d.ts', '/// <reference types="nativewind/types" />\n', true);
+    if (typed) change('kivora-nativewind.d.ts', '/// <reference types="nativewind/types" />\ndeclare module \'*.css\';\n', true);
     const commonjs = pkg.type === 'module' ? 'cjs' : 'js';
     if (pkg.babel || ['.babelrc', '.babelrc.json', '.babelrc.js', '.babelrc.cjs'].some(f => existsSync(join(root, f)))) throw new Error('Babel usa una configuración alternativa; unifícala en babel.config antes de continuar.');
     config('babel.config', `babel.config.${commonjs}`, "module.exports = { presets: ['module:@react-native/babel-preset'] };\n", (text, file) => {
@@ -192,7 +217,7 @@ export function createPlan(root, framework, managerOverride) {
         value = source.statements.filter(ts.isVariableStatement).flatMap(s => [...s.declarationList.declarations]).find(d => d.name.getText(source) === identifier)?.initializer;
       }
       if (!value || !(ts.isObjectLiteralExpression(value) || (ts.isCallExpression(value) && ['getDefaultConfig', 'mergeConfig'].includes(value.expression.getText(source))))) throw new Error('Metro exporta una configuración dinámica no reconocida; requiere revisión manual.');
-      return text.slice(0, expr.getStart(source)) + `require('nativewind/metro').withNativeWind(${expr.getText(source)}, { input: './${css}', inlineRem: 16 })` + text.slice(expr.end);
+      return text.slice(0, expr.getStart(source)) + `require('nativewind/metro').withNativeWind(${expr.getText(source)}, { input: './${css}', inlineRem: 16, disableTypeScriptGeneration: true })` + text.slice(expr.end);
     });
     config('tailwind.config', `tailwind.config.${commonjs}`, 'module.exports = {};\n', (text, file) => {
       if (/\.(mjs|mts|ts)$/.test(file) || (file.endsWith('.js') && pkg.type === 'module')) throw new Error('Esta receta Tailwind requiere CommonJS (.cjs en proyectos ESM).');
@@ -205,7 +230,7 @@ export function createPlan(root, framework, managerOverride) {
       for (const name of colors) text = setConfig(text, ['theme', 'extend', 'colors', name], node => node?.getText() ?? JSON.stringify(`rgb(var(--${name}) / <alpha-value>)`));
       return text;
     });
-    change(entry, wrapEntry(read(safe(entry)), entry, 'component', './kivora-provider'));
+    change(entry, wrappedEntry);
     const manifest = 'android/app/src/main/AndroidManifest.xml';
     if (existsSync(join(root, manifest))) {
       let xml = read(safe(manifest));
@@ -215,7 +240,7 @@ export function createPlan(root, framework, managerOverride) {
         change(manifest, xml);
       }
     }
-    notes.push('Recompila Android. En iOS instala los pods con el procedimiento de tu proyecto y recompila.', 'Para toast, configura un icono de notificación Android existente. iOS y Expo no están validados por esta receta.', 'La receta del repositorio tiene pendiente verificar el parche local de react-native-css-interop; prueba los estilos en una instalación externa.');
+    notes.push('Recompila Android. En iOS instala los pods con el procedimiento de tu proyecto y recompila.', 'Para toast, configura un icono de notificación Android existente. Consulta las instrucciones de background-downloader y orientation-locker para integrar sus callbacks nativos.', 'La generación de bundles no acredita compilación ni ejecución nativa. Consulta docs/native-installation.md para los resultados de validación por plataforma.');
   } else throw new Error('Framework inválido: usa nextjs o native.');
   return { root, framework, manager, files, runtime, dev, notes, manifest: read(join(root, 'package.json')) };
 }
@@ -224,7 +249,7 @@ export function installCommands(plan) {
   const { name } = plan.manager;
   return [[plan.runtime, false], [plan.dev, true]].filter(([packages]) => packages.length).map(([packages, development]) => ({
     command: name,
-    args: [name === 'npm' ? 'install' : 'add', ...(development ? ['-D'] : []), ...packages],
+    args: [name === 'npm' ? 'install' : 'add', ...(development ? ['-D'] : []), ...(plan.framework === 'native' ? [name === 'npm' || name === 'pnpm' ? '--save-exact' : '--exact'] : []), ...packages],
   }));
 }
 
