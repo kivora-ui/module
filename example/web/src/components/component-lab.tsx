@@ -16,6 +16,21 @@ const options = [
 ];
 const notify = () => K.toast.success("Acción de prueba completada");
 
+function AnimationDemo() {
+  const [replay, setReplay] = useState(0);
+  const [disabled, setDisabled] = useState(false);
+  return <div className="grid gap-5">
+    <K.AnimatedText replayKey={replay} disabled={disabled} className="text-2xl font-semibold">Ideas en movimiento</K.AnimatedText>
+    <K.AnimatedText replayKey={replay} disabled={disabled} split="characters" preset="scale">Cada letra cuenta</K.AnimatedText>
+    <K.Animation replayKey={replay} disabled={disabled} preset="scale"><K.Badge>Un elemento que aparece</K.Badge></K.Animation>
+    <div className="flex items-center gap-8">
+      <K.AnimatedPath d="M5 12 L10 17 L20 7" label="Completado" replayKey={replay} disabled={disabled} />
+      <K.AnimatedLoader disabled={disabled} /><K.AnimatedLoader variant="bars" disabled={disabled} />
+    </div>
+    <div className="flex flex-wrap gap-2"><K.Button variant="outline" onClick={() => setReplay(value => value + 1)}>Repetir animaciones</K.Button><K.Button variant="outline" aria-pressed={disabled} onClick={() => setDisabled(value => !value)}>{disabled ? 'Activar movimiento' : 'Desactivar movimiento'}</K.Button></div>
+  </div>;
+}
+
 function FileUploadDemo() {
   const [controller] = useState(getUploadSession);
   const [variant, setVariant] = useState<'simple' | 'advanced'>('advanced');
@@ -156,6 +171,7 @@ type Example = { name: string; description: string; render: () => ReactNode };
 // One entry per source component family. The E2E suite checks this list against
 // packages/nextjs/src/components so new families cannot silently lose coverage.
 export const examples: Record<string, Example> = {
+  animation: { name: "Animaciones", description: "Textos, elementos, SVG y loaders reutilizables.", render: () => <AnimationDemo /> },
   player: { name: 'Player', description: 'Video, audio, DRM, ads and offline playback.', render: () => <Link href="/player" className="underline">Abrir Player OTT</Link> },
   'file-upload': { name: 'FileUpload', description: 'Selecciona y sube archivos. Pausa, reanuda o reintenta.', render: () => <FileUploadDemo /> },
   barcode: { name: 'Barcode', description: 'Code 128, EAN, UPC, Data Matrix, PDF417 y Aztec.', render: () => <BarcodeDemo /> },

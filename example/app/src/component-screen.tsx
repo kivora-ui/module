@@ -518,7 +518,24 @@ function BarcodeExample() {
   </View>;
 }
 
+function ExampleAnimation() {
+  const [replay, setReplay] = React.useState(0);
+  const [disabled, setDisabled] = React.useState(false);
+  return <View style={{ gap: 16 }}>
+    <K.AnimatedText replayKey={replay} disabled={disabled} textStyle={{ fontSize: 22, color: '#71717a' }}>Ideas en movimiento</K.AnimatedText>
+    <K.AnimatedText replayKey={replay} disabled={disabled} split="characters" preset="scale" textStyle={{ color: '#71717a' }}>Cada letra cuenta</K.AnimatedText>
+    <K.Animation replayKey={replay} disabled={disabled} preset="scale"><K.Badge>Un elemento que aparece</K.Badge></K.Animation>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 24 }}>
+      <K.AnimatedPath d="M5 12 L10 17 L20 7" pathLength={22} color="#71717a" label="Completado" replayKey={replay} disabled={disabled} />
+      <K.AnimatedLoader disabled={disabled} /><K.AnimatedLoader variant="bars" disabled={disabled} />
+    </View>
+    <K.Button variant="outline" onPress={() => setReplay(value => value + 1)}>Repetir animaciones</K.Button>
+    <K.Button variant="outline" onPress={() => setDisabled(value => !value)}>{disabled ? 'Activar movimiento' : 'Desactivar movimiento'}</K.Button>
+  </View>;
+}
+
 const examples = [
+  { name: 'Animaciones', description: 'Textos, elementos, SVG y loaders reutilizables.', content: <ExampleAnimation /> },
   { name: 'FileUpload', description: 'Selecciona archivos para subirlos automáticamente. Consulta el progreso y cancela la subida desde las notificaciones.', content: <FileUploadExample /> },
   { name: 'Barcode', description: 'Code 128, EAN, UPC, Data Matrix, PDF417 y Aztec.', content: <BarcodeExample /> },
   {

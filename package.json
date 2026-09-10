@@ -27,6 +27,7 @@
     "publish:codes": "pnpm --filter @kivora/codes typecheck && pnpm --filter @kivora/codes test && pnpm --filter @kivora/codes build && pnpm --filter @kivora/codes publish --access public --publish-branch main",
     "dev:uploads": "node scripts/upload-server.mjs",
     "publish:upload": "pnpm --filter @kivora/upload typecheck && pnpm --filter @kivora/upload test && pnpm --filter @kivora/upload build && pnpm --filter @kivora/upload publish --access public --publish-branch main",
+    "perf:animations": "node scripts/benchmark-animations.mjs",
     "docs:components": "node scripts/generate-component-docs.mjs"
   },
   "devDependencies": {

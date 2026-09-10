@@ -353,3 +353,7 @@ Starting a player closes the previous audio or video player. Install the peer
 dependencies `react-native-video@6.19.2` and `react-native-orientation-locker@1.7.0`,
 configure orientation support and rebuild your native app. See [the native player guide](../../docs/native-player.md) for
 setup, examples and platform limitations.
+
+## Animaciones
+
+`Animation`, `AnimatedText`, `AnimatedPath` y `AnimatedLoader` permiten animar elementos, textos, trazados SVG y estados de carga. Incluyen movimiento reducido y controles de duración. [API y ejemplos](https://github.com/kivora-ui/module/blob/main/docs/animations.md).

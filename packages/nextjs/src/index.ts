@@ -407,3 +407,6 @@ export { Icon } from "./components/icon";
 export type { IconProps } from "./components/icon";
 
 export * from "./components/menu";
+
+export { Animation, AnimatedText, AnimatedPath, AnimatedLoader } from "./components/animation";
+export type { AnimationOptions, AnimationPreset, AnimationProps, AnimatedTextProps, AnimatedPathProps, AnimatedLoaderProps } from "./components/animation";

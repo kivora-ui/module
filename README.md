@@ -35,6 +35,7 @@ Los paquetes públicos se publican en npm con versiones independientes. Las inst
 ## Qué comparten
 
 - Formularios: Button, Input, Select, Checkbox, Switch, RadioGroup, Slider, Calendar y DatePicker.
+- [Animaciones](docs/animations.md): textos, entradas de elementos, trazado SVG y loaders para web y app.
 - Presentación: Card, Badge, Avatar, Alert, Attachment, Typography y estados de carga.
 - Composición e interacción: Accordion, Tabs, Dialog, Carousel, Table y más.
 - Colores semánticos, temas claro/oscuro, tipos de tema y breakpoints compartidos.

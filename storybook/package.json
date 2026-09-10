@@ -26,6 +26,8 @@
     "@storybook/react-vite": "8.6.18",
     "@storybook/test": "8.6.18",
     "@tailwindcss/vite": "^4.1.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
     "storybook": "8.6.18",
     "tailwindcss": "^4.1.0",
     "typescript": "^5.9.3",

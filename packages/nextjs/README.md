@@ -331,3 +331,7 @@ See the repository's `docs/web-player.md` for the full integration guide and
 `/player` in the web example for generated clear/encrypted media, ads, offline
 playback, subtitles and audio demonstrations. Commercial DRM/license services
 and ad SDKs require integration testing with your deployment.
+
+## Animaciones
+
+`Animation`, `AnimatedText`, `AnimatedPath` y `AnimatedLoader` permiten animar elementos, textos, trazados SVG y estados de carga. Incluyen movimiento reducido y controles de duración. [API y ejemplos](https://github.com/kivora-ui/module/blob/main/docs/animations.md).

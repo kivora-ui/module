@@ -1,0 +1,212 @@
+{
+  "environment": {
+    "os": "Darwin",
+    "architecture": "arm64",
+    "mode": "Chrome headless, production Storybook, 1280x800",
+    "sample": "One warmed 2-second sample per story and CPU rate; includes entrance and settled state"
+  },
+  "baseline": {
+    "browser": "152.0.7977.83",
+    "baseURL": "http://localhost:6007",
+    "metric": "Main-thread rAF cadence; not presented GPU frames or a device FPS guarantee",
+    "results": [
+      {
+        "story": "animations-text--letters-up",
+        "cpuRate": 1,
+        "rafFps": 60.6,
+        "p95FrameMs": 16.7,
+        "maxFrameMs": 16.8,
+        "framesOver33ms": 0,
+        "longTasks": 0,
+        "browserAnimationProperties": [
+          "opacity"
+        ]
+      },
+      {
+        "story": "animations-text--words-scale",
+        "cpuRate": 1,
+        "rafFps": 60.8,
+        "p95FrameMs": 16.7,
+        "maxFrameMs": 16.8,
+        "framesOver33ms": 0,
+        "longTasks": 0,
+        "browserAnimationProperties": [
+          "opacity"
+        ]
+      },
+      {
+        "story": "components-animation--loaders",
+        "cpuRate": 1,
+        "rafFps": 60.5,
+        "p95FrameMs": 16.8,
+        "maxFrameMs": 16.8,
+        "framesOver33ms": 0,
+        "longTasks": 0,
+        "browserAnimationProperties": [
+          "opacity"
+        ]
+      },
+      {
+        "story": "components-animation--vector",
+        "cpuRate": 1,
+        "rafFps": 60.5,
+        "p95FrameMs": 16.7,
+        "maxFrameMs": 16.8,
+        "framesOver33ms": 0,
+        "longTasks": 0,
+        "browserAnimationProperties": []
+      },
+      {
+        "story": "animations-text--letters-up",
+        "cpuRate": 4,
+        "rafFps": 60.9,
+        "p95FrameMs": 16.7,
+        "maxFrameMs": 16.8,
+        "framesOver33ms": 0,
+        "longTasks": 0,
+        "browserAnimationProperties": [
+          "opacity"
+        ]
+      },
+      {
+        "story": "animations-text--words-scale",
+        "cpuRate": 4,
+        "rafFps": 60.6,
+        "p95FrameMs": 16.8,
+        "maxFrameMs": 16.8,
+        "framesOver33ms": 0,
+        "longTasks": 0,
+        "browserAnimationProperties": [
+          "opacity"
+        ]
+      },
+      {
+        "story": "components-animation--loaders",
+        "cpuRate": 4,
+        "rafFps": 60.4,
+        "p95FrameMs": 16.7,
+        "maxFrameMs": 16.8,
+        "framesOver33ms": 0,
+        "longTasks": 0,
+        "browserAnimationProperties": [
+          "opacity"
+        ]
+      },
+      {
+        "story": "components-animation--vector",
+        "cpuRate": 4,
+        "rafFps": 60.9,
+        "p95FrameMs": 16.7,
+        "maxFrameMs": 16.8,
+        "framesOver33ms": 0,
+        "longTasks": 0,
+        "browserAnimationProperties": []
+      }
+    ]
+  },
+  "candidate": {
+    "browser": "152.0.7977.83",
+    "baseURL": "http://localhost:6007",
+    "metric": "Main-thread rAF cadence; not presented GPU frames or a device FPS guarantee",
+    "results": [
+      {
+        "story": "animations-text--letters-up",
+        "cpuRate": 1,
+        "rafFps": 60.8,
+        "p95FrameMs": 16.7,
+        "maxFrameMs": 16.8,
+        "framesOver33ms": 0,
+        "longTasks": 0,
+        "browserAnimationProperties": [
+          "opacity",
+          "transform"
+        ]
+      },
+      {
+        "story": "animations-text--words-scale",
+        "cpuRate": 1,
+        "rafFps": 60.8,
+        "p95FrameMs": 16.7,
+        "maxFrameMs": 16.8,
+        "framesOver33ms": 0,
+        "longTasks": 0,
+        "browserAnimationProperties": [
+          "opacity",
+          "transform"
+        ]
+      },
+      {
+        "story": "components-animation--loaders",
+        "cpuRate": 1,
+        "rafFps": 60.2,
+        "p95FrameMs": 16.8,
+        "maxFrameMs": 16.8,
+        "framesOver33ms": 0,
+        "longTasks": 0,
+        "browserAnimationProperties": [
+          "opacity",
+          "transform"
+        ]
+      },
+      {
+        "story": "components-animation--vector",
+        "cpuRate": 1,
+        "rafFps": 60.8,
+        "p95FrameMs": 16.8,
+        "maxFrameMs": 16.8,
+        "framesOver33ms": 0,
+        "longTasks": 0,
+        "browserAnimationProperties": []
+      },
+      {
+        "story": "animations-text--letters-up",
+        "cpuRate": 4,
+        "rafFps": 60.9,
+        "p95FrameMs": 16.7,
+        "maxFrameMs": 16.8,
+        "framesOver33ms": 0,
+        "longTasks": 0,
+        "browserAnimationProperties": [
+          "opacity",
+          "transform"
+        ]
+      },
+      {
+        "story": "animations-text--words-scale",
+        "cpuRate": 4,
+        "rafFps": 60.5,
+        "p95FrameMs": 16.8,
+        "maxFrameMs": 16.8,
+        "framesOver33ms": 0,
+        "longTasks": 0,
+        "browserAnimationProperties": [
+          "opacity",
+          "transform"
+        ]
+      },
+      {
+        "story": "components-animation--loaders",
+        "cpuRate": 4,
+        "rafFps": 60.4,
+        "p95FrameMs": 16.7,
+        "maxFrameMs": 16.8,
+        "framesOver33ms": 0,
+        "longTasks": 0,
+        "browserAnimationProperties": [
+          "opacity",
+          "transform"
+        ]
+      },
+      {
+        "story": "components-animation--vector",
+        "cpuRate": 4,
+        "rafFps": 60.5,
+        "p95FrameMs": 16.7,
+        "maxFrameMs": 16.8,
+        "framesOver33ms": 0,
+        "longTasks": 0,
+        "browserAnimationProperties": []
+      }
+    ]
+  }
+}
